@@ -1,0 +1,164 @@
+[
+  {
+    "Name": "DiagTrack",
+    "DisplayName": "Connected User Experiences and Telemetry",
+    "Description": "Sends diagnostic and usage data to Microsoft",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Telemetry",
+    "Default": "Automatic"
+  },
+  {
+    "Name": "dmwappushservice",
+    "DisplayName": "WAP Push Message Routing",
+    "Description": "Routes WAP push messages, used by telemetry pipeline",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Telemetry",
+    "Default": "Manual"
+  },
+  {
+    "Name": "SysMain",
+    "DisplayName": "SysMain (Superfetch)",
+    "Description": "Pre-loads frequently used apps into RAM. Unnecessary on SSDs.",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Performance",
+    "Default": "Automatic"
+  },
+  {
+    "Name": "WSearch",
+    "DisplayName": "Windows Search",
+    "Description": "Indexes files for fast search. Disabling saves disk I/O.",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Performance",
+    "Default": "AutomaticDelayedStart"
+  },
+  {
+    "Name": "lfsvc",
+    "DisplayName": "Geolocation Service",
+    "Description": "Provides location awareness to apps",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Privacy",
+    "Default": "Manual"
+  },
+  {
+    "Name": "MapsBroker",
+    "DisplayName": "Downloaded Maps Manager",
+    "Description": "Manages offline maps downloads",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Bloatware",
+    "Default": "AutomaticDelayedStart"
+  },
+  {
+    "Name": "RemoteRegistry",
+    "DisplayName": "Remote Registry",
+    "Description": "Allows remote users to modify registry. Security risk.",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Security",
+    "Default": "Disabled"
+  },
+  {
+    "Name": "RemoteAccess",
+    "DisplayName": "Routing and Remote Access",
+    "Description": "Offers routing services to businesses in LAN/WAN environments",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Security",
+    "Default": "Disabled"
+  },
+  {
+    "Name": "XboxGipSvc",
+    "DisplayName": "Xbox Accessory Management",
+    "Description": "Manages Xbox accessories connected to the device",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Gaming",
+    "Default": "Manual"
+  },
+  {
+    "Name": "XblAuthManager",
+    "DisplayName": "Xbox Live Auth Manager",
+    "Description": "Provides authentication and authorization services for Xbox Live",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Gaming",
+    "Default": "Manual"
+  },
+  {
+    "Name": "XblGameSave",
+    "DisplayName": "Xbox Live Game Save",
+    "Description": "Syncs save data for Xbox Live enabled games",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Gaming",
+    "Default": "Manual"
+  },
+  {
+    "Name": "XboxNetApiSvc",
+    "DisplayName": "Xbox Live Networking Service",
+    "Description": "Supports Xbox Live networking functions",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Gaming",
+    "Default": "Manual"
+  },
+  {
+    "Name": "WMPNetworkSvc",
+    "DisplayName": "Windows Media Player Network Sharing",
+    "Description": "Shares Windows Media Player libraries over the network",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Bloatware",
+    "Default": "Manual"
+  },
+  {
+    "Name": "WbioSrvc",
+    "DisplayName": "Windows Biometric Service",
+    "Description": "Manages biometric capture devices (fingerprint, face)",
+    "Recommended": "Manual",
+    "Risk": "Medium",
+    "Category": "Security",
+    "Default": "Manual"
+  },
+  {
+    "Name": "TrkWks",
+    "DisplayName": "Distributed Link Tracking Client",
+    "Description": "Maintains links to files on NTFS volumes across a network",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Network",
+    "Default": "Automatic"
+  },
+  {
+    "Name": "Fax",
+    "DisplayName": "Fax Service",
+    "Description": "Enables fax sending and receiving. Nobody uses fax.",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Bloatware",
+    "Default": "Manual"
+  },
+  {
+    "Name": "PrintNotify",
+    "DisplayName": "Printer Extensions and Notifications",
+    "Description": "Opens dialogs for printer job notifications",
+    "Recommended": "Manual",
+    "Risk": "Low",
+    "Category": "Performance",
+    "Default": "Manual"
+  },
+  {
+    "Name": "SharedAccess",
+    "DisplayName": "Internet Connection Sharing",
+    "Description": "Provides NAT, addressing and DNS resolution for shared connections",
+    "Recommended": "Disabled",
+    "Risk": "Low",
+    "Category": "Network",
+    "Default": "Manual"
+  }
+]
