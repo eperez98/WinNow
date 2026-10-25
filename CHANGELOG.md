@@ -8,7 +8,22 @@ All notable changes to Winnow are listed here. The format follows
 ### Planned
 - A more visual UI (graphical interface) on top of the same engine, alongside the terminal edition.
 - Shorter launch URL for the one-line installer.
-- Spanish / English language option.
+
+## [1.0.1] - 2026-10-24 - Release Build
+
+### Added
+- **Language selector at startup**: English or Español is chosen before any option is shown. The last choice is
+  highlighted next time, `-Lang en|es` skips the screen, and the main menu can switch language at any time.
+- Full Spanish translation: menus, prompts, status messages, and every tweak, service and preset name and description.
+- **Uninstall programs**: lists every installed desktop program (the same entries as Settings > Apps) and
+  Microsoft Store app. MSI programs and programs with a quiet uninstaller are removed silently; others open their
+  own uninstaller. A restore point and backup are taken first, as for every change.
+
+### Changed
+- Version label is now `1.0.1 Release Build` in the header, window title and release.
+
+### Fixed
+- Check lists with a single item returned no selection on Windows PowerShell 5.1.
 
 ## [1.0.0] - 2026-10-24
 
@@ -38,5 +53,6 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.1
 [1.0.0]: https://github.com/eperez98/Winnow/releases/tag/v1.0.0

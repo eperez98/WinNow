@@ -8,7 +8,7 @@ $script:WingetAlreadyInstalled = @(-1978335189, -1978335135)   # 0x8A15002B, 0x8
 function Invoke-WNWinget {
     param([Parameter(Mandatory)][string[]]$Arguments)
     $wg = Find-WNWinget
-    if (-not $wg) { Write-WNStatus 'winget is not available (install "App Installer" from the Microsoft Store).' Error 'Apps'; return -1 }
+    if (-not $wg) { Write-WNStatus (T 'apps.noWinget') Error 'Apps'; return -1 }
     return (Invoke-WNNative -FilePath $wg -ArgumentList ($Arguments + $script:WingetCommon) -Component 'Apps')
 }
 
@@ -18,7 +18,7 @@ function Get-WNInstalledAppIds {
     $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     $wg = Find-WNWinget
     if ($wg) {
-        Write-WNStatus 'Reading installed apps (winget export)...' Info 'Apps'
+        Write-WNStatus (T 'apps.reading') Info 'Apps'
         $tmp = Join-Path $env:TEMP "winnow_export_$PID.json"
         & $wg export -o $tmp --accept-source-agreements --disable-interactivity *> $null
         if (Test-Path $tmp) {
@@ -35,16 +35,16 @@ function Get-WNInstalledAppIds {
 
 function Install-WNChoco {
     if (Get-Command choco.exe -ErrorAction SilentlyContinue) { return $true }
-    Write-Host '  Chocolatey is not installed. It will be installed from community.chocolatey.org.' -ForegroundColor Yellow
-    if (-not (Read-WNConfirm 'Install Chocolatey now?')) { return $false }
-    if ($WN.DryRun) { Write-WNStatus 'Would install Chocolatey' Dry 'Apps'; return $true }
+    Write-Host ('  ' + (T 'apps.chocoMissing')) -ForegroundColor Yellow
+    if (-not (Read-WNConfirm (T 'apps.chocoAsk'))) { return $false }
+    if ($WN.DryRun) { Write-WNStatus (T 'apps.chocoDry') Dry 'Apps'; return $true }
     try {
         [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072
         Invoke-Expression ((New-Object Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
         $env:Path += ";$env:ProgramData\chocolatey\bin"
         return [bool](Get-Command choco.exe -ErrorAction SilentlyContinue)
     } catch {
-        Write-WNStatus "Chocolatey install failed: $($_.Exception.Message)" Error 'Apps'
+        Write-WNStatus (T 'apps.chocoFail' $_.Exception.Message) Error 'Apps'
         return $false
     }
 }
@@ -61,19 +61,19 @@ function Install-WNApps {
         $i++
         Write-Host ''
         Write-Host ("  [{0}/{1}] {2}" -f $i, $Apps.Count, $a.Name) -ForegroundColor White
-        if ($installed.Contains($a.Winget)) { Write-WNStatus "$($a.Name) is already installed" Skip 'Apps'; $skip++; continue }
+        if ($installed.Contains($a.Winget)) { Write-WNStatus (T 'apps.already' $a.Name) Skip 'Apps'; $skip++; continue }
         if ($useChoco) {
-            if (-not $a.Choco -or $a.Choco -eq 'na') { Write-WNStatus "No Chocolatey package for $($a.Name)" Skip 'Apps'; $skip++; continue }
+            if (-not $a.Choco -or $a.Choco -eq 'na') { Write-WNStatus (T 'apps.noChoco' $a.Name) Skip 'Apps'; $skip++; continue }
             $code = Invoke-WNNative -FilePath 'choco' -ArgumentList @('install', $a.Choco, '-y', '--no-progress') -Component 'Apps'
         } else {
             $code = Invoke-WNWinget @('install', '--id', $a.Winget, '-e', '--source', 'winget', '--accept-package-agreements', '--silent')
         }
-        if ($code -in 0, 3010, 1641) { Write-WNStatus "Installed $($a.Name)" Ok 'Apps'; $ok++; if (-not $WN.DryRun) { [void]$installed.Add($a.Winget) } }
-        elseif ($code -in $script:WingetAlreadyInstalled) { Write-WNStatus "$($a.Name) is already installed" Skip 'Apps'; $skip++ }
-        else { Write-WNStatus ("Install failed for {0} (exit 0x{1:X8})" -f $a.Name, $code) Error 'Apps' }
+        if ($code -in 0, 3010, 1641) { Write-WNStatus (T 'apps.installed' $a.Name) Ok 'Apps'; $ok++; if (-not $WN.DryRun) { [void]$installed.Add($a.Winget) } }
+        elseif ($code -in $script:WingetAlreadyInstalled) { Write-WNStatus (T 'apps.already' $a.Name) Skip 'Apps'; $skip++ }
+        else { Write-WNStatus (T 'apps.installFail' $a.Name $code) Error 'Apps' }
     }
     Write-Host ''
-    Write-Host "  Installed $ok, skipped $skip, failed $($Apps.Count - $ok - $skip) of $($Apps.Count)." -ForegroundColor Cyan
+    Write-Host ('  ' + (T 'apps.summary' $ok $skip ($Apps.Count - $ok - $skip) $Apps.Count)) -ForegroundColor Cyan
 }
 
 function Uninstall-WNApps {
@@ -83,10 +83,10 @@ function Uninstall-WNApps {
     foreach ($a in $Apps) {
         Write-Host ''
         Write-Host "  $($a.Name)" -ForegroundColor White
-        if (-not $installed.Contains($a.Winget)) { Write-WNStatus "$($a.Name) is not installed (via winget)" Skip 'Apps'; continue }
+        if (-not $installed.Contains($a.Winget)) { Write-WNStatus (T 'apps.notInstalled' $a.Name) Skip 'Apps'; continue }
         $code = Invoke-WNWinget @('uninstall', '--id', $a.Winget, '-e', '--silent')
-        if ($code -eq 0) { Write-WNStatus "Uninstalled $($a.Name)" Ok 'Apps'; if (-not $WN.DryRun) { [void]$installed.Remove($a.Winget) } }
-        else { Write-WNStatus ("Uninstall failed for {0} (exit 0x{1:X8})" -f $a.Name, $code) Error 'Apps' }
+        if ($code -eq 0) { Write-WNStatus (T 'apps.uninstalled' $a.Name) Ok 'Apps'; if (-not $WN.DryRun) { [void]$installed.Remove($a.Winget) } }
+        else { Write-WNStatus (T 'apps.uninstallFail' $a.Name $code) Error 'Apps' }
     }
 }
 
@@ -101,19 +101,19 @@ function Show-WNAppList {
                 Label    = "$($a.Name)$foss"
                 Value    = $a
                 Detail   = "$($a.Description)  (winget: $($a.Winget))"
-                Tag      = $(if ($isIn) { 'INSTALLED' } else { '' })
+                Tag      = $(if ($isIn) { T 'apps.tagInstalled' } else { '' })
                 TagColor = 'Green'
                 Group    = $a.Category
             }
         }
-        $r = Show-WNCheckList -Title $Title -Items @($items) -EnterLabel 'install' -Actions ([ordered]@{ U = 'Uninstall' })
+        $r = Show-WNCheckList -Title $Title -Items @($items) -EnterLabel (T 'enter.install') -Actions ([ordered]@{ U = 'Uninstall' })
         if (-not $r) { return }
-        $verb = if ($r.Action -eq 'Uninstall') { 'Uninstall' } else { 'Install' }
-        Write-WNHeader "$verb $(@($r.Items).Count) app(s)"
+        $uninstall = $r.Action -eq 'Uninstall'
+        Write-WNHeader $(if ($uninstall) { T 'apps.titleUninstall' @($r.Items).Count } else { T 'apps.titleInstall' @($r.Items).Count })
         $r.Items | ForEach-Object { Write-Host "   - $($_.Name)" }
         Write-Host ''
-        if (-not (Read-WNConfirm "$verb these apps?" -DefaultYes)) { continue }
-        if ($verb -eq 'Install') { Install-WNApps -Apps $r.Items } else { Uninstall-WNApps -Apps $r.Items }
+        if (-not (Read-WNConfirm $(if ($uninstall) { T 'apps.confirmUninstall' } else { T 'apps.confirmInstall' }) -DefaultYes)) { continue }
+        if ($uninstall) { Uninstall-WNApps -Apps $r.Items } else { Install-WNApps -Apps $r.Items }
         Wait-WNKey
     }
 }
@@ -124,31 +124,31 @@ function Show-WNAppsMenu {
         $wg = Find-WNWinget
         $items = @()
         foreach ($cat in ($apps | Group-Object Category | Sort-Object Name)) {
-            $items += @{ Label = "$($cat.Name)  ($($cat.Count))"; Value = "cat:$($cat.Name)"; Hint = 'Space to select, Enter install, U uninstall' }
+            $items += @{ Label = "$($cat.Name)  ($($cat.Count))"; Value = "cat:$($cat.Name)"; Hint = (T 'apps.catHint') }
         }
         $items += @{ Separator = $true; Label = '' }
-        $items += @{ Label = "All apps - search ($($apps.Count))"; Value = 'all'; Hotkey = 's'; Hint = 'Press / inside the list to search by name or description' }
-        $items += @{ Label = 'Installed catalog apps'; Value = 'installed'; Hotkey = 'i'; Hint = 'Apps from the catalog that winget reports as installed' }
-        $items += @{ Label = 'Upgrade ALL apps (winget upgrade --all)'; Value = 'upgrade'; Hotkey = 'g'; Hint = 'Upgrades every app winget can upgrade, including ones not in the catalog' }
-        $items += @{ Label = 'List available upgrades'; Value = 'list'; Hotkey = 'l'; Hint = 'winget upgrade' }
-        $items += @{ Label = 'Refresh installed list'; Value = 'refresh'; Hotkey = 'r'; Hint = 'Re-reads installed apps from winget' }
+        $items += @{ Label = (T 'apps.all' $apps.Count); Value = 'all'; Hotkey = 's'; Hint = (T 'apps.allHint') }
+        $items += @{ Label = (T 'apps.installedMenu'); Value = 'installed'; Hotkey = 'i'; Hint = (T 'apps.installedHint') }
+        $items += @{ Label = (T 'apps.upgradeAll'); Value = 'upgrade'; Hotkey = 'g'; Hint = (T 'apps.upgradeAllHint') }
+        $items += @{ Label = (T 'apps.listUpgrades'); Value = 'list'; Hotkey = 'l'; Hint = 'winget upgrade' }
+        $items += @{ Label = (T 'apps.refresh'); Value = 'refresh'; Hotkey = 'r'; Hint = (T 'apps.refreshHint') }
 
-        $sub = if ($wg) { 'winget ready' } else { 'winget NOT found - Chocolatey will be used' }
-        $choice = Show-WNMenu -Title 'App Manager' -Subtitle $sub -Items $items
+        $sub = if ($wg) { T 'apps.wingetReady' } else { T 'apps.wingetMissing' }
+        $choice = Show-WNMenu -Title (T 'apps.title') -Subtitle $sub -Items $items
         if (-not $choice) { return }
         switch -Wildcard ($choice) {
-            'cat:*'     { $c = $choice.Substring(4); Show-WNAppList -Title "Apps - $c" -Apps @($apps | Where-Object Category -eq $c) }
-            'all'       { Show-WNAppList -Title 'All apps' -Apps $apps }
-            'installed' { $set = Get-WNInstalledAppIds; Show-WNAppList -Title 'Installed apps' -Apps @($apps | Where-Object { $set.Contains($_.Winget) }) }
+            'cat:*'     { $c = $choice.Substring(4); Show-WNAppList -Title (T 'apps.catTitle' $c) -Apps @($apps | Where-Object Category -eq $c) }
+            'all'       { Show-WNAppList -Title (T 'apps.allTitle') -Apps $apps }
+            'installed' { $set = Get-WNInstalledAppIds; Show-WNAppList -Title (T 'apps.installedTitle') -Apps @($apps | Where-Object { $set.Contains($_.Winget) }) }
             'upgrade' {
-                Write-WNHeader 'Upgrade all apps'
-                if ((Test-WNCanChange) -and (Read-WNConfirm 'Run winget upgrade --all now?' -DefaultYes) -and (Start-WNChange -Label 'upgrade all apps' -Apps)) {
+                Write-WNHeader (T 'apps.upgradeTitle')
+                if ((Test-WNCanChange) -and (Read-WNConfirm (T 'apps.upgradeAsk') -DefaultYes) -and (Start-WNChange -Label 'upgrade all apps' -Apps)) {
                     [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent'))
                     [void](Get-WNInstalledAppIds -Refresh)
                 }
                 Wait-WNKey
             }
-            'list'    { Write-WNHeader 'Available upgrades'; if ($wg) { & $wg upgrade --accept-source-agreements | Out-Host }; Wait-WNKey }
+            'list'    { Write-WNHeader (T 'apps.upgradesTitle'); if ($wg) { & $wg upgrade --accept-source-agreements | Out-Host }; Wait-WNKey }
             'refresh' { [void](Get-WNInstalledAppIds -Refresh) }
         }
     }

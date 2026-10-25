@@ -22,7 +22,7 @@ param([Parameter(ValueFromRemainingArguments = $true)][string[]]$WNArgs)
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072
     Write-Host ''
-    Write-Host '  Winnow - downloading latest release...' -ForegroundColor Cyan
+    Write-Host '  Winnow - downloading latest release / descargando la ultima version...' -ForegroundColor Cyan
     try {
         $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing

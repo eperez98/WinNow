@@ -35,12 +35,16 @@
 .PARAMETER NoRestorePoint
     Skip the automatic System Restore Point before changes.
 
+.PARAMETER Lang
+    Interface language: en or es. Without it the interactive app asks at startup.
+
 .EXAMPLE
     .\Winnow.ps1
     .\Winnow.ps1 -DryRun
     .\Winnow.ps1 -Preset Standard -Yes
     .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
     .\Winnow.ps1 -Status
+    .\Winnow.ps1 -Lang es
 #>
 [CmdletBinding()]
 param(
@@ -53,6 +57,7 @@ param(
     [switch]$Status,
     [switch]$Yes,
     [switch]$NoRestorePoint,
+    [ValidateSet('en', 'es')][string]$Lang,
     [switch]$NoElevate
 )
 
@@ -80,6 +85,7 @@ if (-not $isAdmin -and -not $DryRun -and -not $List -and -not $Status -and -not 
 foreach ($f in @(Get-ChildItem "$root\core\*.ps1") + @(Get-ChildItem "$root\modules\*.ps1")) { . $f.FullName }
 Initialize-WNContext -Root $root -DryRun:$DryRun -Yes:$Yes -NoRestorePoint:$NoRestorePoint
 try { Import-WNConfig } catch { Write-Host "  [ERROR] $_" -ForegroundColor Red; exit 1 }
+Set-WNLanguage $(if ($Lang) { $Lang } else { 'en' })
 
 # ---- Scripted mode -----------------------------------------------------------------------------
 function Resolve-WNTweakKeys {
@@ -88,7 +94,7 @@ function Resolve-WNTweakKeys {
     $found = @()
     foreach ($k in $keys) {
         $t = Get-WNTweak $k
-        if ($t) { $found += $t } else { Write-WNStatus "Unknown tweak key '$k' (use -List)" Error }
+        if ($t) { $found += $t } else { Write-WNStatus (T 'main.unknownTweak' $k) Error }
     }
     return $found
 }
@@ -124,7 +130,7 @@ if ($Preset -or $Apply -or $Undo -or $Install) {
         $ids = @($Install | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         $apps = foreach ($id in $ids) {
             $a = $WN.Config.apps | Where-Object { $_.Id -eq $id -or $_.Winget -eq $id } | Select-Object -First 1
-            if ($a) { $a } else { Write-WNStatus "Unknown app '$id'" Error }
+            if ($a) { $a } else { Write-WNStatus (T 'main.unknownApp' $id) Error }
         }
         if ($apps) { Install-WNApps -Apps @($apps) }
     }
@@ -134,40 +140,48 @@ if ($Preset -or $Apply -or $Undo -or $Install) {
 # ---- Interactive -------------------------------------------------------------------------------
 Initialize-WNConsole
 if (-not $WN.IsAdmin -and -not $WN.DryRun) { $WN.DryRun = $true }
+if (-not $Lang) {
+    $picked = Show-WNLanguagePicker
+    if (-not $picked) { Set-WNCursor $true; exit 0 }
+    Set-WNLanguage $picked
+}
 
 try {
     while ($true) {
-        $sim = if ($WN.DryRun) { 'ON - nothing is changed' } else { 'OFF - changes are real' }
+        $sim = if ($WN.DryRun) { T 'main.simOn' } else { T 'main.simOff' }
         $items = @(
-            @{ Separator = $true; Label = 'Optimize' }
-            @{ Label = 'Tweaks'; Value = 'tweaks'; Hint = "$(@($WN.Config.tweaks | Where-Object Type -ne 'Toggle').Count) tweaks by category, presets, undo" }
-            @{ Label = 'Preferences (switches)'; Value = 'prefs'; Hint = 'Dark mode, file extensions, taskbar, mouse acceleration... shown as ON/OFF' }
-            @{ Label = 'App Manager'; Value = 'apps'; Hint = "$(@($WN.Config.apps).Count) apps via winget - install, uninstall, upgrade all" }
-            @{ Label = 'Services'; Value = 'services'; Hint = 'Compare and set startup type of common services' }
-            @{ Label = 'Startup Manager'; Value = 'startup'; Hint = 'Enable / disable apps that start with Windows' }
-            @{ Separator = $true; Label = 'Maintain' }
-            @{ Label = 'Repair & Maintenance'; Value = 'repair'; Hint = 'SFC, DISM, cleanup, network/update/store reset, restore points' }
-            @{ Label = 'Windows Update'; Value = 'updates'; Hint = 'Recommended / default policies, pause and resume' }
-            @{ Label = 'DNS'; Value = 'dns'; Hint = 'Cloudflare, Google, Quad9, AdGuard... or back to DHCP' }
-            @{ Label = 'Hosts file'; Value = 'hosts'; Hint = 'Telemetry / Adobe blocks, view, edit with backup' }
-            @{ Label = 'Backups & restore'; Value = 'backups'; Hint = 'Restore points and backups: create, restore, delete'; Hotkey = 'b' }
-            @{ Separator = $true; Label = 'Tool' }
-            @{ Label = 'System information'; Value = 'info'; Hint = 'Hardware, Windows version, disks'; Hotkey = 'y' }
-            @{ Label = 'Logs'; Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
-            @{ Label = "Simulation mode: $sim"; Value = 'sim'; Hint = 'When ON every action is only printed (safe for testing)'; Hotkey = 'm' }
+            @{ Separator = $true; Label = (T 'main.secOptimize') }
+            @{ Label = (T 'main.tweaks'); Value = 'tweaks'; Hint = (T 'main.tweaksHint' @($WN.Config.tweaks | Where-Object Type -ne 'Toggle').Count) }
+            @{ Label = (T 'main.prefs'); Value = 'prefs'; Hint = (T 'main.prefsHint') }
+            @{ Label = (T 'main.apps'); Value = 'apps'; Hint = (T 'main.appsHint' @($WN.Config.apps).Count) }
+            @{ Label = (T 'main.uninstall'); Value = 'uninstall'; Hint = (T 'main.uninstallHint') }
+            @{ Label = (T 'main.services'); Value = 'services'; Hint = (T 'main.servicesHint') }
+            @{ Label = (T 'main.startup'); Value = 'startup'; Hint = (T 'main.startupHint') }
+            @{ Separator = $true; Label = (T 'main.secMaintain') }
+            @{ Label = (T 'main.repair'); Value = 'repair'; Hint = (T 'main.repairHint') }
+            @{ Label = (T 'main.updates'); Value = 'updates'; Hint = (T 'main.updatesHint') }
+            @{ Label = (T 'main.dns'); Value = 'dns'; Hint = (T 'main.dnsHint') }
+            @{ Label = (T 'main.hosts'); Value = 'hosts'; Hint = (T 'main.hostsHint'); Hotkey = 'h' }
+            @{ Label = (T 'main.backups'); Value = 'backups'; Hint = (T 'main.backupsHint'); Hotkey = 'b' }
+            @{ Separator = $true; Label = (T 'main.secTool') }
+            @{ Label = (T 'main.info'); Value = 'info'; Hint = (T 'main.infoHint'); Hotkey = 'y' }
+            @{ Label = (T 'main.logs'); Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
+            @{ Label = (T 'lang.menu'); Value = 'lang'; Hint = (T 'lang.menuHint'); Hotkey = 'i' }
+            @{ Label = (T 'main.sim' $sim); Value = 'sim'; Hint = (T 'main.simHint'); Hotkey = 'm' }
         )
-        $choice = Show-WNMenu -Title 'Main menu' -Items $items -BackLabel 'Exit' -Banner
+        $choice = Show-WNMenu -Title (T 'main.title') -Items $items -BackLabel (T 'menu.exit') -Banner
         if (-not $choice) {
             # Ask before leaving so a stray Esc can never close the app on its own
             if (-not $WN.Interactive) { break }
             Write-Host ''
-            if (Read-WNConfirm 'Exit Winnow?' -DefaultYes) { break } else { continue }
+            if (Read-WNConfirm (T 'main.exitConfirm') -DefaultYes) { break } else { continue }
         }
         try {
         switch ($choice) {
             'tweaks'   { Show-WNTweaksMenu }
             'prefs'    { Show-WNToggles }
             'apps'     { Show-WNAppsMenu }
+            'uninstall' { Show-WNUninstallMenu }
             'services' { Show-WNServicesMenu }
             'startup'  { Show-WNStartupMenu }
             'repair'   { Show-WNRepairMenu }
@@ -177,10 +191,11 @@ try {
             'backups'  { Show-WNBackupsMenu }
             'info'     { Show-WNSystemInfo }
             'logs'     { Show-WNLogsMenu }
+            'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }
             'sim' {
                 if ($WN.DryRun -and -not $WN.IsAdmin) {
-                    Write-WNHeader 'Simulation mode'
-                    Write-WNStatus 'Real changes need administrator rights. Restart Winnow as administrator (Launch.bat).' Warn
+                    Write-WNHeader (T 'main.simTitle')
+                    Write-WNStatus (T 'main.simNeedAdmin') Warn
                     Wait-WNKey
                 } else {
                     $WN.DryRun = -not $WN.DryRun
@@ -193,7 +208,7 @@ try {
             # A failing module must not close the app: show the error and return to the menu
             Set-WNCursor $true
             Write-Host ''
-            Write-WNStatus "Unexpected error in '$choice': $($_.Exception.Message)" Error
+            Write-WNStatus (T 'main.error' $choice $_.Exception.Message) Error
             Write-WNLog "At: $($_.InvocationInfo.PositionMessage)" -Level ERROR
             Wait-WNKey
         }
@@ -203,4 +218,4 @@ try {
     Write-WNLog '==== exit'
 }
 Write-Host ''
-Write-Host "  Bye. Log: $($WN.LogFile)" -ForegroundColor DarkGray
+Write-Host ('  ' + (T 'main.bye' $WN.LogFile)) -ForegroundColor DarkGray

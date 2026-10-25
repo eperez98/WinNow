@@ -31,12 +31,12 @@ function Set-WNRegistry {
             Write-WNLog "Already absent: $target" -Component 'Registry'
             return
         }
-        if ($WN.DryRun) { Write-WNStatus "Would remove $target" Dry 'Registry'; return }
+        if ($WN.DryRun) { Write-WNStatus (T 'reg.dryRemove' $target) Dry 'Registry'; return }
         try {
             Remove-ItemProperty -LiteralPath $Path -Name $Name -Force -ErrorAction Stop
             Write-WNLog "Removed $target" -Component 'Registry'
         } catch {
-            Write-WNStatus "Registry remove failed: $target - $($_.Exception.Message)" Error 'Registry'
+            Write-WNStatus (T 'reg.removeFail' $target $_.Exception.Message) Error 'Registry'
         }
         return
     }
@@ -46,14 +46,14 @@ function Set-WNRegistry {
         Write-WNLog "Unchanged $target = $Value" -Component 'Registry'
         return
     }
-    if ($WN.DryRun) { Write-WNStatus "Would set $target = $Value ($Type)" Dry 'Registry'; return }
+    if ($WN.DryRun) { Write-WNStatus (T 'reg.drySet' $target $Value $Type) Dry 'Registry'; return }
     try {
         # New-Item -Force on an existing key wipes its values, so only create missing keys
         if (-not (Test-Path -LiteralPath $Path)) { New-Item -Path $Path -Force -ErrorAction Stop | Out-Null }
         Set-ItemProperty -LiteralPath $Path -Name $Name -Type $Type -Value $Value -Force -ErrorAction Stop
         Write-WNLog "Set $target = $Value ($Type) [was: $current]" -Component 'Registry'
     } catch {
-        Write-WNStatus "Registry write failed: $target - $($_.Exception.Message)" Error 'Registry'
+        Write-WNStatus (T 'reg.writeFail' $target $_.Exception.Message) Error 'Registry'
     }
 }
 
@@ -90,9 +90,9 @@ function Set-WNService {
         [Parameter(Mandatory)][ValidateSet('Automatic', 'AutomaticDelayedStart', 'Manual', 'Disabled')][string]$StartupType
     )
     $current = Get-WNServiceStartup $Name
-    if ($null -eq $current) { Write-WNStatus "Service $Name not found, skipped" Skip 'Service'; return }
+    if ($null -eq $current) { Write-WNStatus (T 'svc.notFound' $Name) Skip 'Service'; return }
     if ($current -eq $StartupType) { Write-WNLog "Service $Name already $StartupType" -Component 'Service'; return }
-    if ($WN.DryRun) { Write-WNStatus "Would set service $Name : $current -> $StartupType" Dry 'Service'; return }
+    if ($WN.DryRun) { Write-WNStatus (T 'svc.dry' $Name $current $StartupType) Dry 'Service'; return }
     try {
         switch ($StartupType) {
             'AutomaticDelayedStart' {
@@ -115,7 +115,7 @@ function Set-WNService {
         }
         Write-WNLog "Service $Name : $current -> $StartupType" -Component 'Service'
     } catch {
-        Write-WNStatus "Service $Name -> $StartupType failed: $($_.Exception.Message)" Error 'Service'
+        Write-WNStatus (T 'svc.fail' $Name $StartupType $_.Exception.Message) Error 'Service'
     }
 }
 #endregion
@@ -144,7 +144,7 @@ function Remove-WNAppx {
     param([Parameter(Mandatory)][string[]]$Patterns)
     Initialize-WNAppx
     if (-not $WN.DryRun -and -not $WN.Cache.ContainsKey('Provisioned')) {
-        Write-WNStatus 'Reading provisioned packages (one time)...' Info 'Appx'
+        Write-WNStatus (T 'appx.reading') Info 'Appx'
         $WN.Cache.Provisioned = @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyContinue)
     }
     foreach ($p in $Patterns) {
@@ -152,12 +152,12 @@ function Remove-WNAppx {
         $prov = @($WN.Cache.Provisioned | Where-Object { $_.DisplayName -like $p })
         if ($pkgs.Count -eq 0 -and $prov.Count -eq 0) { Write-WNLog "Appx not present: $p" -Component 'Appx'; continue }
         foreach ($pkg in $pkgs) {
-            if ($WN.DryRun) { Write-WNStatus "Would remove app $($pkg.Name) $($pkg.Version)" Dry 'Appx'; continue }
+            if ($WN.DryRun) { Write-WNStatus (T 'appx.dry' $pkg.Name $pkg.Version) Dry 'Appx'; continue }
             try {
                 Remove-AppxPackage -Package $pkg.PackageFullName -AllUsers -ErrorAction Stop
-                Write-WNStatus "Removed $($pkg.Name)" Ok 'Appx'
+                Write-WNStatus (T 'appx.removed' $pkg.Name) Ok 'Appx'
             } catch {
-                Write-WNStatus "Could not remove $($pkg.Name): $($_.Exception.Message)" Warn 'Appx'
+                Write-WNStatus (T 'appx.fail' $pkg.Name $_.Exception.Message) Warn 'Appx'
             }
         }
         foreach ($pp in $prov) {
@@ -175,10 +175,10 @@ function Remove-WNAppx {
 #region Restore point
 function New-WNRestorePoint {
     param([string]$Description = "Winnow $(Get-Date -Format 'yyyy-MM-dd HH:mm')", [switch]$Force)
-    if ($WN.DryRun) { Write-WNStatus "Would create restore point '$Description'" Dry 'Restore'; return $true }
+    if ($WN.DryRun) { Write-WNStatus (T 'rp.dry' $Description) Dry 'Restore'; return $true }
     if ($WN.RestorePointDone -and -not $Force) { return $true }
 
-    Write-WNStatus 'Creating System Restore Point...' Step 'Restore'
+    Write-WNStatus (T 'rp.creating') Step 'Restore'
     $freqPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore'
     $prevFreq = Get-WNRegistryValue $freqPath 'SystemRestorePointCreationFrequency'
     try {
@@ -193,10 +193,10 @@ function New-WNRestorePoint {
             Checkpoint-Computer -Description $Description -RestorePointType MODIFY_SETTINGS -ErrorAction Stop
         }
         $WN.RestorePointDone = $true
-        Write-WNStatus "Restore point created: $Description" Ok 'Restore'
+        Write-WNStatus (T 'rp.created' $Description) Ok 'Restore'
         return $true
     } catch {
-        Write-WNStatus "Restore point failed: $($_.Exception.Message)" Warn 'Restore'
+        Write-WNStatus (T 'rp.failed' $_.Exception.Message) Warn 'Restore'
         return $false
     } finally {
         if ($null -ne $prevFreq) { Set-ItemProperty -Path $freqPath -Name 'SystemRestorePointCreationFrequency' -Type DWord -Value $prevFreq -Force -ErrorAction SilentlyContinue }
@@ -209,7 +209,7 @@ function Confirm-WNRestorePoint {
     if ($WN.NoRestorePoint -or $WN.RestorePointDone) { return $true }
     if (New-WNRestorePoint) { return $true }
     if ($WN.Yes) { return $true }
-    return (Read-WNConfirm 'Continue without a restore point?')
+    return (Read-WNConfirm (T 'rp.continueWithout'))
 }
 #endregion
 
@@ -262,7 +262,7 @@ function New-WNBackup {
     $stamp = Get-Date -Format 'yyyyMMdd_HHmmss'
     $safe = ($Label -replace '[^A-Za-z0-9]+', '-').Trim('-')
     $file = Join-Path (Get-WNBackupDir) "backup_${stamp}_$safe.json"
-    if ($WN.DryRun) { Write-WNStatus "Would save backup $(Split-Path $file -Leaf)" Dry 'Backup'; return $file }
+    if ($WN.DryRun) { Write-WNStatus (T 'bk.dry' (Split-Path $file -Leaf)) Dry 'Backup'; return $file }
 
     $seen = @{}
     $reg = foreach ($r in $Registry) {
@@ -291,15 +291,15 @@ function New-WNBackup {
     try {
         $backup | ConvertTo-Json -Depth 6 | Set-Content -Path $file -Encoding UTF8 -ErrorAction Stop
         $what = @()
-        if ($backup.Registry.Count) { $what += "$($backup.Registry.Count) registry values" }
-        if ($backup.Services.Count) { $what += "$($backup.Services.Count) services" }
-        if ($backup.Dns.Count) { $what += "DNS of $($backup.Dns.Count) adapters" }
-        if ($backup.Apps.Count) { $what += "$($backup.Apps.Count) installed apps" }
-        $detail = if ($what) { $what -join ', ' } else { 'change log only' }
-        Write-WNStatus "Backup saved ($detail): $file" Ok 'Backup'
+        if ($backup.Registry.Count) { $what += T 'bk.regValues' $backup.Registry.Count }
+        if ($backup.Services.Count) { $what += T 'bk.services' $backup.Services.Count }
+        if ($backup.Dns.Count) { $what += T 'bk.dns' $backup.Dns.Count }
+        if ($backup.Apps.Count) { $what += T 'bk.apps' $backup.Apps.Count }
+        $detail = if ($what) { $what -join ', ' } else { T 'bk.logOnly' }
+        Write-WNStatus (T 'bk.saved' $detail $file) Ok 'Backup'
         return $file
     } catch {
-        Write-WNStatus "Backup failed: $($_.Exception.Message)" Error 'Backup'
+        Write-WNStatus (T 'bk.failed' $_.Exception.Message) Error 'Backup'
         return $null
     }
 }
@@ -318,7 +318,7 @@ function Start-WNChange {
     if (-not (Test-WNCanChange)) { return $false }
     if (-not (Confirm-WNRestorePoint)) { return $false }
     $file = New-WNBackup -Label $Label -Registry $Registry -Services $Services -Dns:$Dns -Apps:$Apps -Items $Items
-    if (-not $file -and -not $WN.Yes) { return (Read-WNConfirm 'Continue without a backup?') }
+    if (-not $file -and -not $WN.Yes) { return (Read-WNConfirm (T 'bk.continueWithout')) }
     return $true
 }
 
@@ -341,7 +341,7 @@ function Restore-WNBackup {
         if (-not $r) { continue }
         $target = "$($r.Path)\$($r.Name)"
         if (-not $r.Exists) { Set-WNRegistry -Path $r.Path -Name $r.Name -Value $script:UnsetToken; continue }
-        if ($WN.DryRun) { Write-WNStatus "Would restore $target = $($r.Data) ($($r.Kind))" Dry 'Backup'; continue }
+        if ($WN.DryRun) { Write-WNStatus (T 'bk.dryRestore' $target $r.Data $r.Kind) Dry 'Backup'; continue }
         try {
             if (-not (Test-Path -LiteralPath $r.Path)) { New-Item -Path $r.Path -Force | Out-Null }
             $value = switch ($r.Kind) {
@@ -354,23 +354,23 @@ function Restore-WNBackup {
             New-ItemProperty -LiteralPath $r.Path -Name $r.Name -PropertyType $r.Kind -Value $value -Force -ErrorAction Stop | Out-Null
             Write-WNLog "Restored $target" -Component 'Backup'
         } catch {
-            Write-WNStatus "Could not restore $target : $($_.Exception.Message)" Error 'Backup'
+            Write-WNStatus (T 'bk.restoreFail' $target $_.Exception.Message) Error 'Backup'
         }
     }
     foreach ($s in @($Backup.Services)) { if ($s) { Set-WNService -Name $s.Name -StartupType $s.Startup } }
     foreach ($d in @($Backup.Dns)) {
         if (-not $d) { continue }
         $a = Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object { [string]$_.InterfaceGuid -eq $d.Guid }
-        if (-not $a) { Write-WNStatus "Adapter '$($d.Name)' not found, DNS skipped" Skip 'Backup'; continue }
+        if (-not $a) { Write-WNStatus (T 'bk.adapterMissing' $d.Name) Skip 'Backup'; continue }
         $servers = @(($d.IPv4 -split '[,\s]+') + ($d.IPv6 -split '[,\s]+') | Where-Object { $_ })
-        if ($WN.DryRun) { Write-WNStatus "Would restore DNS on '$($d.Name)' to $(if ($servers) { $servers -join ', ' } else { 'DHCP' })" Dry 'Backup'; continue }
+        if ($WN.DryRun) { Write-WNStatus (T 'bk.dryDns' $d.Name $(if ($servers) { $servers -join ', ' } else { 'DHCP' })) Dry 'Backup'; continue }
         if ($servers.Count) { Set-DnsClientServerAddress -InterfaceIndex $a.ifIndex -ServerAddresses $servers -ErrorAction SilentlyContinue }
         else { Set-DnsClientServerAddress -InterfaceIndex $a.ifIndex -ResetServerAddresses -ErrorAction SilentlyContinue }
     }
     if (@($Backup.Apps).Count) {
-        Write-WNStatus "This backup lists $(@($Backup.Apps).Count) apps that were installed. Apps are not reinstalled or removed automatically; use App Manager if needed." Info 'Backup'
+        Write-WNStatus (T 'bk.appsNote' @($Backup.Apps).Count) Info 'Backup'
     }
-    Write-WNStatus "Backup '$($Backup.Label)' from $($Backup.Created) restored$(if ($WN.DryRun) { ' (simulation)' })" Ok 'Backup'
+    Write-WNStatus (T 'bk.restored' $Backup.Label $Backup.Created $(if ($WN.DryRun) { T 'bk.simSuffix' } else { '' })) Ok 'Backup'
 }
 #endregion
 
@@ -403,15 +403,15 @@ function Get-WNTweakState {
 function Invoke-WNScriptAction {
     param([Parameter(Mandatory)][string]$Function, [Parameter(Mandatory)][string]$TweakName)
     if (-not (Get-Command $Function -ErrorAction SilentlyContinue)) {
-        Write-WNStatus "Script $Function not found for '$TweakName'" Error 'Script'
+        Write-WNStatus (T 'tw.scriptMissing' $Function $TweakName) Error 'Script'
         return
     }
-    if ($WN.DryRun) { Write-WNStatus "Would run script $Function" Dry 'Script'; return }
+    if ($WN.DryRun) { Write-WNStatus (T 'tw.dryScript' $Function) Dry 'Script'; return }
     try {
         Write-WNLog "Run script $Function for $TweakName" -Component 'Script'
         & $Function
     } catch {
-        Write-WNStatus "$Function failed: $($_.Exception.Message)" Error 'Script'
+        Write-WNStatus (T 'tw.scriptFail' $Function $_.Exception.Message) Error 'Script'
     }
 }
 
@@ -441,17 +441,17 @@ function Invoke-WNTweakBatch {
     param([Parameter(Mandatory)][object[]]$Tweaks, [switch]$Undo)
 
     if (-not (Test-WNCanChange)) { return }
-    $verb = if ($Undo) { 'Undo' } else { 'Apply' }
+    $verb = if ($Undo) { T 'verb.undo' } else { T 'verb.apply' }
     $list = @($Tweaks)
 
     if ($Undo) {
         $skipped = @($list | Where-Object { $_.Type -eq 'Action' -or (-not $_.Registry -and -not $_.Services -and -not $_.Undo) })
-        foreach ($t in $skipped) { Write-WNStatus "'$($t.Name)' is a one-shot action and cannot be undone" Skip 'Tweaks' }
+        foreach ($t in $skipped) { Write-WNStatus (T 'tw.oneShot' $t.Name) Skip 'Tweaks' }
         $list = @($list | Where-Object { $skipped -notcontains $_ })
         # Undoing a tweak that is not applied would write its "original" values over whatever is
         # there now (and for grouped tweaks, over a sibling's setting), so leave those alone
         $notApplied = @($list | Where-Object { (Get-WNTweakState $_) -eq 'NotApplied' })
-        foreach ($t in $notApplied) { Write-WNStatus "'$($t.Name)' is not applied, nothing to undo" Skip 'Tweaks' }
+        foreach ($t in $notApplied) { Write-WNStatus (T 'tw.notApplied' $t.Name) Skip 'Tweaks' }
         $list = @($list | Where-Object { $notApplied -notcontains $_ })
     } else {
         # Tweaks in the same Group write the same setting: keep only the last one selected
@@ -459,19 +459,19 @@ function Invoke-WNTweakBatch {
         foreach ($g in $grouped) {
             $keep = $g.Group[-1]
             foreach ($drop in ($g.Group | Where-Object { $_ -ne $keep })) {
-                Write-WNStatus "'$($drop.Name)' conflicts with '$($keep.Name)' ($($g.Name)); skipping it" Warn 'Tweaks'
+                Write-WNStatus (T 'tw.conflict' $drop.Name $keep.Name $g.Name) Warn 'Tweaks'
                 $list = @($list | Where-Object { $_ -ne $drop })
             }
         }
     }
-    if ($list.Count -eq 0) { Write-WNStatus 'Nothing to do.' Info; return }
+    if ($list.Count -eq 0) { Write-WNStatus (T 'tw.nothing') Info; return }
 
     $regs = @($list | ForEach-Object { $_.Registry } | Where-Object { $_ })
     $svcs = @($list | ForEach-Object { $_.Services } | Where-Object { $_ } | ForEach-Object Name)
-    if (-not (Start-WNChange -Label "$verb tweaks" -Registry $regs -Services $svcs -Items @($list.Key))) { Write-WNStatus 'Cancelled.' Warn; return }
+    if (-not (Start-WNChange -Label $(if ($Undo) { 'undo tweaks' } else { 'apply tweaks' }) -Registry $regs -Services $svcs -Items @($list.Key))) { Write-WNStatus (T 'common.cancelled') Warn; return }
 
     Write-Host ''
-    Write-WNStatus "$verb $($list.Count) item(s)$(if ($WN.DryRun) { ' [SIMULATION]' })" Step 'Tweaks'
+    Write-WNStatus (T 'tw.batchStart' $verb $list.Count $(if ($WN.DryRun) { T 'title.sim' } else { '' })) Step 'Tweaks'
     $results = @()
     $i = 0
     foreach ($t in $list) {
@@ -482,11 +482,11 @@ function Invoke-WNTweakBatch {
         try {
             Invoke-WNTweak -Tweak $t -Undo:$Undo
         } catch {
-            Write-WNStatus "Unexpected error: $($_.Exception.Message)" Error 'Tweaks'
+            Write-WNStatus (T 'tw.unexpected' $_.Exception.Message) Error 'Tweaks'
         }
         $ok = ($WN.ErrorCount -eq $before)
         $results += [pscustomobject]@{ Name = $t.Name; Ok = $ok }
-        if ($ok) { Write-WNStatus "$verb done: $($t.Name)" Ok 'Tweaks' } else { Write-WNStatus "$verb finished with errors: $($t.Name)" Warn 'Tweaks' }
+        if ($ok) { Write-WNStatus (T 'tw.done' $verb $t.Name) Ok 'Tweaks' } else { Write-WNStatus (T 'tw.doneErrors' $verb $t.Name) Warn 'Tweaks' }
     }
 
     $restart = @($list | ForEach-Object { $_.Restart } | Where-Object { $_ } | Select-Object -Unique)
@@ -496,10 +496,10 @@ function Invoke-WNTweakBatch {
     Write-Host ''
     Write-Host ('  ' + ('-' * 56)) -ForegroundColor DarkGray
     $color = if ($okCount -eq $results.Count) { 'Green' } else { 'Yellow' }
-    Write-Host ("  {0}: {1} of {2} completed without errors" -f $verb, $okCount, $results.Count) -ForegroundColor $color
-    foreach ($r in ($results | Where-Object { -not $_.Ok })) { Write-Host "    - $($r.Name) (see log)" -ForegroundColor Yellow }
-    if ($restart -contains 'Reboot') { Write-Host '  A restart is required for some changes to take effect.' -ForegroundColor Yellow }
-    Write-Host "  Log: $($WN.LogFile)" -ForegroundColor DarkGray
+    Write-Host ('  ' + (T 'tw.summary' $verb $okCount $results.Count)) -ForegroundColor $color
+    foreach ($r in ($results | Where-Object { -not $_.Ok })) { Write-Host "    - $($r.Name) $(T 'tw.seeLog')" -ForegroundColor Yellow }
+    if ($restart -contains 'Reboot') { Write-Host ('  ' + (T 'tw.reboot')) -ForegroundColor Yellow }
+    Write-Host ('  ' + (T 'common.log' $WN.LogFile)) -ForegroundColor DarkGray
     Write-WNLog "$verb batch complete: $okCount/$($results.Count) ok" -Component 'Tweaks'
 }
 #endregion

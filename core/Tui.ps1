@@ -4,7 +4,7 @@
 
 function Initialize-WNConsole {
     try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch { }
-    try { $Host.UI.RawUI.WindowTitle = "$($WN.Name) $($WN.Version)$(if ($WN.DryRun) { ' [SIMULATION]' })" } catch { }
+    try { $Host.UI.RawUI.WindowTitle = "$($WN.Name) $($WN.Version) $($WN.Channel)$(if ($WN.DryRun) { T 'title.sim' })" } catch { }
 }
 
 function Get-WNConsoleSize {
@@ -59,7 +59,7 @@ function Write-WNBanner {
         Write-Host $script:WNMark[$r][0] -ForegroundColor $script:WNMark[$r][1] -NoNewline
         Write-Host "   $name" -ForegroundColor $rowColors[$r]
     }
-    Write-Host '                 sift Windows down to what matters' -ForegroundColor DarkGray
+    Write-Host ('                 ' + (T 'tagline')) -ForegroundColor DarkGray
 }
 
 function Write-WNHeader {
@@ -67,17 +67,17 @@ function Write-WNHeader {
     if ($WN.Interactive) { Clear-Host }
     $w = (Get-WNConsoleSize).Width
     $line = '=' * [Math]::Min(78, $w - 4)
-    $admin = if ($WN.IsAdmin) { @('Admin', 'Green') } else { @('Not admin', 'Yellow') }
+    $admin = if ($WN.IsAdmin) { @((T 'hdr.admin'), 'Green') } else { @((T 'hdr.notAdmin'), 'Yellow') }
     Write-Host ''
     # The full banner needs ~7 extra rows; on shorter windows the menu would scroll it out of view
     if ($Banner -and (Get-WNConsoleSize).Height -ge 40) { Write-WNBanner; Write-Host '' }
     Write-Host "  $line" -ForegroundColor DarkCyan
     $seg = @(
-        @('   ', $null), @('\/\/', 'Green'), @('.', 'Yellow'), @(' winnow', 'Cyan'), @(" $($WN.Version)", 'White'),
+        @('   ', $null), @('\/\/', 'Green'), @('.', 'Yellow'), @(' winnow', 'Cyan'), @(" $($WN.Version)", 'White'), @(" $($WN.Channel)", 'DarkGray'),
         @('  |  ', 'DarkGray'), @("$($WN.OSLabel) build $($WN.OSBuild)", 'Gray'),
         @('  |  ', 'DarkGray'), $admin
     )
-    if ($WN.DryRun) { $seg += , @('  |  ', 'DarkGray'); $seg += , @(' SIMULATION ', 'Black', 'Magenta') }
+    if ($WN.DryRun) { $seg += , @('  |  ', 'DarkGray'); $seg += , @((T 'hdr.sim'), 'Black', 'Magenta') }
     Write-WNSegments $seg
     Write-Host "  $line" -ForegroundColor DarkCyan
     if ($Title) {
@@ -109,23 +109,24 @@ function Read-WNKey {
 function Read-WNConfirm {
     param([Parameter(Mandatory)][string]$Message, [switch]$DefaultYes)
     if ($WN.Yes) { return $true }
-    $hint = if ($DefaultYes) { '[Y/n]' } else { '[y/N]' }
+    $hint = if ($DefaultYes) { T 'yn.yes' } else { T 'yn.no' }
     Write-Host "  $Message $hint " -ForegroundColor Yellow -NoNewline
     if ($WN.Interactive) {
         Clear-WNKeyBuffer
         while ($true) {
             $k = Read-WNKey
             switch ($k.Key) {
-                'Y'      { Write-Host 'y'; return $true }
-                'N'      { Write-Host 'n'; return $false }
-                'Escape' { Write-Host 'n'; return $false }
-                'Enter'  { Write-Host $(if ($DefaultYes) { 'y' } else { 'n' }); return [bool]$DefaultYes }
+                # Y and S (si) both mean yes, so either language's key works
+                { "$_" -in 'Y', 'S' } { Write-Host (T 'yn.yesKey'); return $true }
+                'N'      { Write-Host (T 'yn.noKey'); return $false }
+                'Escape' { Write-Host (T 'yn.noKey'); return $false }
+                'Enter'  { Write-Host $(if ($DefaultYes) { T 'yn.yesKey' } else { T 'yn.noKey' }); return [bool]$DefaultYes }
             }
         }
     }
     $a = Read-Host
     if ([string]::IsNullOrWhiteSpace($a)) { return [bool]$DefaultYes }
-    return $a.Trim() -match '^(y|yes|s|si)$'
+    return $a.Trim() -match '^(y|yes|s|si|s\u00ed)$'
 }
 
 function Read-WNText {
@@ -142,7 +143,7 @@ function Wait-WNKey {
     if (-not $WN.Interactive) { return }
     Clear-WNKeyBuffer
     Write-Host ''
-    Write-Host '  Press Enter to continue...' -ForegroundColor Cyan -NoNewline
+    Write-Host ('  ' + (T 'wait')) -ForegroundColor Cyan -NoNewline
     # Only Enter/Space continue, so a stray key from a finished command cannot skip this screen
     while ($true) { $k = Read-WNKey; if ($k.Key -in 'Enter', 'Spacebar', 'Escape') { break } }
     Write-Host ''
@@ -156,9 +157,10 @@ function Show-WNMenu {
         [Parameter(Mandatory)][string]$Title,
         [Parameter(Mandatory)][object[]]$Items,
         [string]$Subtitle,
-        [string]$BackLabel = 'Back',
+        [string]$BackLabel,
         [switch]$Banner
     )
+    if (-not $BackLabel) { $BackLabel = T 'menu.back' }
     $items = @($Items) + @(@{ Separator = $true; Label = '' }, @{ Label = $BackLabel; Value = $null; Hotkey = '0'; IsBack = $true })
     $selectable = @(for ($i = 0; $i -lt $items.Count; $i++) { if (-not $items[$i].Separator) { $i } })
 
@@ -174,7 +176,7 @@ function Show-WNMenu {
             if ($it.Separator) { if ($it.Label) { Write-Host "  -- $($it.Label) --" -ForegroundColor DarkCyan }; continue }
             Write-Host ("   {0}) {1}" -f $it.Hotkey, $it.Label)
         }
-        $a = Read-Host '  Select'
+        $a = Read-Host ('  ' + (T 'menu.select'))
         if ($null -eq $a) { return $null }
         $hit = $items | Where-Object { -not $_.Separator -and $_.Hotkey -eq $a.Trim() } | Select-Object -First 1
         if ($hit) { return $hit.Value }
@@ -206,7 +208,7 @@ function Show-WNMenu {
         $hint = $items[$selectable[$pos]].Hint
         Write-WNSegments @(, @("  $hint", 'DarkGray')) $width
         Write-WNSegments @(, @('', $null)) $width
-        Write-WNSegments @(, @('  Up/Down move   Enter select   number = shortcut   Esc back', 'DarkGray')) $width
+        Write-WNSegments @(, @(('  ' + (T 'menu.footer')), 'DarkGray')) $width
 
         $k = Read-WNKey
         $handled = $true
@@ -238,14 +240,15 @@ function Show-WNCheckList {
         [Parameter(Mandatory)][string]$Title,
         [Parameter(Mandatory)][object[]]$Items,
         [string]$Subtitle,
-        [string]$EnterLabel = 'apply',
+        [string]$EnterLabel,
         [System.Collections.IDictionary]$Actions = @{},
         [switch]$SingleFocusAction
     )
+    if (-not $EnterLabel) { $EnterLabel = T 'enter.apply' }
     $all = @($Items | ForEach-Object {
         [pscustomobject]@{ Label = $_.Label; Value = $_.Value; Detail = $_.Detail; Tag = $_.Tag; TagColor = $_.TagColor; Group = $_.Group; Checked = [bool]$_.Checked }
     })
-    if ($all.Count -eq 0) { Write-WNStatus 'Nothing to show.' Info; Wait-WNKey; return $null }
+    if ($all.Count -eq 0) { Write-WNStatus (T 'list.nothing') Info; Wait-WNKey; return $null }
 
     if (-not $WN.Interactive) { return (Show-WNCheckListFallback -Title $Title -Subtitle $Subtitle -All $all -Actions $Actions -EnterLabel $EnterLabel) }
 
@@ -271,8 +274,8 @@ function Show-WNCheckList {
 
         [Console]::SetCursorPosition(0, $top)
         $checkedCount = @($all | Where-Object Checked).Count
-        $searchText = if ($searching) { "/${filter}_" } elseif ($filter) { "filter: $filter" } else { '' }
-        Write-WNSegments @(@("  $checkedCount selected", 'Cyan'), @("   $($view.Count) shown", 'DarkGray'), @("   $searchText", 'Yellow')) $width
+        $searchText = if ($searching) { "/${filter}_" } elseif ($filter) { T 'list.filter' $filter } else { '' }
+        Write-WNSegments @(@(('  ' + (T 'list.selected' $checkedCount)), 'Cyan'), @(('   ' + (T 'list.shown' $view.Count)), 'DarkGray'), @("   $searchText", 'Yellow')) $width
 
         $tagWidth = 12
         $lastGroup = $null
@@ -295,9 +298,9 @@ function Show-WNCheckList {
                 Write-WNSegments @(@('   ', $null), @(" $box ", $boxColor), @("$label ", 'Gray'), @($tag, $tagColor)) $width
             }
         }
-        $more = if ($view.Count -gt $rows) { "  rows $($offset + 1)-$([Math]::Min($view.Count, $offset + $rows)) of $($view.Count)" } else { '' }
+        $more = if ($view.Count -gt $rows) { '  ' + (T 'list.rows' ($offset + 1) ([Math]::Min($view.Count, $offset + $rows)) $view.Count) } else { '' }
         Write-WNSegments @(, @($more, 'DarkGray')) $width
-        $detail = if ($view.Count -gt 0) { $view[$pos].Detail } else { 'No matches. Press Esc to clear the filter.' }
+        $detail = if ($view.Count -gt 0) { $view[$pos].Detail } else { T 'list.noMatch' }
         # Detail can be long: show up to two wrapped lines
         $d1 = ''; $d2 = ''
         if ($detail) {
@@ -311,8 +314,8 @@ function Show-WNCheckList {
         Write-WNSegments @(, @("  $d1", 'Gray')) $width
         Write-WNSegments @(, @("  $d2", 'Gray')) $width
         Write-WNSegments @(, @('', $null)) $width
-        $extra = ($Actions.Keys | ForEach-Object { "$_ $($Actions[$_].ToLower())" }) -join '   '
-        Write-WNSegments @(, @("  Space select   A all/none   / search   Enter $EnterLabel   $extra   Esc back", 'DarkGray')) $width
+        $extra = ($Actions.Keys | ForEach-Object { "$_ $(T ('act.' + $Actions[$_]))" }) -join '   '
+        Write-WNSegments @(, @(('  ' + (T 'list.footer' $EnterLabel $extra)), 'DarkGray')) $width
 
         $k = Read-WNKey
 
@@ -372,7 +375,7 @@ function Show-WNCheckListFallback {
     for ($i = 0; $i -lt $All.Count; $i++) {
         Write-Host ("  {0,3}) {1,-55} {2}" -f ($i + 1), $All[$i].Label, $All[$i].Tag)
     }
-    $a = Read-Host '  Numbers (e.g. 1,3,5-7 or a = all, empty = back)'
+    $a = Read-Host ('  ' + (T 'list.fbPrompt'))
     if ([string]::IsNullOrWhiteSpace($a)) { return $null }
     $idx = New-Object System.Collections.Generic.List[int]
     if ($a.Trim() -eq 'a') { 0..($All.Count - 1) | ForEach-Object { $idx.Add($_) } }
@@ -386,8 +389,8 @@ function Show-WNCheckListFallback {
     if ($values.Count -eq 0) { return $null }
     $action = 'Enter'
     if ($Actions.Count -gt 0) {
-        $opts = (@("Enter=$EnterLabel") + ($Actions.Keys | ForEach-Object { "$_=$($Actions[$_])" })) -join ', '
-        $c = Read-Host "  Action ($opts)"
+        $opts = (@("Enter=$EnterLabel") + ($Actions.Keys | ForEach-Object { "$_=$(T ('act.' + $Actions[$_]))" })) -join ', '
+        $c = Read-Host ('  ' + (T 'list.fbAction' $opts))
         if ($c -and $Actions.Contains($c.Trim().ToUpper())) { $action = $Actions[$c.Trim().ToUpper()] }
     }
     return @{ Action = $action; Items = $values }
@@ -397,12 +400,12 @@ function Show-WNText {
     # Paged display of text lines (logs, lists)
     param([Parameter(Mandatory)][string]$Title, [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Lines)
     Write-WNHeader $Title
-    if ($Lines.Count -eq 0) { Write-Host '  (empty)' -ForegroundColor DarkGray; Wait-WNKey; return }
+    if ($Lines.Count -eq 0) { Write-Host ('  ' + (T 'text.empty')) -ForegroundColor DarkGray; Wait-WNKey; return }
     $pageSize = [Math]::Max(10, (Get-WNConsoleSize).Height - 10)
     for ($i = 0; $i -lt $Lines.Count; $i++) {
         Write-Host "  $($Lines[$i])"
         if ($WN.Interactive -and (($i + 1) % $pageSize -eq 0) -and ($i + 1 -lt $Lines.Count)) {
-            Write-Host '  -- more: any key, Esc to stop --' -ForegroundColor DarkGray -NoNewline
+            Write-Host ('  ' + (T 'text.more')) -ForegroundColor DarkGray -NoNewline
             $k = Read-WNKey
             Write-Host ''
             if ($k.Key -eq 'Escape') { return }

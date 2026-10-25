@@ -5,32 +5,32 @@ function Show-WNServicesMenu {
     while ($true) {
         $items = foreach ($s in $WN.Config.services) {
             $cur = Get-WNServiceStartup $s.Name
-            if ($null -eq $cur) { $tag = 'missing'; $color = 'DarkGray' }
+            if ($null -eq $cur) { $tag = T 'svc.missing'; $color = 'DarkGray' }
             elseif ($cur -eq $s.Recommended) { $tag = $cur; $color = 'Green' }
             else { $tag = $cur; $color = 'Yellow' }
-            $risk = if ($s.Risk -ne 'Low') { " ($($s.Risk.ToUpper()) RISK)" } else { '' }
+            $risk = if ($s.Risk -ne 'Low') { T 'common.risk' (T "risk.$($s.Risk)").ToUpper() } else { '' }
             [pscustomobject]@{
                 Label    = "$($s.DisplayName)$risk"
                 Value    = $s
-                Detail   = "$($s.Name): $($s.Description)  | recommended: $($s.Recommended), Windows default: $($s.Default)"
+                Detail   = T 'svc.detail' $s.Name $s.Description $s.Recommended $s.Default
                 Tag      = $tag
                 TagColor = $color
                 Group    = $s.Category
             }
         }
-        $r = Show-WNCheckList -Title 'Services Manager' -Subtitle 'Green = already at recommended' -Items @($items) `
-             -EnterLabel 'set recommended' -Actions ([ordered]@{ D = 'Default'; M = 'Manual' })
+        $r = Show-WNCheckList -Title (T 'svc.title') -Subtitle (T 'svc.subtitle') -Items @($items) `
+             -EnterLabel (T 'enter.recommended') -Actions ([ordered]@{ D = 'Default'; M = 'Manual' })
         if (-not $r) { return }
         if (-not (Test-WNCanChange)) { Wait-WNKey; continue }
 
-        Write-WNHeader 'Services Manager'
+        Write-WNHeader (T 'svc.title')
         $plan = foreach ($s in $r.Items) {
             $target = switch ($r.Action) { 'Default' { $s.Default } 'Manual' { 'Manual' } default { $s.Recommended } }
             Write-Host ("   {0,-45} {1,-22} -> {2}" -f $s.DisplayName, (Get-WNServiceStartup $s.Name), $target)
             [pscustomobject]@{ Name = $s.Name; Target = $target }
         }
         Write-Host ''
-        if (-not (Read-WNConfirm 'Apply?' -DefaultYes)) { continue }
+        if (-not (Read-WNConfirm (T 'svc.apply') -DefaultYes)) { continue }
         if (-not (Start-WNChange -Label 'services' -Services @($plan | ForEach-Object Name))) { continue }
         foreach ($p in $plan) {
             $before = $WN.ErrorCount

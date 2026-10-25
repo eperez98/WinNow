@@ -24,18 +24,18 @@ function Test-WNDenyEveryone {
 function Invoke-WNRestorePointAction { [void](New-WNRestorePoint -Force) }
 
 function Set-WNTelemetryExtras {
-    try { Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction Stop } catch { Write-WNStatus "Defender sample submission not changed: $($_.Exception.Message)" Warn 'Telemetry' }
+    try { Set-MpPreference -SubmitSamplesConsent 2 -ErrorAction Stop } catch { Write-WNStatus (T 'ta.defender' $_.Exception.Message) Warn 'Telemetry' }
     [Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', '1', 'Machine')
 }
 
 function Undo-WNTelemetryExtras {
-    try { Set-MpPreference -SubmitSamplesConsent 1 -ErrorAction Stop } catch { Write-WNStatus "Defender sample submission not changed: $($_.Exception.Message)" Warn 'Telemetry' }
+    try { Set-MpPreference -SubmitSamplesConsent 1 -ErrorAction Stop } catch { Write-WNStatus (T 'ta.defender' $_.Exception.Message) Warn 'Telemetry' }
     [Environment]::SetEnvironmentVariable('POWERSHELL_TELEMETRY_OPTOUT', $null, 'Machine')
 }
 
 $script:StoreDb = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsStore_8wekyb3d8bbwe\LocalState\store.db"
 function Set-WNStoreSearchBlock {
-    if (-not (Test-Path $script:StoreDb)) { Write-WNStatus 'Store search database not found (Store never opened?), skipped' Skip; return }
+    if (-not (Test-Path $script:StoreDb)) { Write-WNStatus (T 'ta.storeDbMissing') Skip; return }
     icacls $script:StoreDb /deny '*S-1-1-0:F' | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "icacls exit code $LASTEXITCODE" }
 }
@@ -52,12 +52,12 @@ function Set-WNExplorerAutoDiscovery {
     $all = "$script:ShellBags\Bags\AllFolders\Shell"
     if (-not (Test-Path $all)) { New-Item -Path $all -Force | Out-Null }
     New-ItemProperty -Path $all -Name 'FolderType' -Value 'NotSpecified' -PropertyType String -Force | Out-Null
-    Write-WNStatus 'Sign out and back in to finish applying this change.' Info
+    Write-WNStatus (T 'ta.signOut') Info
 }
 function Undo-WNExplorerAutoDiscovery {
     Remove-Item -Path "$script:ShellBags\Bags" -Recurse -Force -ErrorAction SilentlyContinue
     Remove-Item -Path "$script:ShellBags\BagMRU" -Recurse -Force -ErrorAction SilentlyContinue
-    Write-WNStatus 'Sign out and back in to finish applying this change.' Info
+    Write-WNStatus (T 'ta.signOut') Info
 }
 function Test-WNExplorerAutoDiscovery { (Get-WNRegistryValue "$script:ShellBags\Bags\AllFolders\Shell" 'FolderType') -eq 'NotSpecified' }
 
@@ -77,9 +77,9 @@ function Invoke-WNDeleteTempFiles {
             Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
         $freed = $before - (Get-WNFolderSize $dir)
         $total += [Math]::Max(0, $freed)
-        Write-WNStatus ("Cleaned {0} ({1:N1} MB)" -f $dir, ($freed / 1MB)) Ok 'Cleanup'
+        Write-WNStatus (T 'ta.cleaned' $dir ($freed / 1MB)) Ok 'Cleanup'
     }
-    Write-WNStatus ("Freed {0:N1} MB in total" -f ($total / 1MB)) Info 'Cleanup'
+    Write-WNStatus (T 'ta.freed' ($total / 1MB)) Info 'Cleanup'
 }
 
 function Invoke-WNDiskCleanup {
@@ -93,9 +93,9 @@ function Invoke-WNDiskCleanup {
         $k = Join-Path $caches $h
         if (Test-Path $k) { Set-ItemProperty -Path $k -Name 'StateFlags0064' -Type DWord -Value 2 -ErrorAction SilentlyContinue }
     }
-    Write-WNStatus 'Running Disk Cleanup (cleanmgr /sagerun:64)...' Step 'Cleanup'
+    Write-WNStatus (T 'ta.cleanmgr') Step 'Cleanup'
     Start-Process cleanmgr.exe -ArgumentList '/sagerun:64' -Wait -WindowStyle Hidden
-    Write-WNStatus 'Running DISM component cleanup (this can take a while)...' Step 'Cleanup'
+    Write-WNStatus (T 'ta.dism') Step 'Cleanup'
     [void](Invoke-WNNative -FilePath 'dism.exe' -ArgumentList @('/Online', '/Cleanup-Image', '/StartComponentCleanup', '/ResetBase') -Component 'Cleanup')
 }
 #endregion
@@ -184,7 +184,7 @@ function Test-WNOneDriveRemoved {
 $script:OneDriveNavKey = 'HKCU:\Software\Classes\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}'
 
 function Remove-WNOneDrive {
-    if (Test-WNOneDriveRemoved) { Write-WNStatus 'OneDrive is not installed' Skip; return }
+    if (Test-WNOneDriveRemoved) { Write-WNStatus (T 'ta.odNotInstalled') Skip; return }
     Get-Process -Name 'OneDrive', 'FileCoAuth' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
     # winget covers per-user and per-machine installs; the setup shipped with Windows is the fallback
@@ -193,7 +193,7 @@ function Remove-WNOneDrive {
         $setup = Get-ChildItem -Path "$env:SystemRoot\System32\OneDriveSetup.exe", "$env:SystemRoot\SysWOW64\OneDriveSetup.exe" -ErrorAction SilentlyContinue |
                  Select-Object -First 1
         if ($setup) {
-            Write-WNStatus 'Running the OneDrive uninstaller shipped with Windows...' Step
+            Write-WNStatus (T 'ta.odUninstaller') Step
             Start-Process -FilePath $setup.FullName -ArgumentList '/uninstall' -Wait
         }
     }
@@ -206,8 +206,8 @@ function Remove-WNOneDrive {
     if (-not (Test-Path $script:OneDriveNavKey)) { New-Item -Path $script:OneDriveNavKey -Force | Out-Null }
     Set-ItemProperty -Path $script:OneDriveNavKey -Name 'System.IsPinnedToNameSpaceTree' -Type DWord -Value 0
 
-    if ($env:OneDrive -and (Test-Path -LiteralPath $env:OneDrive)) { Write-WNStatus "Your files are still in $env:OneDrive" Info }
-    if (Test-WNOneDriveRemoved) { Write-WNStatus 'OneDrive removed' Ok } else { Write-WNStatus 'OneDrive.exe is still present after uninstalling' Warn }
+    if ($env:OneDrive -and (Test-Path -LiteralPath $env:OneDrive)) { Write-WNStatus (T 'ta.odFilesKept' $env:OneDrive) Info }
+    if (Test-WNOneDriveRemoved) { Write-WNStatus (T 'ta.odRemoved') Ok } else { Write-WNStatus (T 'ta.odStill') Warn }
 }
 
 function Install-WNOneDrive {
@@ -226,14 +226,14 @@ function Remove-WNEdge {
              Where-Object { $_.Name -as [version] } | Sort-Object { [version]$_.Name } |
              ForEach-Object { Join-Path $_.FullName 'Installer\setup.exe' } | Where-Object { Test-Path $_ } |
              Select-Object -Last 1
-    if (-not $setup) { Write-WNStatus 'Microsoft Edge is not installed' Skip; return }
+    if (-not $setup) { Write-WNStatus (T 'ta.edgeNotInstalled') Skip; return }
     # Edge Update reads this value and then allows setup.exe to remove the browser
     if (-not (Test-Path $script:EdgeUpdateDev)) { New-Item -Path $script:EdgeUpdateDev -Force | Out-Null }
     Set-ItemProperty -Path $script:EdgeUpdateDev -Name 'AllowUninstall' -Type DWord -Value 1
     Get-Process -Name 'msedge' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Process -FilePath $setup -ArgumentList '--uninstall', '--system-level', '--force-uninstall' -Wait
-    if (Test-WNEdgeRemoved) { Write-WNStatus 'Microsoft Edge removed' Ok }
-    else { Write-WNStatus 'Edge is still installed: some Windows builds only allow removing it in the EEA.' Warn }
+    if (Test-WNEdgeRemoved) { Write-WNStatus (T 'ta.edgeRemoved') Ok }
+    else { Write-WNStatus (T 'ta.edgeStill') Warn }
 }
 
 function Install-WNEdge {
@@ -245,10 +245,10 @@ function Install-WNEdge {
 #region Advanced
 function Disable-WNRecallFeature {
     $f = Get-WindowsOptionalFeature -Online -FeatureName 'Recall' -ErrorAction SilentlyContinue
-    if (-not $f) { Write-WNStatus 'Recall is not available on this PC, policies only' Skip; return }
+    if (-not $f) { Write-WNStatus (T 'ta.recallMissing') Skip; return }
     if ($f.State -ne 'Disabled') {
         Disable-WindowsOptionalFeature -Online -FeatureName 'Recall' -NoRestart -ErrorAction Stop | Out-Null
-        Write-WNStatus 'Recall feature disabled (restart to finish)' Ok
+        Write-WNStatus (T 'ta.recallOff') Ok
     }
 }
 

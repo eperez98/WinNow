@@ -14,8 +14,8 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'Winnow'
-        Version          = '1.0.0'
-        Channel          = 'CLI'
+        Version          = '1.0.1'
+        Channel          = 'Release Build'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Root             = $Root
@@ -33,6 +33,10 @@ function Initialize-WNContext {
         Cache            = @{}
         DataDir          = $null
         LogFile          = $null
+        Lang             = 'en'
+        I18n             = $null
+        Strings          = $null
+        CatalogEs        = $null
     }
 
     # Logs and backups live in ProgramData when elevated, otherwise in TEMP (DryRun without admin)
@@ -135,8 +139,8 @@ function Find-WNWinget {
 }
 
 function Restart-WNExplorer {
-    if ($WN.DryRun) { Write-WNStatus 'Would restart Explorer' Dry; return }
-    Write-WNStatus 'Restarting Explorer...' Step
+    if ($WN.DryRun) { Write-WNStatus (T 'exp.dry') Dry; return }
+    Write-WNStatus (T 'exp.restarting') Step
     Get-Process -Name explorer -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 1200
     # Windows usually restarts the shell by itself; start it only if it did not come back
@@ -147,7 +151,7 @@ function Test-WNCanChange {
     # Every write path calls this first: real changes need admin, DryRun never touches the system
     if ($WN.DryRun) { return $true }
     if (-not $WN.IsAdmin) {
-        Write-WNStatus 'Administrator rights are required for this action.' Error
+        Write-WNStatus (T 'common.needAdmin') Error
         return $false
     }
     return $true
@@ -161,7 +165,7 @@ function Invoke-WNNative {
         [string]$Component = 'Exec'
     )
     $display = "$FilePath $($ArgumentList -join ' ')".Trim()
-    if ($WN.DryRun) { Write-WNStatus "Would run: $display" Dry $Component; return 0 }
+    if ($WN.DryRun) { Write-WNStatus (T 'run.dry' $display) Dry $Component; return 0 }
     Write-WNLog "Run: $display" -Component $Component
     & $FilePath @ArgumentList | Out-Host
     $code = $LASTEXITCODE

@@ -5,9 +5,10 @@
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal.</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.0.1%20Release%20Build-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
+  <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
   <img src="https://img.shields.io/badge/license-GPL--3.0-FBBF24?style=flat-square"/>
 </p>
 
@@ -16,7 +17,8 @@
 **Winnow** separates the grain from the chaff: it strips telemetry, ads and bloat from Windows and keeps
 what you use. It is a keyboard-driven terminal app built around a declarative tweak catalog. Every tweak
 declares the value it applies **and** the value it restores, so Winnow can tell what is already applied,
-apply it, and undo it. A backup is saved before every change. See the [CHANGELOG](CHANGELOG.md).
+apply it, and undo it. A backup is saved before every change. The whole interface is available in
+**English and Spanish**. See the [CHANGELOG](CHANGELOG.md).
 
 ## Quick start
 
@@ -27,7 +29,7 @@ irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex
 ```
 
 It downloads the latest release to `%TEMP%\Winnow-app` and starts it (asking for administrator rights).
-Nothing is installed. To explore first without changing anything (simulation mode, no admin needed):
+The first screen asks for the language (English / Español) before showing any option. Nothing is installed. To explore first without changing anything (simulation mode, no admin needed):
 
 ```powershell
 & ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -DryRun
@@ -39,14 +41,19 @@ extract it, right-click `Launch.bat` -> *Run as administrator*. Or from a termin
 ```powershell
 .\Winnow.ps1            # interactive menu (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
+.\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
 ```
 
 ## Screenshots
 
 | | |
 |---|---|
-| ![Main menu](screenshots/01-main-menu.png) | ![Tweaks](screenshots/03-tweaks-essential.png) |
-| Main menu | Tweaks with live status, multi-select |
+| ![Language](screenshots/00-language.png) | ![Main menu](screenshots/01-main-menu.png) |
+| Language selector at startup | Main menu |
+| ![Menú principal](screenshots/13-main-menu-es.png) | ![Tweaks en español](screenshots/14-tweaks-es.png) |
+| Main menu in Spanish | Tweaks in Spanish |
+| ![Tweaks](screenshots/03-tweaks-essential.png) | ![Uninstall](screenshots/12-uninstall.png) |
+| Tweaks with live status, multi-select | Uninstall any program or Store app |
 | ![Confirm](screenshots/04-confirm.png) | ![Simulation](screenshots/05-apply-simulation.png) |
 | Confirmation with risk levels | Simulation mode prints every step |
 | ![Preferences](screenshots/06-preferences.png) | ![Apps](screenshots/08-apps-browsers.png) |
@@ -77,6 +84,7 @@ show the compact `\/\/. winnow` mark in the header.
 | **Tweaks** | 51 tweaks in 6 categories with live status (`APPLIED`, `PARTIAL`, `-`), apply + real undo, presets **Minimal / Standard / Heavy**, "Undo applied tweaks" scan |
 | **Preferences** | 18 ON/OFF switches: dark mode, file extensions, hidden files, taskbar, Bing search, mouse acceleration, GPU scheduling, NumLock... |
 | **App Manager** | 376-app catalog, install / uninstall via winget (Chocolatey fallback), installed detection, upgrade all |
+| **Uninstall programs** | Every installed desktop program (same list as Settings > Apps) and Microsoft Store app. MSI and programs with a quiet uninstaller are removed silently; the rest open their own uninstaller |
 | **Services** | 18 common services: current vs recommended vs Windows default |
 | **Startup Manager** | Enable / disable startup apps using Task Manager's own flags (nothing is deleted) |
 | **Repair** | SFC, DISM, chkdsk, temp + disk cleanup, DNS flush, network reset, Windows Update reset, Store reset |
@@ -85,6 +93,7 @@ show the compact `\/\/. winnow` mark in the header.
 | **Hosts** | Tagged telemetry / Adobe blocks that can be removed exactly, automatic backups |
 | **Backups & restore** | Restore the backups taken before each change, delete old backups; create, list, roll back to or delete restore points (oldest or all) |
 | **System info / Logs** | Hardware summary, disk usage, log viewer with errors-only filter |
+| **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
 
 ### Safety
 
@@ -104,6 +113,7 @@ show the compact `\/\/. winnow` mark in the header.
 .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
 .\Winnow.ps1 -Undo ClassicContextMenu
 .\Winnow.ps1 -Install firefox,7zip,vscode -Yes
+.\Winnow.ps1 -Status -Lang es                         # tweak names in Spanish
 ```
 
 Exit code is `1` if any step failed.
@@ -121,13 +131,17 @@ core/
   Common.ps1             Context, logging, helpers
   Engine.ps1             Registry / service / appx engine, tweak state, apply/undo batches, backups
   Tui.ps1                Logo banner, arrow-key menus, check lists with search, confirmations
+  I18n.ps1               English / Spanish strings, language selector
 modules/
   Tweaks.ps1             Tweaks, presets, preference switches
   TweakActions.ps1       Script parts of tweaks (Invoke / Undo / Check functions)
+  Uninstall.ps1          Uninstall programs (desktop + Store apps)
   Apps.ps1 Services.ps1 Startup.ps1 Repair.ps1 Updates.ps1 Network.ps1 System.ps1
 config/
   tweaks.json            Declarative tweak catalog
   presets.json apps.json services.json dns.json
+  i18n.json              Interface text in English and Spanish
+  catalog.es.json        Spanish names and descriptions for tweaks, services and presets
 ```
 
 ### Adding a tweak
@@ -152,7 +166,6 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 
 - **Next version:** a more visual UI (graphical interface) on top of the same engine, alongside the terminal edition.
 - Short launch URL (custom domain) for the one-liner.
-- Spanish / English language option.
 
 ## Requirements
 

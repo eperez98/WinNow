@@ -1,29 +1,22 @@
 # modules/Tweaks.ps1
 # Tweaks, presets and preference toggles screens.
 
-$script:TweakCategories = @(
-    @{ Name = 'Essential';   Hint = 'Safe privacy and cleanup tweaks recommended for everyone' }
-    @{ Name = 'Privacy';     Hint = 'Telemetry hosts, camera/mic, Copilot, Edge and Brave debloat' }
-    @{ Name = 'Performance'; Hint = 'Power plans, services, visual effects, gaming' }
-    @{ Name = 'Interface';   Hint = 'Context menu, Explorer, widgets, notifications' }
-    @{ Name = 'Bloatware';   Hint = 'Remove preinstalled apps, Xbox, OneDrive, Edge' }
-    @{ Name = 'Advanced';    Hint = 'Network stack, hosts blocks, AI removal - read descriptions first' }
-)
+$script:TweakCategories = @('Essential', 'Privacy', 'Performance', 'Interface', 'Bloatware', 'Advanced')
 
 function Get-WNStateTag {
     param([string]$State, [switch]$Toggle)
     if ($Toggle) {
         switch ($State) {
-            'Applied' { return @('ON', 'Green') }
-            'Partial' { return @('MIXED', 'Yellow') }
-            default   { return @('OFF', 'DarkGray') }
+            'Applied' { return @((T 'state.On'), 'Green') }
+            'Partial' { return @((T 'state.Mixed'), 'Yellow') }
+            default   { return @((T 'state.Off'), 'DarkGray') }
         }
     }
     switch ($State) {
-        'Applied'    { @('APPLIED', 'Green') }
-        'Partial'    { @('PARTIAL', 'Yellow') }
+        'Applied'    { @((T 'state.Applied'), 'Green') }
+        'Partial'    { @((T 'state.Partial'), 'Yellow') }
         'NotApplied' { @('-', 'DarkGray') }
-        'Action'     { @('ACTION', 'DarkCyan') }
+        'Action'     { @((T 'state.Action'), 'DarkCyan') }
         default      { @('?', 'DarkGray') }
     }
 }
@@ -32,15 +25,15 @@ function ConvertTo-WNTweakItems {
     param([object[]]$Tweaks, [string[]]$Checked = @(), [switch]$Toggle, [switch]$ShowCategory)
     foreach ($t in $Tweaks) {
         $tag = Get-WNStateTag (Get-WNTweakState $t) -Toggle:$Toggle
-        $risk = if ($t.Risk -ne 'Low') { " ($($t.Risk.ToUpper()) RISK)" } else { '' }
-        $label = if ($ShowCategory) { "$($t.Name)  [$($t.Category)]" } else { $t.Name }
+        $risk = if ($t.Risk -ne 'Low') { T 'common.risk' (T "risk.$($t.Risk)").ToUpper() } else { '' }
+        $label = if ($ShowCategory) { "$($t.Name)  [$(T "cat.$($t.Category)")]" } else { $t.Name }
         [pscustomobject]@{
             Label    = "$label$risk"
             Value    = $t
             Detail   = $t.Description
             Tag      = $tag[0]
             TagColor = $tag[1]
-            Group    = $t.Category
+            Group    = T "cat.$($t.Category)"
             Checked  = ($Checked -contains $t.Key)
         }
     }
@@ -48,20 +41,20 @@ function ConvertTo-WNTweakItems {
 
 function Confirm-WNTweakPlan {
     param([object[]]$Tweaks, [switch]$Undo)
-    $verb = if ($Undo) { 'UNDO' } else { 'APPLY' }
-    Write-WNHeader "Confirm: $verb $(@($Tweaks).Count) item(s)"
+    $verb = if ($Undo) { T 'verb.undoCaps' } else { T 'verb.applyCaps' }
+    Write-WNHeader (T 'tw.confirmTitle' $verb @($Tweaks).Count)
     foreach ($t in $Tweaks) {
         $color = switch ($t.Risk) { 'High' { 'Red' } 'Medium' { 'Yellow' } default { 'Gray' } }
-        $note = if ($t.Type -eq 'Action' -and -not $Undo) { '  (one-shot, not undoable)' } elseif ($t.Appx -and -not $Undo) { '  (removes apps)' } else { '' }
-        Write-Host ("   - {0,-52} {1,-6}{2}" -f $t.Name, $t.Risk, $note) -ForegroundColor $color
+        $note = if ($t.Type -eq 'Action' -and -not $Undo) { T 'tw.noteOneShot' } elseif ($t.Appx -and -not $Undo) { T 'tw.noteRemovesApps' } else { '' }
+        Write-Host ("   - {0,-52} {1,-6}{2}" -f $t.Name, (T "risk.$($t.Risk)"), $note) -ForegroundColor $color
     }
     Write-Host ''
-    if ($WN.DryRun) { Write-Host '  SIMULATION: nothing will be changed, every step is only printed.' -ForegroundColor Magenta }
-    elseif (-not $WN.RestorePointDone -and -not $WN.NoRestorePoint) { Write-Host '  A System Restore Point will be created first.' -ForegroundColor DarkGray }
+    if ($WN.DryRun) { Write-Host ('  ' + (T 'tw.simNote')) -ForegroundColor Magenta }
+    elseif (-not $WN.RestorePointDone -and -not $WN.NoRestorePoint) { Write-Host ('  ' + (T 'tw.rpNote')) -ForegroundColor DarkGray }
     if (-not $Undo -and ($Tweaks | Where-Object { $_.Risk -eq 'High' })) {
-        Write-Host '  This list contains HIGH risk items.' -ForegroundColor Red
+        Write-Host ('  ' + (T 'tw.highRisk')) -ForegroundColor Red
     }
-    return (Read-WNConfirm 'Proceed?')
+    return (Read-WNConfirm (T 'common.proceed'))
 }
 
 function Invoke-WNTweakSelection {
@@ -76,7 +69,7 @@ function Show-WNTweakList {
     param([string]$Title, [object[]]$Tweaks, [string[]]$Checked = @(), [switch]$ShowCategory)
     while ($true) {
         $items = @(ConvertTo-WNTweakItems -Tweaks $Tweaks -Checked $Checked -ShowCategory:$ShowCategory)
-        $r = Show-WNCheckList -Title $Title -Items $items -Subtitle 'Space to select, Enter to apply' -EnterLabel 'apply' -Actions ([ordered]@{ U = 'Undo' })
+        $r = Show-WNCheckList -Title $Title -Items $items -Subtitle (T 'tw.listSubtitle') -EnterLabel (T 'enter.apply') -Actions ([ordered]@{ U = 'Undo' })
         if (-not $r) { return }
         $Checked = @()
         Invoke-WNTweakSelection -Tweaks $r.Items -Undo:($r.Action -eq 'Undo')
@@ -87,15 +80,15 @@ function Show-WNToggles {
     $toggles = @($WN.Config.tweaks | Where-Object { $_.Type -eq 'Toggle' })
     while ($true) {
         $items = @(ConvertTo-WNTweakItems -Tweaks $toggles -Toggle)
-        $r = Show-WNCheckList -Title 'Preferences' -Items $items -Subtitle 'Enter flips the selected switches ON <-> OFF' -EnterLabel 'flip'
+        $r = Show-WNCheckList -Title (T 'pref.title') -Items $items -Subtitle (T 'pref.subtitle') -EnterLabel (T 'enter.flip')
         if (-not $r) { return }
         $turnOn  = @($r.Items | Where-Object { (Get-WNTweakState $_) -ne 'Applied' })
         $turnOff = @($r.Items | Where-Object { (Get-WNTweakState $_) -eq 'Applied' })
-        Write-WNHeader 'Preferences'
-        foreach ($t in $turnOn)  { Write-Host "   $($t.Name)  ->  ON"  -ForegroundColor Green }
-        foreach ($t in $turnOff) { Write-Host "   $($t.Name)  ->  OFF" -ForegroundColor Yellow }
+        Write-WNHeader (T 'pref.title')
+        foreach ($t in $turnOn)  { Write-Host "   $($t.Name)  ->  $(T 'state.On')"  -ForegroundColor Green }
+        foreach ($t in $turnOff) { Write-Host "   $($t.Name)  ->  $(T 'state.Off')" -ForegroundColor Yellow }
         Write-Host ''
-        if (-not (Read-WNConfirm 'Apply these changes?' -DefaultYes)) { continue }
+        if (-not (Read-WNConfirm (T 'pref.apply') -DefaultYes)) { continue }
         if ($turnOn.Count)  { Invoke-WNTweakBatch -Tweaks $turnOn }
         if ($turnOff.Count) { Invoke-WNTweakBatch -Tweaks $turnOff -Undo }
         Wait-WNKey
@@ -105,21 +98,21 @@ function Show-WNToggles {
 function Show-WNPresets {
     $items = foreach ($name in $WN.Config.presets.PSObject.Properties.Name) {
         $p = $WN.Config.presets.$name
-        @{ Label = "$name  ($(@($p.Tweaks).Count) items)"; Value = $name; Hint = $p.Description }
+        @{ Label = (T 'preset.item' (T "preset.$name") @($p.Tweaks).Count); Value = $name; Hint = $p.Description }
     }
-    $choice = Show-WNMenu -Title 'Presets' -Subtitle 'Opens the preset pre-selected so you can review it' -Items @($items)
+    $choice = Show-WNMenu -Title (T 'preset.title') -Subtitle (T 'preset.subtitle') -Items @($items)
     if (-not $choice) { return }
     $keys = @($WN.Config.presets.$choice.Tweaks)
     $tweaks = @($keys | ForEach-Object { Get-WNTweak $_ } | Where-Object { $_ })
-    Show-WNTweakList -Title "Preset: $choice" -Tweaks $tweaks -Checked $keys -ShowCategory
+    Show-WNTweakList -Title (T 'preset.listTitle' (T "preset.$choice")) -Tweaks $tweaks -Checked $keys -ShowCategory
 }
 
 function Show-WNUndoApplied {
-    Write-WNStatus 'Checking which tweaks are currently applied...' Info
+    Write-WNStatus (T 'undo.checking') Info
     $applied = @($WN.Config.tweaks | Where-Object { $_.Type -eq 'Tweak' -and (Get-WNTweakState $_) -in 'Applied', 'Partial' })
-    if ($applied.Count -eq 0) { Write-WNStatus 'No applied tweaks detected.' Ok; Wait-WNKey; return }
+    if ($applied.Count -eq 0) { Write-WNStatus (T 'undo.none') Ok; Wait-WNKey; return }
     $items = @(ConvertTo-WNTweakItems -Tweaks $applied -ShowCategory -Checked @($applied.Key))
-    $r = Show-WNCheckList -Title 'Undo applied tweaks' -Items $items -Subtitle 'All detected tweaks are pre-selected' -EnterLabel 'undo'
+    $r = Show-WNCheckList -Title (T 'undo.title') -Items $items -Subtitle (T 'undo.subtitle') -EnterLabel (T 'enter.undo')
     if ($r) { Invoke-WNTweakSelection -Tweaks $r.Items -Undo }
 }
 
@@ -127,20 +120,20 @@ function Show-WNTweaksMenu {
     while ($true) {
         $items = @()
         foreach ($c in $script:TweakCategories) {
-            $count = @($WN.Config.tweaks | Where-Object { $_.Category -eq $c.Name }).Count
-            if ($count) { $items += @{ Label = "$($c.Name)  ($count)"; Value = "cat:$($c.Name)"; Hint = $c.Hint } }
+            $count = @($WN.Config.tweaks | Where-Object { $_.Category -eq $c }).Count
+            if ($count) { $items += @{ Label = "$(T "cat.$c")  ($count)"; Value = "cat:$c"; Hint = (T "catHint.$c") } }
         }
         $items += @{ Separator = $true; Label = '' }
-        $items += @{ Label = 'Presets (Minimal / Standard / Heavy)'; Value = 'presets'; Hint = 'Pre-selected bundles you can review before applying'; Hotkey = 'p' }
-        $items += @{ Label = 'All tweaks (search)'; Value = 'all'; Hint = 'Every tweak in one list, press / to search'; Hotkey = 's' }
-        $items += @{ Label = 'Undo applied tweaks'; Value = 'undo'; Hint = 'Detects applied tweaks and reverts the ones you choose'; Hotkey = 'u' }
+        $items += @{ Label = (T 'tw.menuPresets'); Value = 'presets'; Hint = (T 'tw.menuPresetsHint'); Hotkey = 'p' }
+        $items += @{ Label = (T 'tw.menuAll'); Value = 'all'; Hint = (T 'tw.menuAllHint'); Hotkey = 's' }
+        $items += @{ Label = (T 'tw.menuUndo'); Value = 'undo'; Hint = (T 'tw.menuUndoHint'); Hotkey = 'u' }
 
-        $choice = Show-WNMenu -Title 'Tweaks' -Items $items
+        $choice = Show-WNMenu -Title (T 'tw.title') -Items $items
         if (-not $choice) { return }
         switch -Wildcard ($choice) {
-            'cat:*'   { $cat = $choice.Substring(4); Show-WNTweakList -Title "Tweaks - $cat" -Tweaks @($WN.Config.tweaks | Where-Object { $_.Category -eq $cat }) }
+            'cat:*'   { $cat = $choice.Substring(4); Show-WNTweakList -Title (T 'tw.catTitle' (T "cat.$cat")) -Tweaks @($WN.Config.tweaks | Where-Object { $_.Category -eq $cat }) }
             'presets' { Show-WNPresets }
-            'all'     { Show-WNTweakList -Title 'All tweaks' -Tweaks @($WN.Config.tweaks | Where-Object { $_.Type -ne 'Toggle' }) -ShowCategory }
+            'all'     { Show-WNTweakList -Title (T 'tw.all') -Tweaks @($WN.Config.tweaks | Where-Object { $_.Type -ne 'Toggle' }) -ShowCategory }
             'undo'    { Show-WNUndoApplied }
         }
     }
