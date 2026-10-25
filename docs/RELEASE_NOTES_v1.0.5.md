@@ -22,6 +22,9 @@ Simulation mode first (nothing is changed, no admin needed):
 
 Offline: download **Winnow.zip** below, extract it, and run `Launch.bat` as administrator, or double-click `Launch-GUI.bat` for the window.
 
+> [!IMPORTANT]
+> **The terminal edition is the complete version** of Winnow, with every module. The **graphical interface is an early preview with only a few options** (home, tweaks and apps); everything else is still in the terminal edition, which the window can open with one click.
+
 ### New in 1.0.5
 
 **Graphical interface (preview).** This is the first version of the graphical edition: a window in the Windows 11 style that follows the light or dark theme set in Windows. It runs on the same engine as the terminal, so every change still gets a restore point, a backup, real undo and simulation mode.

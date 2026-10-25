@@ -21,6 +21,12 @@ apply it, and undo it. A backup is saved before every change. The whole interfac
 **English and Spanish**. Version 1.0.5 adds the first preview of a **graphical interface** in the Windows 11
 style, running on the same engine. See the [CHANGELOG](CHANGELOG.md).
 
+> [!IMPORTANT]
+> **The terminal edition is the complete one.** It has every module: tweaks, preferences, apps, uninstall
+> programs, services, startup, repair, Windows Update, DNS, hosts, backups and logs.
+> The **graphical interface is an early preview with only a few options** (home, tweaks and apps). Use the
+> terminal edition for everything else; the window has a button that opens it.
+
 ## Quick start
 
 Open **PowerShell** (or Windows Terminal) and run:
@@ -66,9 +72,10 @@ a backup, real undo and simulation mode. Open it with `-GUI`, `Launch-GUI.bat`, 
 | ![GUI apps](screenshots/17-gui-apps-es.png) | ![GUI light](screenshots/18-gui-home-light.png) |
 | Apps: filter the catalog or search all of winget (Spanish) | Light theme, taken from the Windows setting |
 
-What the preview covers: **Home** (system summary), **Tweaks** (filter, presets, apply and undo with the live
-state), **Apps** (catalog filter, full winget search, install), a live log, simulation mode and the
-English / Spanish switch. Everything else is one click away in the terminal edition.
+The preview has **few options for now**: **Home** (system summary), **Tweaks** (filter, presets, apply and undo
+with the live state), **Apps** (catalog filter, full winget search, install), a live log, simulation mode and the
+English / Spanish switch. Preferences, uninstall programs, services, startup, repair, Windows Update, DNS, hosts
+and backups are **only in the terminal edition**, which stays the complete version.
 
 ## Screenshots
 
