@@ -30,6 +30,7 @@ function Get-WNInstalledPrograms {
             Quiet     = [string]$e.QuietUninstallString
             Command   = [string]$e.UninstallString
             Silent    = [bool]($msi -or $e.QuietUninstallString)
+            Key       = $e.PSPath
         }
     }
     $WN.Cache.Programs = @($list | Sort-Object Name)
@@ -54,10 +55,28 @@ function Invoke-WNProgramUninstall {
         $p = Start-Process -FilePath 'msiexec.exe' -ArgumentList '/x', $Program.MsiCode, '/qn', '/norestart' -Wait -PassThru
         return $p.ExitCode
     }
-    $cmd = if ($Program.Quiet) { $Program.Quiet } else { $Program.Command }
-    # cmd /s /c runs the stored command line exactly as Windows does, whatever its quoting
-    $p = Start-Process -FilePath 'cmd.exe' -ArgumentList "/s /c `"$cmd`"" -Wait -PassThru -WindowStyle Hidden
-    return $p.ExitCode
+    $exe, $argLine = Split-WNCommandLine $(if ($Program.Quiet) { $Program.Quiet } else { $Program.Command })
+    # Window stays visible: wizard uninstallers need the user. -Wait also waits for child processes.
+    $start = @{ FilePath = $exe; Wait = $true; PassThru = $true }
+    if ($argLine) { $start.ArgumentList = $argLine }
+    return (Start-Process @start).ExitCode
+}
+
+function Split-WNCommandLine {
+    # Returns exe, arguments. Uninstall strings are often unquoted paths with spaces
+    # ("C:\Program Files\X\uninst.exe /S"), which cmd would split at the first space.
+    param([Parameter(Mandatory)][string]$Line)
+    $Line = $Line.Trim()
+    if ($Line -match '^"([^"]+)"\s*(.*)$') { return $matches[1], $matches[2] }
+    $i = 0
+    while (($i = $Line.IndexOf('.exe', $i, [StringComparison]::OrdinalIgnoreCase)) -ge 0) {
+        $exe = $Line.Substring(0, $i + 4)
+        if (Test-Path -LiteralPath $exe -PathType Leaf) { return $exe, $Line.Substring($i + 4).Trim() }
+        $i += 4
+    }
+    # A command on PATH, e.g. "winget uninstall ..." or "powershell -c ..."
+    $parts = $Line -split '\s+', 2
+    return $parts[0], $(if ($parts.Count -gt 1) { $parts[1] } else { '' })
 }
 
 function Uninstall-WNPrograms {
@@ -75,12 +94,17 @@ function Uninstall-WNPrograms {
         Write-WNStatus (T 'un.running' $pr.Name) Step 'Uninstall'
         try {
             $code = Invoke-WNProgramUninstall $pr
-            Write-WNLog "Uninstall $($pr.Name) exit $code" -Component 'Uninstall'
-            switch ($code) {
-                { $_ -in 0 }          { Write-WNStatus (T 'un.done' $pr.Name) Ok 'Uninstall'; $ok++ }
-                { $_ -in 3010, 1641 } { Write-WNStatus (T 'un.reboot' $pr.Name) Ok 'Uninstall'; $ok++ }
-                1605                  { Write-WNStatus (T 'un.notFound' $pr.Name) Skip 'Uninstall'; $ok++ }
-                default               { Write-WNStatus (T 'un.fail' $pr.Name $code) Warn 'Uninstall' }
+            # The exit code alone can't be trusted: wizards can be cancelled and still return 0
+            $gone = -not (Test-Path -LiteralPath $pr.Key)
+            Write-WNLog "Uninstall $($pr.Name) exit $code, removed=$gone" -Component 'Uninstall'
+            if ($gone) {
+                Write-WNStatus $(if ($code -in 3010, 1641) { T 'un.reboot' $pr.Name } else { T 'un.done' $pr.Name }) Ok 'Uninstall'; $ok++
+            } elseif ($code -eq 1605) {
+                Write-WNStatus (T 'un.notFound' $pr.Name) Skip 'Uninstall'; $ok++
+            } elseif ($code -in 0, 3010, 1641) {
+                Write-WNStatus (T 'un.still' $pr.Name) Warn 'Uninstall'
+            } else {
+                Write-WNStatus (T 'un.fail' $pr.Name $code) Warn 'Uninstall'
             }
         } catch {
             Write-WNStatus (T 'un.fail' $pr.Name $_.Exception.Message) Error 'Uninstall'

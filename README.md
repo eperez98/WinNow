@@ -2,10 +2,10 @@
   <img src="LOGO/Winnow_logo.png" width="560" alt="Winnow - sift Windows down to what matters"/>
 </p>
 
-<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal.</b></p>
+<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the new graphical interface (preview).</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.1%20Release%20Build-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.0.5%20Release%20Build-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -18,7 +18,8 @@
 what you use. It is a keyboard-driven terminal app built around a declarative tweak catalog. Every tweak
 declares the value it applies **and** the value it restores, so Winnow can tell what is already applied,
 apply it, and undo it. A backup is saved before every change. The whole interface is available in
-**English and Spanish**. See the [CHANGELOG](CHANGELOG.md).
+**English and Spanish**. Version 1.0.5 adds the first preview of a **graphical interface** in the Windows 11
+style, running on the same engine. See the [CHANGELOG](CHANGELOG.md).
 
 ## Quick start
 
@@ -35,14 +36,39 @@ The first screen asks for the language (English / Español) before showing any o
 & ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -DryRun
 ```
 
+To open the **graphical interface** (preview) instead of the terminal menus:
+
+```powershell
+& ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -GUI
+```
+
 **Offline / manual:** download `Winnow.zip` from [Releases](https://github.com/eperez98/Winnow/releases/latest),
-extract it, right-click `Launch.bat` -> *Run as administrator*. Or from a terminal in that folder:
+extract it, right-click `Launch.bat` -> *Run as administrator* (or double-click `Launch-GUI.bat` for the window).
+Or from a terminal in that folder:
 
 ```powershell
 .\Winnow.ps1            # interactive menu (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
 .\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
+.\Winnow.ps1 -GUI      # graphical interface (preview)
 ```
+
+## Graphical interface (preview)
+
+Version 1.0.5 starts the graphical edition: a WPF window in the Windows 11 style that follows the system
+light or dark theme. It uses the same engine as the terminal, so every change still gets a restore point,
+a backup, real undo and simulation mode. Open it with `-GUI`, `Launch-GUI.bat`, or `G` in the main menu.
+
+| | |
+|---|---|
+| ![GUI home](screenshots/15-gui-home.png) | ![GUI tweaks](screenshots/16-gui-tweaks.png) |
+| Home: this PC at a glance and quick actions | Tweaks grouped by category, with the live state of each one |
+| ![GUI apps](screenshots/17-gui-apps-es.png) | ![GUI light](screenshots/18-gui-home-light.png) |
+| Apps: filter the catalog or search all of winget (Spanish) | Light theme, taken from the Windows setting |
+
+What the preview covers: **Home** (system summary), **Tweaks** (filter, presets, apply and undo with the live
+state), **Apps** (catalog filter, full winget search, install), a live log, simulation mode and the
+English / Spanish switch. Everything else is one click away in the terminal edition.
 
 ## Screenshots
 
@@ -83,7 +109,7 @@ show the compact `\/\/. winnow` mark in the header.
 |---|---|
 | **Tweaks** | 51 tweaks in 6 categories with live status (`APPLIED`, `PARTIAL`, `-`), apply + real undo, presets **Minimal / Standard / Heavy**, "Undo applied tweaks" scan |
 | **Preferences** | 18 ON/OFF switches: dark mode, file extensions, hidden files, taskbar, Bing search, mouse acceleration, GPU scheduling, NumLock... |
-| **App Manager** | 376-app catalog, install / uninstall via winget (Chocolatey fallback), installed detection, upgrade all |
+| **App Manager** | 376-app catalog, install / uninstall via winget (Chocolatey fallback), installed detection, upgrade all, and **search all of winget by name** (`W`) |
 | **Uninstall programs** | Every installed desktop program (same list as Settings > Apps) and Microsoft Store app. MSI and programs with a quiet uninstaller are removed silently; the rest open their own uninstaller |
 | **Services** | 18 common services: current vs recommended vs Windows default |
 | **Startup Manager** | Enable / disable startup apps using Task Manager's own flags (nothing is deleted) |
@@ -94,6 +120,7 @@ show the compact `\/\/. winnow` mark in the header.
 | **Backups & restore** | Restore the backups taken before each change, delete old backups; create, list, roll back to or delete restore points (oldest or all) |
 | **System info / Logs** | Hardware summary, disk usage, log viewer with errors-only filter |
 | **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
+| **Graphical interface** | Preview window in the Windows 11 style: home, tweaks and apps (`G` in the main menu, or `-GUI`) |
 
 ### Safety
 
@@ -123,6 +150,7 @@ Exit code is `1` if any step failed.
 ```
 Winnow.ps1               Entry point: parameters, elevation, main menu
 Launch.bat               Double-click launcher (self-elevates)
+Launch-GUI.bat           Double-click launcher for the graphical interface
 run.ps1                  One-line launcher used by irm | iex (downloads the latest release)
 CHANGELOG.md             Version history
 docs/                    Release notes
@@ -137,6 +165,10 @@ modules/
   TweakActions.ps1       Script parts of tweaks (Invoke / Undo / Check functions)
   Uninstall.ps1          Uninstall programs (desktop + Store apps)
   Apps.ps1 Services.ps1 Startup.ps1 Repair.ps1 Updates.ps1 Network.ps1 System.ps1
+gui/
+  Gui.ps1                Graphical interface (WPF): pages, background worker, theme
+  MainWindow.xaml        Window layout and Windows 11 style
+tests/                   Self-checks for the parsers (run with powershell -File)
 config/
   tweaks.json            Declarative tweak catalog
   presets.json apps.json services.json dns.json
@@ -164,7 +196,8 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 
 ## Roadmap
 
-- **Next version:** a more visual UI (graphical interface) on top of the same engine, alongside the terminal edition.
+- **Graphical interface:** bring every terminal module to the window (services, startup apps, uninstall, repair,
+  Windows Update, DNS, hosts, backups), per-step progress, Mica background and the Windows accent color.
 - Short launch URL (custom domain) for the one-liner.
 
 ## Requirements
@@ -172,6 +205,7 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 - Windows 10 (19041+) or Windows 11
 - Windows PowerShell 5.1 (built in) or PowerShell 7
 - Administrator rights for real changes (not for `-DryRun`, `-List`, `-Status`)
+- The graphical interface uses WPF, included in Windows (.NET Framework 4.x)
 - winget for the App Manager (Chocolatey is offered as fallback)
 
 ## License

@@ -6,8 +6,28 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- A more visual UI (graphical interface) on top of the same engine, alongside the terminal edition.
+- Graphical interface: every terminal module in the window, per-step progress, Mica background and accent color.
 - Shorter launch URL for the one-line installer.
+
+## [1.0.5] - 2026-10-25 - Release Build
+
+### Added
+- **Graphical interface (preview)**: a WPF window in the Windows 11 style that follows the system light or dark
+  theme, with sidebar navigation and the Winnow logo. Pages: **Home** (Windows, CPU, memory, system drive, uptime
+  and quick actions), **Tweaks** (grouped by category, live state badges, filter, presets, apply and undo),
+  **Apps** (filter the catalog or search all of winget, install) and **Coming next**. Changes run in a background
+  worker on the same engine, so the window stays responsive and every change still gets a restore point, a
+  backup and simulation mode. A live log, the simulation switch and the English / Spanish switch are included.
+  Open it with `-GUI`, `Launch-GUI.bat`, or `G` in the terminal main menu.
+- **Search winget by name** in the App Manager (`W`): type a name and install any winget package, not only the
+  376 catalog apps.
+- Self-checks in `tests/` for the uninstall command-line parser and the winget table parser.
+
+### Fixed
+- Uninstall programs: uninstallers that open a wizard returned exit code 1 and were not removed. Uninstall
+  commands with unquoted paths containing spaces are now split correctly, the uninstaller window is shown so the
+  wizard can be completed, and the result is checked against the registry: Winnow reports when a program is
+  still installed (for example, when its wizard was cancelled).
 
 ## [1.0.1] - 2026-10-24 - Release Build
 
@@ -53,6 +73,7 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.5...HEAD
+[1.0.5]: https://github.com/eperez98/Winnow/releases/tag/v1.0.5
 [1.0.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.1
 [1.0.0]: https://github.com/eperez98/Winnow/releases/tag/v1.0.0

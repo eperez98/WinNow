@@ -38,6 +38,9 @@
 .PARAMETER Lang
     Interface language: en or es. Without it the interactive app asks at startup.
 
+.PARAMETER GUI
+    Open the graphical interface (preview) instead of the terminal menus.
+
 .EXAMPLE
     .\Winnow.ps1
     .\Winnow.ps1 -DryRun
@@ -45,6 +48,7 @@
     .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
     .\Winnow.ps1 -Status
     .\Winnow.ps1 -Lang es
+    .\Winnow.ps1 -GUI
 #>
 [CmdletBinding()]
 param(
@@ -58,6 +62,7 @@ param(
     [switch]$Yes,
     [switch]$NoRestorePoint,
     [ValidateSet('en', 'es')][string]$Lang,
+    [switch]$GUI,
     [switch]$NoElevate
 )
 
@@ -76,7 +81,9 @@ if (-not $isAdmin -and -not $DryRun -and -not $List -and -not $Status -and -not 
         else { $argList += "-$($p.Key)"; $argList += "`"$($p.Value)`"" }
     }
     $exe = (Get-Process -Id $PID).Path
-    try { Start-Process -FilePath $exe -ArgumentList $argList -Verb RunAs -ErrorAction Stop }
+    # The GUI does not need its console window in front
+    $style = if ($GUI) { 'Minimized' } else { 'Normal' }
+    try { Start-Process -FilePath $exe -ArgumentList $argList -Verb RunAs -WindowStyle $style -ErrorAction Stop }
     catch { Write-Host '  Elevation was cancelled. Run with -DryRun to explore without admin rights.' -ForegroundColor Red; exit 1 }
     exit 0
 }
@@ -137,6 +144,25 @@ if ($Preset -or $Apply -or $Undo -or $Install) {
     exit ([int]($WN.ErrorCount -gt 0))
 }
 
+# ---- Graphical interface (preview) -------------------------------------------------------------
+if ($GUI) {
+    if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
+        # WPF needs a single-threaded apartment; Windows PowerShell 5.1 starts in one
+        $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate')
+        if ($DryRun) { $a += '-DryRun' }
+        if ($Lang) { $a += '-Lang', $Lang }
+        Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+        exit 0
+    }
+    if (-not $WN.IsAdmin) { $WN.DryRun = $true }
+    $l = if ($Lang) { $Lang } elseif ((Get-WNSettings).Lang -in 'en', 'es') { (Get-WNSettings).Lang } else { 'en' }
+    Set-WNLanguage $l
+    . "$root\gui\Gui.ps1"
+    # Switching language closes the window and opens it again in the other language
+    while ($next = Show-WNGui) { Set-WNLanguage $next; Save-WNSetting 'Lang' $next }
+    exit 0
+}
+
 # ---- Interactive -------------------------------------------------------------------------------
 Initialize-WNConsole
 if (-not $WN.IsAdmin -and -not $WN.DryRun) { $WN.DryRun = $true }
@@ -164,6 +190,7 @@ try {
             @{ Label = (T 'main.hosts'); Value = 'hosts'; Hint = (T 'main.hostsHint'); Hotkey = 'h' }
             @{ Label = (T 'main.backups'); Value = 'backups'; Hint = (T 'main.backupsHint'); Hotkey = 'b' }
             @{ Separator = $true; Label = (T 'main.secTool') }
+            @{ Label = (T 'main.gui'); Value = 'gui'; Hint = (T 'main.guiHint'); Hotkey = 'g' }
             @{ Label = (T 'main.info'); Value = 'info'; Hint = (T 'main.infoHint'); Hotkey = 'y' }
             @{ Label = (T 'main.logs'); Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
             @{ Label = (T 'lang.menu'); Value = 'lang'; Hint = (T 'lang.menuHint'); Hotkey = 'i' }
@@ -189,6 +216,12 @@ try {
             'dns'      { Show-WNDnsMenu }
             'hosts'    { Show-WNHostsMenu }
             'backups'  { Show-WNBackupsMenu }
+            'gui' {
+                $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate', '-Lang', $WN.Lang)
+                if ($WN.DryRun) { $a += '-DryRun' }
+                Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+                Write-WNStatus (T 'main.guiOpened') Ok
+            }
             'info'     { Show-WNSystemInfo }
             'logs'     { Show-WNLogsMenu }
             'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }

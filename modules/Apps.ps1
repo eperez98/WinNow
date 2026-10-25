@@ -90,6 +90,46 @@ function Uninstall-WNApps {
     }
 }
 
+function ConvertFrom-WNWingetTable {
+    # Parses winget's text table (search/list). Column starts come from the header words, which
+    # winget localizes, so they are found by position rather than by name.
+    # shortcut: wide (CJK) characters shift columns; switch to the Microsoft.WinGet.Client module if that matters.
+    param([string[]]$Lines)
+    $Lines = @($Lines | ForEach-Object { ($_ -split "`r")[-1] })
+    $dash = [Array]::FindIndex([string[]]$Lines, [Predicate[string]] { param($l) $l -match '^-{10,}$' })
+    if ($dash -lt 1 -or $dash -ge $Lines.Count - 1) { return }
+    $starts = @([regex]::Matches($Lines[$dash - 1], '\S+') | ForEach-Object Index)
+    if ($starts.Count -lt 3) { return }
+    foreach ($l in $Lines[($dash + 1)..($Lines.Count - 1)]) {
+        if ($l.Length -le $starts[2]) { continue }
+        $id = $l.Substring($starts[1], $starts[2] - $starts[1]).Trim()
+        # Ids cut with an ellipsis (narrow output) cannot be installed
+        if (-not $id -or $id -match '\s' -or $id.EndsWith([string][char]0x2026)) { continue }
+        $verEnd = if ($starts.Count -gt 3 -and $l.Length -gt $starts[3]) { $starts[3] } else { $l.Length }
+        [pscustomobject]@{
+            Name    = $l.Substring(0, $starts[1]).Trim()
+            Id      = $id
+            Version = $l.Substring($starts[2], $verEnd - $starts[2]).Trim()
+        }
+    }
+}
+
+function Search-WNWinget {
+    # Returns catalog-shaped app objects so Show-WNAppList / Install-WNApps can use them as is
+    param([Parameter(Mandatory)][string]$Query)
+    $wg = Find-WNWinget
+    if (-not $wg) { Write-WNStatus (T 'apps.noWinget') Error 'Apps'; return }
+    Write-WNStatus (T 'apps.searching' $Query) Info 'Apps'
+    $enc = [Console]::OutputEncoding
+    try {
+        [Console]::OutputEncoding = [Text.Encoding]::UTF8
+        $out = & $wg search --query $Query --source winget --accept-source-agreements --disable-interactivity 2>$null
+    } finally { [Console]::OutputEncoding = $enc }
+    foreach ($r in (ConvertFrom-WNWingetTable @($out))) {
+        [pscustomobject]@{ Name = $r.Name; Winget = $r.Id; Choco = 'na'; Description = "v$($r.Version)"; Category = $null; Foss = $false }
+    }
+}
+
 function Show-WNAppList {
     param([string]$Title, [object[]]$Apps)
     while ($true) {
@@ -128,6 +168,7 @@ function Show-WNAppsMenu {
         }
         $items += @{ Separator = $true; Label = '' }
         $items += @{ Label = (T 'apps.all' $apps.Count); Value = 'all'; Hotkey = 's'; Hint = (T 'apps.allHint') }
+        $items += @{ Label = (T 'apps.search'); Value = 'search'; Hotkey = 'w'; Hint = (T 'apps.searchHint') }
         $items += @{ Label = (T 'apps.installedMenu'); Value = 'installed'; Hotkey = 'i'; Hint = (T 'apps.installedHint') }
         $items += @{ Label = (T 'apps.upgradeAll'); Value = 'upgrade'; Hotkey = 'g'; Hint = (T 'apps.upgradeAllHint') }
         $items += @{ Label = (T 'apps.listUpgrades'); Value = 'list'; Hotkey = 'l'; Hint = 'winget upgrade' }
@@ -139,6 +180,14 @@ function Show-WNAppsMenu {
         switch -Wildcard ($choice) {
             'cat:*'     { $c = $choice.Substring(4); Show-WNAppList -Title (T 'apps.catTitle' $c) -Apps @($apps | Where-Object Category -eq $c) }
             'all'       { Show-WNAppList -Title (T 'apps.allTitle') -Apps $apps }
+            'search' {
+                Write-WNHeader (T 'apps.searchTitle')
+                $q = Read-WNText (T 'apps.searchPrompt')
+                if (-not $q) { break }
+                $found = @(Search-WNWinget $q)
+                if ($found.Count) { Show-WNAppList -Title (T 'apps.searchResults' $q $found.Count) -Apps $found }
+                else { Write-WNStatus (T 'apps.searchNone' $q) Warn 'Apps'; Wait-WNKey }
+            }
             'installed' { $set = Get-WNInstalledAppIds; Show-WNAppList -Title (T 'apps.installedTitle') -Apps @($apps | Where-Object { $set.Contains($_.Winget) }) }
             'upgrade' {
                 Write-WNHeader (T 'apps.upgradeTitle')
