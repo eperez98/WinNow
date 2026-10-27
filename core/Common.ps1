@@ -15,7 +15,7 @@ function Initialize-WNContext {
     $global:WN = [ordered]@{
         Name             = 'Winnow'
         Version          = '1.0.7.1'
-        Channel          = 'Release Build'
+        Channel          = 'HotFix & Preview Update'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Root             = $Root

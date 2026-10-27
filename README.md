@@ -5,7 +5,7 @@
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (preview).</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.7.1%20Release%20Build-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.0.7.1%20HotFix%20%26%20Preview%20Update-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
