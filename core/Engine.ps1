@@ -287,7 +287,7 @@ function New-WNBackup {
         Dns      = @(if ($Dns) { Get-WNDnsSnapshot })
         Apps     = @()
     }
-    if ($Apps) { $backup.Apps = @(Get-WNInstalledAppIds -Refresh | Sort-Object) }
+    if ($Apps) { $backup.Apps = @((Get-WNInstalledAppIds -Refresh) | Sort-Object) }
     try {
         $backup | ConvertTo-Json -Depth 6 | Set-Content -Path $file -Encoding UTF8 -ErrorAction Stop
         $what = @()

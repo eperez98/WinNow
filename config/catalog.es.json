@@ -92,7 +92,7 @@
   },
   "presets": {
     "Minimal": "Solo lo básico de privacidad. Seguro para cualquier PC.",
-    "Standard": "Recomendado para la mayoría: Mínimo + ubicación, limpieza de Edge, Game DVR, búsqueda de la Store y limpieza.",
-    "Heavy": "Estándar + quitar bloatware/Xbox, Copilot desactivado, efectos visuales de rendimiento y menús clásicos. PCs de escritorio y usuarios avanzados."
+    "Standard": "Todos los ajustes recomendados: privacidad, limpieza y comodidad sin cambios bruscos. No quita nada y todo se puede deshacer.",
+    "Heavy": "Estándar + cambios avanzados: servicios recortados, bloatware y apps de Xbox quitadas, Copilot desactivado, plan de energía y efectos de rendimiento, menús clásicos. PCs de escritorio y usuarios avanzados."
   }
 }

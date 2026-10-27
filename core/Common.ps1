@@ -14,7 +14,7 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'Winnow'
-        Version          = '1.0.5'
+        Version          = '1.0.7.1'
         Channel          = 'Release Build'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
@@ -27,6 +27,7 @@ function Initialize-WNContext {
         IsWin11          = $os.Build -ge 22000
         OSLabel          = if ($os.Build -ge 22000) { 'Windows 11' } else { 'Windows 10' }
         Interactive      = -not [Console]::IsInputRedirected
+        Gui              = $false
         RestorePointDone = $false
         ErrorCount       = 0
         Config           = @{}
@@ -167,7 +168,13 @@ function Invoke-WNNative {
     $display = "$FilePath $($ArgumentList -join ' ')".Trim()
     if ($WN.DryRun) { Write-WNStatus (T 'run.dry' $display) Dry $Component; return 0 }
     Write-WNLog "Run: $display" -Component $Component
-    & $FilePath @ArgumentList | Out-Host
+    if ($WN.Gui) {
+        # The GUI reads Write-Host records; keep the last progress frame of each line and drop the
+        # NUL padding sfc/dism print in UTF-16
+        & $FilePath @ArgumentList 2>&1 | ForEach-Object { $l = (("$_" -replace "`0", '') -split "`r")[-1]; if ($l.Trim()) { Write-Host $l } }
+    } else {
+        & $FilePath @ArgumentList | Out-Host
+    }
     $code = $LASTEXITCODE
     if (Get-Command Clear-WNKeyBuffer -ErrorAction SilentlyContinue) { Clear-WNKeyBuffer }
     Write-WNLog "Exit $code : $display" -Component $Component

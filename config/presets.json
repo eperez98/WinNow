@@ -1,24 +1,14 @@
 {
   "Minimal": {
     "Description": "Privacy basics only. Safe for any PC.",
-    "Tweaks": [ "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "ServicesManual", "DeliveryOptimization" ]
+    "Tweaks": [ "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "DeliveryOptimization" ]
   },
   "Standard": {
-    "Description": "Recommended for most users: Minimal + location, Edge debloat, Game DVR, Store search, cleanup.",
-    "Tweaks": [
-      "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "ServicesManual", "DeliveryOptimization",
-      "Location", "DeviceMetadata", "EndTaskOnTaskbar", "StoreSearch", "ExplorerAutoDiscovery", "TelemetryHosts",
-      "EdgeDebloat", "GameDVR", "Widgets", "DeleteTempFiles", "DiskCleanup"
-    ]
+    "Description": "Every recommended tweak: gentle privacy, cleanup and quality-of-life changes. Nothing is removed and every change can be undone.",
+    "Tweaks": [ "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "DeliveryOptimization", "Location", "DeviceMetadata", "EndTaskOnTaskbar", "StoreSearch", "ExplorerAutoDiscovery", "DeleteTempFiles", "DiskCleanup", "EdgeDebloat", "BraveDebloat", "GameDVR", "CoInstallerBlock" ]
   },
   "Heavy": {
-    "Description": "Standard + bloatware/Xbox removal, Copilot off, performance visuals, classic menus. Desktops and power users.",
-    "Tweaks": [
-      "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "ServicesManual", "DeliveryOptimization",
-      "Location", "DeviceMetadata", "EndTaskOnTaskbar", "StoreSearch", "ExplorerAutoDiscovery", "TelemetryHosts",
-      "EdgeDebloat", "GameDVR", "Widgets", "DeleteTempFiles", "DiskCleanup",
-      "Copilot", "BloatwareApps", "XboxApps", "OneDriveDisable", "BackgroundApps", "SysMain", "Hibernation",
-      "VisualPerformance", "HighPerfPower", "ClassicContextMenu", "HomeGallery", "Notifications"
-    ]
+    "Description": "Standard + advanced changes: services trimmed, bloatware and Xbox apps removed, Copilot off, performance power plan and visuals, classic menus. Desktops and power users.",
+    "Tweaks": [ "Telemetry", "ActivityHistory", "ConsumerFeatures", "StartMenuAds", "WPBT", "DeliveryOptimization", "Location", "DeviceMetadata", "EndTaskOnTaskbar", "StoreSearch", "ExplorerAutoDiscovery", "DeleteTempFiles", "DiskCleanup", "EdgeDebloat", "BraveDebloat", "GameDVR", "CoInstallerBlock", "ServicesManual", "TelemetryHosts", "Widgets", "Copilot", "BloatwareApps", "XboxApps", "OneDriveDisable", "BackgroundApps", "SysMain", "Hibernation", "VisualPerformance", "HighPerfPower", "ClassicContextMenu", "HomeGallery", "Notifications" ]
   }
 }

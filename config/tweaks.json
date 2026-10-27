@@ -5,6 +5,7 @@
     "Category": "Essential",
     "Type": "Action",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Creates a System Restore Point now. Winnow also creates one automatically before the first change of each session.",
     "Invoke": "Invoke-WNRestorePointAction"
   },
@@ -14,6 +15,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Sets diagnostic data to minimum, disables advertising ID, tailored experiences, inking/typing collection, feedback prompts, Defender auto sample submission and PowerShell 7 telemetry. Disables DiagTrack, dmwappushservice and WerSvc.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection", "Name": "AllowTelemetry", "Type": "DWord", "Value": "0", "Original": "<unset>" },
@@ -43,6 +45,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops Windows from publishing or uploading user activities. Clipboard history keeps working.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "Name": "EnableActivityFeed", "Type": "DWord", "Value": "1", "Original": "<unset>" },
@@ -56,6 +59,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops Windows from silently installing promoted Store apps (Candy Crush, etc.).",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "Name": "DisableWindowsConsumerFeatures", "Type": "DWord", "Value": "1", "Original": "<unset>" }
@@ -67,6 +71,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Turns off suggested content, tips and silently installed apps delivered by ContentDeliveryManager.",
     "Registry": [
       { "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "Name": "SubscribedContent-338388Enabled", "Type": "DWord", "Value": "0", "Original": "1" },
@@ -83,6 +88,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Blocks the Windows Platform Binary Table, which lets PC vendors run programs at boot and force-install software.",
     "Registry": [
       { "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "Name": "DisableWpbtExecution", "Type": "DWord", "Value": "1", "Original": "<unset>" }
@@ -94,6 +100,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Denies location access system-wide and for the current user, disables map auto-update and the Geolocation service.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "Name": "Value", "Type": "String", "Value": "Deny", "Original": "Allow" },
@@ -111,6 +118,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Sets services most home PCs never need to Manual or Disabled: Maps Broker, Retail Demo, Media Player network sharing, Distributed Link Tracking and Offline Files.",
     "Services": [
       { "Name": "MapsBroker", "Startup": "Manual", "Original": "AutomaticDelayedStart" },
@@ -126,6 +134,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops Windows from uploading updates to other PCs on your network or the internet.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "Name": "DODownloadMode", "Type": "DWord", "Value": "0", "Original": "<unset>" }
@@ -137,6 +146,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops extra vendor software being downloaded when you plug in devices (e.g. ads when plugging in a monitor).",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Device Metadata", "Name": "PreventDeviceMetadataFromNetwork", "Type": "DWord", "Value": "1", "Original": "<unset>" }
@@ -148,6 +158,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "MinBuild": 22000,
     "Description": "Adds an End Task option when right-clicking an app on the taskbar.",
     "Registry": [
@@ -160,6 +171,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Blocks the Store search database so recommended Store apps stop appearing when searching in Start.",
     "Invoke": "Set-WNStoreSearchBlock",
     "Undo": "Undo-WNStoreSearchBlock",
@@ -171,6 +183,7 @@
     "Category": "Essential",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops Explorer guessing folder types from content, which slows browsing. Resets saved folder views. Sign out to apply.",
     "Invoke": "Set-WNExplorerAutoDiscovery",
     "Undo": "Undo-WNExplorerAutoDiscovery",
@@ -182,6 +195,7 @@
     "Category": "Essential",
     "Type": "Action",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Empties the user and Windows TEMP folders. Files in use are skipped.",
     "Invoke": "Invoke-WNDeleteTempFiles"
   },
@@ -191,6 +205,7 @@
     "Category": "Essential",
     "Type": "Action",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Runs cleanmgr on the system drive and DISM StartComponentCleanup /ResetBase (removes superseded updates; can take several minutes).",
     "Invoke": "Invoke-WNDiskCleanup"
   },
@@ -200,6 +215,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Denies camera access for the current user. Video calls will not work until undone.",
     "Registry": [
       { "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\webcam", "Name": "Value", "Type": "String", "Value": "Deny", "Original": "Allow" }
@@ -211,6 +227,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Denies microphone access for the current user. Calls and voice apps will not work until undone.",
     "Registry": [
       { "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\microphone", "Name": "Value", "Type": "String", "Value": "Deny", "Original": "Allow" }
@@ -222,6 +239,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Adds a tagged block of Microsoft telemetry endpoints to the hosts file. Undo removes only that block. A hosts backup is made first.",
     "Invoke": "Add-WNHostsTelemetry",
     "Undo": "Remove-WNHostsTelemetry",
@@ -233,6 +251,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Turns off Copilot by policy, hides the taskbar button and removes the Copilot app. Undo restores the policies only (reinstall the app from the Store).",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsCopilot", "Name": "TurnOffWindowsCopilot", "Type": "DWord", "Value": "1", "Original": "<unset>" },
@@ -248,6 +267,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Edge policies: no telemetry, shopping, rewards, collections, sidebar, startup boost, background mode or first-run nags.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate", "Name": "CreateDesktopShortcutDefault", "Type": "DWord", "Value": "0", "Original": "<unset>" },
@@ -278,6 +298,7 @@
     "Category": "Privacy",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Brave policies: disables Rewards, Wallet, VPN, Leo AI, News, Talk, Tor and usage pings.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "Name": "BraveRewardsDisabled", "Type": "DWord", "Value": "1", "Original": "<unset>" },
@@ -298,6 +319,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Group": "PowerPlan",
     "Description": "Activates the High Performance plan (creates it if missing). Undo switches back to Balanced. Not recommended on laptops.",
     "Invoke": "Set-WNPowerPlanHigh",
@@ -310,6 +332,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Group": "PowerPlan",
     "Description": "Adds and activates the hidden Ultimate Performance plan. Undo switches back to Balanced. Desktops only.",
     "Invoke": "Set-WNPowerPlanUltimate",
@@ -322,6 +345,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Stops RAM preloading of frequently used apps. Useful on SSD systems with limited RAM.",
     "Services": [
       { "Name": "SysMain", "Startup": "Disabled", "Original": "Automatic" }
@@ -333,6 +357,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Stops file indexing to reduce disk I/O. Start/Explorer search still works but is slower.",
     "Services": [
       { "Name": "WSearch", "Startup": "Disabled", "Original": "AutomaticDelayedStart" }
@@ -344,6 +369,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Removes hiberfil.sys (frees disk space equal to a large part of RAM) and hides the Hibernate option. Not recommended on laptops.",
     "Registry": [
       { "Path": "HKLM:\\System\\CurrentControlSet\\Control\\Session Manager\\Power", "Name": "HibernateEnabled", "Type": "DWord", "Value": "0", "Original": "1" },
@@ -358,6 +384,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Disables background game recording, which costs FPS on some systems.",
     "Registry": [
       { "Path": "HKCU:\\System\\GameConfigStore", "Name": "GameDVR_Enabled", "Type": "DWord", "Value": "0", "Original": "1" },
@@ -371,6 +398,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Restart": "Explorer",
     "Description": "Turns off animations, shadows, Aero Peek and window drag contents. Undo restores Windows defaults.",
     "Registry": [
@@ -393,6 +421,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Prevents Microsoft Store apps from running in the background.",
     "Registry": [
       { "Path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications", "Name": "GlobalUserDisabled", "Type": "DWord", "Value": "1", "Original": "0" }
@@ -404,6 +433,7 @@
     "Category": "Performance",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Forces exclusive fullscreen behaviour for games. Can reduce input lag; may break Alt+Tab overlays in some titles.",
     "Registry": [
       { "Path": "HKCU:\\System\\GameConfigStore", "Name": "GameDVR_DXGIHonorFSEWindowsCompatible", "Type": "DWord", "Value": "1", "Original": "0" },
@@ -417,6 +447,7 @@
     "Category": "Interface",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "MinBuild": 22000,
     "Restart": "Explorer",
     "Description": "Restores the full Windows 10 style context menu in File Explorer.",
@@ -430,6 +461,7 @@
     "Category": "Interface",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "MinBuild": 22000,
     "Restart": "Explorer",
     "Description": "Removes Home and Gallery from the Explorer sidebar and opens Explorer on This PC.",
@@ -445,6 +477,7 @@
     "Category": "Interface",
     "Type": "Action",
     "Risk": "Low",
+    "Level": "Advanced",
     "MinBuild": 22000,
     "Restart": "Explorer",
     "Description": "Uninstalls the Widgets board and its web experience pack. Reinstall from the Store if needed.",
@@ -457,6 +490,7 @@
     "Category": "Interface",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Disables all notifications, including the calendar flyout.",
     "Registry": [
       { "Path": "HKCU:\\Software\\Policies\\Microsoft\\Windows\\Explorer", "Name": "DisableNotificationCenter", "Type": "DWord", "Value": "1", "Original": "<unset>" },
@@ -469,6 +503,7 @@
     "Category": "Bloatware",
     "Type": "Action",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Removes preinstalled promo apps (Bing apps, Solitaire, Clipchamp, Candy Crush, Teams personal, Office Hub, Feedback Hub, ...) for all users and from the provisioning image. Media Player, Photos, Calculator, Notepad and Store are kept.",
     "Appx": [
       "Microsoft.3DBuilder", "Microsoft.Microsoft3DViewer", "Microsoft.BingWeather", "Microsoft.BingNews",
@@ -487,6 +522,7 @@
     "Category": "Bloatware",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Removes Xbox app, Game Bar overlays and TCUI, and disables Xbox Live services. Undo re-enables the services only. Xbox Identity Provider is kept so game sign-in keeps working.",
     "Appx": [ "Microsoft.XboxApp", "Microsoft.GamingApp", "Microsoft.XboxGamingOverlay", "Microsoft.XboxGameOverlay", "Microsoft.XboxSpeechToTextOverlay", "Microsoft.Xbox.TCUI" ],
     "Services": [
@@ -502,6 +538,7 @@
     "Category": "Bloatware",
     "Type": "Action",
     "Risk": "High",
+    "Level": "Advanced",
     "Description": "Aggressive: everything in 'Common Bloatware' plus Alarms, Sound Recorder, Sticky Notes, Mail/Calendar, Snipping Tool, Phone Link, Quick Assist, Media Player and third-party promos. Not reversible.",
     "Appx": [
       "Microsoft.3DBuilder", "Microsoft.Microsoft3DViewer", "Microsoft.BingWeather", "Microsoft.BingNews",
@@ -526,6 +563,7 @@
     "Category": "Bloatware",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Prevents OneDrive from syncing via Group Policy without uninstalling it.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\OneDrive", "Name": "DisableFileSyncNGSC", "Type": "DWord", "Value": "1", "Original": "<unset>" }
@@ -537,6 +575,7 @@
     "Category": "Bloatware",
     "Type": "Tweak",
     "Risk": "High",
+    "Level": "Advanced",
     "Restart": "Explorer",
     "Description": "Uninstalls OneDrive (winget, or Windows' own uninstaller), removes its app data and the Explorer sidebar entry. Your synced files stay in your user folder. Undo reinstalls via winget.",
     "Invoke": "Remove-WNOneDrive",
@@ -549,6 +588,7 @@
     "Category": "Bloatware",
     "Type": "Tweak",
     "Risk": "High",
+    "Level": "Advanced",
     "Description": "Allows Edge's official uninstaller by policy and runs it system-wide. WebView2 is not touched. Undo reinstalls Edge via winget.",
     "Invoke": "Remove-WNEdge",
     "Undo": "Install-WNEdge",
@@ -560,6 +600,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "MinBuild": 22000,
     "Description": "Turns off Recall snapshots, Click to Do and AI features in Notepad and Paint by Group Policy, disables the Recall feature and removes the Copilot app. Undo restores the policies (reinstall Copilot from the Store).",
     "Registry": [
@@ -582,6 +623,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Stores the hardware clock in UTC. Fixes wrong time when dual booting with Linux.",
     "Registry": [
       { "Path": "HKLM:\\SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation", "Name": "RealTimeIsUniversal", "Type": "QWord", "Value": "1", "Original": "0" }
@@ -593,6 +635,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Group": "Tcpip6",
     "Restart": "Reboot",
     "Description": "Keeps IPv6 enabled but makes Windows prefer IPv4. Only one IPv6 tweak can be active.",
@@ -606,6 +649,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Group": "Tcpip6",
     "Restart": "Reboot",
     "Description": "Disables the Teredo IPv6 tunnel. Can lower latency but may break Xbox party chat / some games.",
@@ -621,6 +665,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Group": "Tcpip6",
     "Restart": "Reboot",
     "Description": "Disables IPv6 on all adapters. Microsoft does not recommend this.",
@@ -636,6 +681,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Adds a tagged block of Adobe activation and telemetry hosts to the hosts file. Undo removes only that block.",
     "Invoke": "Add-WNHostsAdobe",
     "Undo": "Remove-WNHostsAdobe",
@@ -647,6 +693,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Recommended",
     "Description": "Stops Windows from running device co-installers and fetching driver software that pulls in vendor apps (Razer Synapse, Logitech assistants...) when hardware is plugged in. Drivers still install.",
     "Registry": [
       { "Path": "HKLM:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Device Installer", "Name": "DisableCoInstallers", "Type": "DWord", "Value": "1", "Original": "<unset>" },
@@ -659,6 +706,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "Description": "Stops Storage Sense from deleting temp files and Downloads automatically.",
     "Registry": [
       { "Path": "HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy", "Name": "01", "Type": "DWord", "Value": "0", "Original": "1" }
@@ -670,6 +718,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Restart": "Reboot",
     "Description": "Groups services into fewer svchost.exe processes to lower memory use. For PCs with 12 GB RAM or less. May interfere with Xbox services.",
     "Invoke": "Set-WNSvcHostSplit",
@@ -682,6 +731,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Medium",
+    "Level": "Advanced",
     "Description": "Frees the 7-10 GB Windows reserves for updates. Re-enable before big feature updates.",
     "Invoke": "Disable-WNReservedStorage",
     "Undo": "Enable-WNReservedStorage"
@@ -692,6 +742,7 @@
     "Category": "Advanced",
     "Type": "Tweak",
     "Risk": "Low",
+    "Level": "Advanced",
     "MinBuild": 26100,
     "Restart": "Reboot",
     "Description": "Disables the new Start menu feature flag. Does not work on the newest builds where the flag was removed.",

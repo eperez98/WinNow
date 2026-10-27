@@ -20,15 +20,19 @@ function Start-WNUpdateChange {
     Start-WNChange -Label $Label -Registry @($regs) -Services @('BITS', 'wuauserv', 'UsoSvc')
 }
 
-function Show-WNUpdateStatus {
-    $rows = @(
+function Get-WNUpdateStatus {
+    # Label / value pairs of the current policy; $null value means Windows default
+    @(
         @((T 'upd.rowFeature'), (Get-WNRegistryValue $script:WUPolicy 'DeferFeatureUpdatesPeriodInDays')),
         @((T 'upd.rowQuality'), (Get-WNRegistryValue $script:WUPolicy 'DeferQualityUpdatesPeriodInDays')),
         @((T 'upd.rowDrivers'), (Get-WNRegistryValue $script:WUPolicy 'ExcludeWUDriversInQualityUpdate')),
         @((T 'upd.rowAU'), (Get-WNRegistryValue $script:WUAU 'AUOptions')),
         @((T 'upd.rowPaused'), (Get-WNRegistryValue $script:WUUX 'PauseUpdatesExpiryTime'))
     )
-    foreach ($r in $rows) {
+}
+
+function Show-WNUpdateStatus {
+    foreach ($r in (Get-WNUpdateStatus)) {
         $v = if ($null -eq $r[1] -or "$($r[1])" -eq '') { T 'common.default' } else { $r[1] }
         Write-Host ("   {0,-42} {1}" -f $r[0], $v) -ForegroundColor Gray
     }

@@ -14,7 +14,8 @@ function Invoke-WNWinget {
 
 function Get-WNInstalledAppIds {
     param([switch]$Refresh)
-    if (-not $Refresh -and $WN.Cache.ContainsKey('InstalledApps')) { return $WN.Cache.InstalledApps }
+    # The leading comma returns the set itself; a bare return would unroll it into a fixed-size array
+    if (-not $Refresh -and $WN.Cache.ContainsKey('InstalledApps')) { return ,$WN.Cache.InstalledApps }
     $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
     $wg = Find-WNWinget
     if ($wg) {
@@ -30,7 +31,7 @@ function Get-WNInstalledAppIds {
         }
     }
     $WN.Cache.InstalledApps = $set
-    return $set
+    return ,$set
 }
 
 function Install-WNChoco {
@@ -154,6 +155,8 @@ function Show-WNAppList {
         Write-Host ''
         if (-not (Read-WNConfirm $(if ($uninstall) { T 'apps.confirmUninstall' } else { T 'apps.confirmInstall' }) -DefaultYes)) { continue }
         if ($uninstall) { Uninstall-WNApps -Apps $r.Items } else { Install-WNApps -Apps $r.Items }
+        # Re-read from winget so the INSTALLED tags match the PC when the list comes back
+        if (-not $WN.DryRun) { [void](Get-WNInstalledAppIds -Refresh) }
         Wait-WNKey
     }
 }

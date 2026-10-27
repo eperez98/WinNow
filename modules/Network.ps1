@@ -68,12 +68,20 @@ function Add-WNHostsBlock {
 #region DNS
 function Get-WNActiveAdapters { @(Get-NetAdapter -ErrorAction SilentlyContinue | Where-Object Status -eq 'Up') }
 
-function Show-WNCurrentDns {
+function Get-WNCurrentDns {
     foreach ($a in (Get-WNActiveAdapters)) {
-        $v4 = (Get-DnsClientServerAddress -InterfaceIndex $a.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue).ServerAddresses -join ', '
-        $v6 = (Get-DnsClientServerAddress -InterfaceIndex $a.ifIndex -AddressFamily IPv6 -ErrorAction SilentlyContinue).ServerAddresses -join ', '
-        Write-Host ("   {0,-28} IPv4: {1}" -f $a.Name, $(if ($v4) { $v4 } else { T 'dns.none' })) -ForegroundColor Gray
-        if ($v6) { Write-Host ("   {0,-28} IPv6: {1}" -f '', $v6) -ForegroundColor DarkGray }
+        [pscustomobject]@{
+            Name = $a.Name
+            IPv4 = (Get-DnsClientServerAddress -InterfaceIndex $a.ifIndex -AddressFamily IPv4 -ErrorAction SilentlyContinue).ServerAddresses -join ', '
+            IPv6 = (Get-DnsClientServerAddress -InterfaceIndex $a.ifIndex -AddressFamily IPv6 -ErrorAction SilentlyContinue).ServerAddresses -join ', '
+        }
+    }
+}
+
+function Show-WNCurrentDns {
+    foreach ($d in (Get-WNCurrentDns)) {
+        Write-Host ("   {0,-28} IPv4: {1}" -f $d.Name, $(if ($d.IPv4) { $d.IPv4 } else { T 'dns.none' })) -ForegroundColor Gray
+        if ($d.IPv6) { Write-Host ("   {0,-28} IPv6: {1}" -f '', $d.IPv6) -ForegroundColor DarkGray }
     }
 }
 

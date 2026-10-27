@@ -6,8 +6,49 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- Graphical interface: every terminal module in the window, per-step progress, Mica background and accent color.
+- Graphical interface: leave preview, per-step progress bars.
 - Shorter launch URL for the one-line installer.
+
+## [1.0.7.1] - 2026-10-27 - Release Build
+
+### Added
+- **Graphical interface with every module** (still a preview): Tweaks, Preferences, Services, Startup apps,
+  App Manager, Uninstall programs, Repair & maintenance, Windows Update, Backups & restore, DNS, Hosts file,
+  System information and Logs, grouped in the sidebar like the terminal main menu (Optimize, Apps, Maintain,
+  Network, System).
+- **New GUI design**: dark window with an orange accent, sidebar, a search bar on top that filters the list of the
+  current page (Enter on the App Manager searches all of winget), round buttons for language, terminal edition and
+  log, and a home page with a large banner, a **Start here** card that opens the recommended tweaks, and a poster
+  card for every tool.
+- **Tweak levels**: every tweak is now **Recommended** (18 gentle changes, safe for any PC: nothing is removed,
+  services and network are untouched, all can be undone) or **Advanced** (33 changes that need care: removing apps,
+  services, network, power plans, interface). The terminal Tweaks menu lists both levels first (`R`, `A`), then the
+  categories; the GUI Tweaks page has Recommended / Advanced / All tabs with an explanation card, and asks again when
+  advanced tweaks are selected. New `Level` field in `config/tweaks.json`.
+- **Update check at every start**: Winnow asks GitHub for the latest release and, when it is newer, shows the
+  version and the changelog sections since the installed one. Choices: update now (download, replace this copy,
+  restart), keep using the current version, or skip that version. Silent when offline; a failed update rolls back.
+  Also `U` in the main menu, the update button in the GUI, and `-NoUpdateCheck` to turn it off.
+- **Desktop shortcut** with the Winnow logo (`LOGO/Winnow.ico`), offered once on the first start and available as
+  `K` in the main menu and in the GUI. It opens the local copy directly; a copy started from the one-line command is
+  first copied to `%LOCALAPPDATA%\Programs\Winnow`.
+- GUI extras: select applied tweaks for undo, installed tags and upgrade all in the App Manager, desktop / Store
+  switch when uninstalling, pause days for Windows Update, double confirmation before deleting every restore
+  point, live output of SFC, DISM and winget in the log.
+- Self-checks for the installed-app set and the changelog reader used by the update check.
+
+### Changed
+- **Presets follow the levels**: Standard is exactly the recommended set (it no longer trims services, edits the
+  hosts file or removes Widgets); Minimal is privacy only; Heavy is Standard plus a selection of advanced tweaks.
+- **Terminal main menu reorganized** into the same groups as the GUI: Optimize (1-4), Apps (5-6),
+  Maintain (7-9: repair, Windows Update, backups), Network (`D` DNS, `H` hosts), System (`Y` information,
+  `L` logs) and Winnow (`G` graphical interface, `U` updates, `K` shortcut, `I` language, `M` simulation).
+- Repair tasks, Windows Update status, current DNS, system information, restore point deletion and backup
+  deletion are now shared functions used by both editions.
+
+### Fixed
+- Installing or uninstalling apps ended with "Collection was of a fixed size": the installed-app list is now kept
+  as a set, and it is read again from winget after every install or uninstall so the INSTALLED tags are current.
 
 ## [1.0.5] - 2026-10-25 - Release Build
 
@@ -73,7 +114,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.5...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.1...HEAD
+[1.0.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.1
 [1.0.5]: https://github.com/eperez98/Winnow/releases/tag/v1.0.5
 [1.0.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.1
 [1.0.0]: https://github.com/eperez98/Winnow/releases/tag/v1.0.0

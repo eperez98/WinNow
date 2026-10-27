@@ -37,46 +37,59 @@ function Reset-WNWindowsUpdateComponents {
     Write-WNStatus (T 'rep.wuDone') Ok
 }
 
+# Every repair task once, for the terminal menu and the GUI. Label / Hint are i18n keys or literal
+# text (T returns unknown keys unchanged).
+$script:RepairTasks = @(
+    @{ Id = 'sfc'; Section = 'rep.secFiles'; Label = 'SFC /scannow'; Hint = 'rep.sfcHint'
+       Action = { [void](Invoke-WNNative 'sfc.exe' @('/scannow') 'Repair') } }
+    @{ Id = 'dismscan'; Section = 'rep.secFiles'; Label = 'rep.dismScan'; Hint = 'rep.dismScanHint'; ReadOnly = $true
+       Action = { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/CheckHealth') 'Repair'); [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/ScanHealth') 'Repair') } }
+    @{ Id = 'dismfix'; Section = 'rep.secFiles'; Label = 'DISM RestoreHealth'; Hint = 'rep.dismFixHint'
+       Action = { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/RestoreHealth') 'Repair') } }
+    @{ Id = 'full'; Section = 'rep.secFiles'; Label = 'rep.full'; Hint = 'rep.fullHint'
+       Action = { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/RestoreHealth') 'Repair'); [void](Invoke-WNNative 'sfc.exe' @('/scannow') 'Repair') } }
+    @{ Id = 'chkdsk'; Section = 'rep.secFiles'; Label = 'rep.chkdsk'; Hint = 'rep.chkdskHint'; ReadOnly = $true
+       Action = { [void](Invoke-WNNative 'chkdsk.exe' @($env:SystemDrive, '/scan') 'Repair') } }
+    @{ Id = 'temp'; Section = 'rep.secCleanup'; Label = 'rep.temp'; Hint = 'rep.tempHint'
+       Action = { if ($WN.DryRun) { Write-WNStatus (T 'rep.dryTemp' $env:TEMP "$env:SystemRoot\Temp") Dry } else { Invoke-WNDeleteTempFiles } } }
+    @{ Id = 'cleanmgr'; Section = 'rep.secCleanup'; Label = 'rep.cleanmgr'; Hint = 'rep.cleanmgrHint'
+       Action = { if ($WN.DryRun) { Write-WNStatus (T 'rep.dryCleanmgr') Dry } else { Invoke-WNDiskCleanup } } }
+    @{ Id = 'dns'; Section = 'rep.secNet'; Label = 'rep.dns'; Hint = 'ipconfig /flushdns'; ReadOnly = $true
+       Action = { [void](Invoke-WNNative 'ipconfig.exe' @('/flushdns') 'Repair') } }
+    @{ Id = 'net'; Section = 'rep.secNet'; Label = 'rep.net'; Hint = 'rep.netHint'; NeedsConfirm = $true; Warning = 'rep.netWarn'
+       Action = {
+            [void](Invoke-WNNative 'netsh.exe' @('winsock', 'reset') 'Repair')
+            [void](Invoke-WNNative 'netsh.exe' @('int', 'ip', 'reset') 'Repair')
+            [void](Invoke-WNNative 'ipconfig.exe' @('/release') 'Repair')
+            [void](Invoke-WNNative 'ipconfig.exe' @('/renew') 'Repair')
+            [void](Invoke-WNNative 'ipconfig.exe' @('/flushdns') 'Repair')
+            Write-Host ('  ' + (T 'rep.netReboot')) -ForegroundColor Yellow } }
+    @{ Id = 'wu'; Section = 'rep.secNet'; Label = 'rep.wu'; Hint = 'rep.wuHint'; NeedsConfirm = $true
+       Action = { Reset-WNWindowsUpdateComponents } }
+    @{ Id = 'store'; Section = 'rep.secNet'; Label = 'rep.store'; Hint = 'wsreset.exe'
+       Action = { [void](Invoke-WNNative 'wsreset.exe' @() 'Repair') } }
+    @{ Id = 'winget'; Section = 'rep.secNet'; Label = 'rep.winget'; Hint = 'winget source reset --force'
+       Action = { [void](Invoke-WNWinget @('source', 'reset', '--force')) } }
+)
+
+function Invoke-WNRepairTask {
+    param([Parameter(Mandatory)][string]$Id)
+    $t = $script:RepairTasks | Where-Object { $_.Id -eq $Id } | Select-Object -First 1
+    if (-not $t) { return }
+    $warn = if ($t.Warning) { T $t.Warning } else { $null }
+    Invoke-WNRepairStep (T $t.Label) $t.Action -NeedsConfirm:([bool]$t.NeedsConfirm) -Warning $warn -ReadOnly:([bool]$t.ReadOnly)
+}
+
 function Show-WNRepairMenu {
     while ($true) {
-        $items = @(
-            @{ Separator = $true; Label = (T 'rep.secFiles') }
-            @{ Label = 'SFC /scannow'; Value = 'sfc'; Hint = (T 'rep.sfcHint') }
-            @{ Label = (T 'rep.dismScan'); Value = 'dismscan'; Hint = (T 'rep.dismScanHint') }
-            @{ Label = 'DISM RestoreHealth'; Value = 'dismfix'; Hint = (T 'rep.dismFixHint') }
-            @{ Label = (T 'rep.full'); Value = 'full'; Hint = (T 'rep.fullHint') }
-            @{ Label = (T 'rep.chkdsk'); Value = 'chkdsk'; Hint = (T 'rep.chkdskHint') }
-            @{ Separator = $true; Label = (T 'rep.secCleanup') }
-            @{ Label = (T 'rep.temp'); Value = 'temp'; Hint = (T 'rep.tempHint') }
-            @{ Label = (T 'rep.cleanmgr'); Value = 'cleanmgr'; Hint = (T 'rep.cleanmgrHint') }
-            @{ Separator = $true; Label = (T 'rep.secNet') }
-            @{ Label = (T 'rep.dns'); Value = 'dns'; Hint = 'ipconfig /flushdns' }
-            @{ Label = (T 'rep.net'); Value = 'net'; Hint = (T 'rep.netHint') }
-            @{ Label = (T 'rep.wu'); Value = 'wu'; Hint = (T 'rep.wuHint') }
-            @{ Label = (T 'rep.store'); Value = 'store'; Hint = 'wsreset.exe' }
-            @{ Label = (T 'rep.winget'); Value = 'winget'; Hint = 'winget source reset --force' }
-        )
+        $items = @()
+        $section = $null
+        foreach ($t in $script:RepairTasks) {
+            if ($t.Section -ne $section) { $section = $t.Section; $items += @{ Separator = $true; Label = (T $section) } }
+            $items += @{ Label = (T $t.Label); Value = $t.Id; Hint = (T $t.Hint) }
+        }
         $choice = Show-WNMenu -Title (T 'rep.title') -Items $items
         if (-not $choice) { return }
-        switch ($choice) {
-            'sfc'      { Invoke-WNRepairStep 'SFC /scannow' { [void](Invoke-WNNative 'sfc.exe' @('/scannow') 'Repair') } }
-            'dismscan' { Invoke-WNRepairStep (T 'rep.dismScan') -ReadOnly { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/CheckHealth') 'Repair'); [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/ScanHealth') 'Repair') } }
-            'dismfix'  { Invoke-WNRepairStep 'DISM RestoreHealth' { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/RestoreHealth') 'Repair') } }
-            'full'     { Invoke-WNRepairStep (T 'rep.full') { [void](Invoke-WNNative 'dism.exe' @('/Online', '/Cleanup-Image', '/RestoreHealth') 'Repair'); [void](Invoke-WNNative 'sfc.exe' @('/scannow') 'Repair') } }
-            'chkdsk'   { Invoke-WNRepairStep (T 'rep.chkdsk') -ReadOnly { [void](Invoke-WNNative 'chkdsk.exe' @($env:SystemDrive, '/scan') 'Repair') } }
-            'temp'     { Invoke-WNRepairStep (T 'rep.temp') { if ($WN.DryRun) { Write-WNStatus (T 'rep.dryTemp' $env:TEMP "$env:SystemRoot\Temp") Dry } else { Invoke-WNDeleteTempFiles } } }
-            'cleanmgr' { Invoke-WNRepairStep (T 'rep.cleanmgr') { if ($WN.DryRun) { Write-WNStatus (T 'rep.dryCleanmgr') Dry } else { Invoke-WNDiskCleanup } } }
-            'dns'      { Invoke-WNRepairStep (T 'rep.dns') -ReadOnly { [void](Invoke-WNNative 'ipconfig.exe' @('/flushdns') 'Repair') } }
-            'net'      { Invoke-WNRepairStep (T 'rep.net') -NeedsConfirm -Warning (T 'rep.netWarn') {
-                            [void](Invoke-WNNative 'netsh.exe' @('winsock', 'reset') 'Repair')
-                            [void](Invoke-WNNative 'netsh.exe' @('int', 'ip', 'reset') 'Repair')
-                            [void](Invoke-WNNative 'ipconfig.exe' @('/release') 'Repair')
-                            [void](Invoke-WNNative 'ipconfig.exe' @('/renew') 'Repair')
-                            [void](Invoke-WNNative 'ipconfig.exe' @('/flushdns') 'Repair')
-                            Write-Host ('  ' + (T 'rep.netReboot')) -ForegroundColor Yellow } }
-            'wu'       { Invoke-WNRepairStep (T 'rep.wu') -NeedsConfirm { Reset-WNWindowsUpdateComponents } }
-            'store'    { Invoke-WNRepairStep (T 'rep.store') { [void](Invoke-WNNative 'wsreset.exe' @() 'Repair') } }
-            'winget'   { Invoke-WNRepairStep (T 'rep.winget') { [void](Invoke-WNWinget @('source', 'reset', '--force')) } }
-        }
+        Invoke-WNRepairTask $choice
     }
 }

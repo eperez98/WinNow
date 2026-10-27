@@ -1,9 +1,8 @@
 # modules/System.ps1
 # System information, logs and session settings.
 
-function Show-WNSystemInfo {
-    Write-WNHeader (T 'sys.title')
-    Write-WNStatus (T 'sys.collecting') Info
+function Get-WNSystemInfo {
+    # Rows (label -> value) and disks, shared by the terminal screen and the GUI page
     $os  = Get-CimInstance Win32_OperatingSystem
     $cs  = Get-CimInstance Win32_ComputerSystem
     $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
@@ -24,14 +23,23 @@ function Show-WNSystemInfo {
         'winget'     = $wgv
         (T 'sys.logFile') = $WN.LogFile
     }
+    $disks = foreach ($d in Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3') {
+        [pscustomobject]@{ Drive = $d.DeviceID; UsedPct = $(if ($d.Size) { 100 - [int](100 * $d.FreeSpace / $d.Size) } else { 0 }); FreeGB = $d.FreeSpace / 1GB; SizeGB = $d.Size / 1GB }
+    }
+    @{ Rows = $rows; Disks = @($disks) }
+}
+
+function Show-WNSystemInfo {
+    Write-WNHeader (T 'sys.title')
+    Write-WNStatus (T 'sys.collecting') Info
+    $info = Get-WNSystemInfo
     Write-Host ''
-    foreach ($k in $rows.Keys) { Write-Host ("   {0,-14} {1}" -f $k, $rows[$k]) -ForegroundColor Gray }
+    foreach ($k in $info.Rows.Keys) { Write-Host ("   {0,-14} {1}" -f $k, $info.Rows[$k]) -ForegroundColor Gray }
     Write-Host ''
-    foreach ($d in Get-CimInstance Win32_LogicalDisk -Filter 'DriveType=3') {
-        $pct = if ($d.Size) { 100 - [int](100 * $d.FreeSpace / $d.Size) } else { 0 }
-        $bar = ('#' * [int]($pct / 5)).PadRight(20, '.')
-        $color = if ($pct -ge 90) { 'Red' } elseif ($pct -ge 75) { 'Yellow' } else { 'Green' }
-        Write-Host ('   ' + (T 'sys.disk' $d.DeviceID $bar $pct ($d.FreeSpace / 1GB) ($d.Size / 1GB))) -ForegroundColor $color
+    foreach ($d in $info.Disks) {
+        $bar = ('#' * [int]($d.UsedPct / 5)).PadRight(20, '.')
+        $color = if ($d.UsedPct -ge 90) { 'Red' } elseif ($d.UsedPct -ge 75) { 'Yellow' } else { 'Green' }
+        Write-Host ('   ' + (T 'sys.disk' $d.Drive $bar $d.UsedPct $d.FreeGB $d.SizeGB)) -ForegroundColor $color
     }
     Wait-WNKey
 }
@@ -99,19 +107,24 @@ function Remove-WNRestorePoints {
         $old = $rps | Sort-Object Created | Select-Object -First 1
         Write-Host ('  ' + (T 'bkm.oldest' $old.Sequence $old.Created $old.Description)) -ForegroundColor Yellow
         if (-not (Read-WNConfirm (T 'bkm.deleteIt'))) { return }
-        $vssArgs = @('delete', 'shadows', "/for=$env:SystemDrive", '/oldest', '/quiet')
     } else {
         Write-Host ('  ' + (T 'bkm.allWarn1' $rps.Count $env:SystemDrive)) -ForegroundColor Red
         Write-Host ('  ' + (T 'bkm.allWarn2')) -ForegroundColor Red
         if ((Read-WNText (T 'bkm.typeDelete')) -ne 'DELETE') { Write-WNStatus (T 'common.cancelled') Skip; Wait-WNKey; return }
-        $vssArgs = @('delete', 'shadows', "/for=$env:SystemDrive", '/all', '/quiet')
     }
+    Remove-WNShadowCopies -Mode $Mode
+    Wait-WNKey
+}
+
+function Remove-WNShadowCopies {
+    # No prompts: callers confirm first (terminal screens above, GUI dialogs)
+    param([ValidateSet('Oldest', 'All')][string]$Mode)
+    $vssArgs = @('delete', 'shadows', "/for=$env:SystemDrive", $(if ($Mode -eq 'Oldest') { '/oldest' } else { '/all' }), '/quiet')
     $code = Invoke-WNNative -FilePath 'vssadmin.exe' -ArgumentList $vssArgs -Component 'Restore'
     if ($code -eq 0) { Write-WNStatus (T 'bkm.rpDeleted' $Mode) $(if ($WN.DryRun) { 'Dry' } else { 'Ok' }) 'Restore' }
     else { Write-WNStatus (T 'bkm.vssFail' $code) Error 'Restore' }
     # This session's automatic restore point may be gone now; make a new one before the next change
     $WN.RestorePointDone = $false
-    Wait-WNKey
 }
 
 function Remove-WNBackupFiles {
@@ -134,12 +147,15 @@ function Remove-WNBackupFiles {
     Write-Host ''
     Write-Host ('  ' + (T 'bkm.delWarn')) -ForegroundColor Yellow
     if (-not (Test-WNCanChange) -or -not (Read-WNConfirm (T 'bkm.delAsk'))) { Wait-WNKey; return }
-    foreach ($b in $r.Items) {
-        if ($WN.DryRun) { Write-WNStatus (T 'bkm.dryDel' $b.File) Dry 'Backup'; continue }
-        try { Remove-Item -LiteralPath $b.File -Force -ErrorAction Stop; Write-WNStatus (T 'bkm.deleted' (Split-Path $b.File -Leaf)) Ok 'Backup' }
-        catch { Write-WNStatus (T 'bkm.delFail' (Split-Path $b.File -Leaf) $_.Exception.Message) Error 'Backup' }
-    }
+    foreach ($b in $r.Items) { Remove-WNBackupFile $b.File }
     Wait-WNKey
+}
+
+function Remove-WNBackupFile {
+    param([Parameter(Mandatory)][string]$File)
+    if ($WN.DryRun) { Write-WNStatus (T 'bkm.dryDel' $File) Dry 'Backup'; return }
+    try { Remove-Item -LiteralPath $File -Force -ErrorAction Stop; Write-WNStatus (T 'bkm.deleted' (Split-Path $File -Leaf)) Ok 'Backup' }
+    catch { Write-WNStatus (T 'bkm.delFail' (Split-Path $File -Leaf) $_.Exception.Message) Error 'Backup' }
 }
 
 function Show-WNBackupsMenu {

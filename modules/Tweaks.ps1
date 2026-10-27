@@ -118,12 +118,20 @@ function Show-WNUndoApplied {
 
 function Show-WNTweaksMenu {
     while ($true) {
-        $items = @()
+        # By level first (gentle vs. caution), then by category
+        $rec = @($WN.Config.tweaks | Where-Object Level -eq 'Recommended')
+        $adv = @($WN.Config.tweaks | Where-Object Level -eq 'Advanced')
+        $items = @(
+            @{ Separator = $true; Label = (T 'tw.secLevel') }
+            @{ Label = (T 'tw.levelRec' $rec.Count); Value = 'level:Recommended'; Hint = (T 'tw.levelRecHint'); Hotkey = 'r' }
+            @{ Label = (T 'tw.levelAdv' $adv.Count); Value = 'level:Advanced'; Hint = (T 'tw.levelAdvHint'); Hotkey = 'a' }
+            @{ Separator = $true; Label = (T 'tw.secCategory') }
+        )
         foreach ($c in $script:TweakCategories) {
             $count = @($WN.Config.tweaks | Where-Object { $_.Category -eq $c }).Count
             if ($count) { $items += @{ Label = "$(T "cat.$c")  ($count)"; Value = "cat:$c"; Hint = (T "catHint.$c") } }
         }
-        $items += @{ Separator = $true; Label = '' }
+        $items += @{ Separator = $true; Label = (T 'tw.secTools') }
         $items += @{ Label = (T 'tw.menuPresets'); Value = 'presets'; Hint = (T 'tw.menuPresetsHint'); Hotkey = 'p' }
         $items += @{ Label = (T 'tw.menuAll'); Value = 'all'; Hint = (T 'tw.menuAllHint'); Hotkey = 's' }
         $items += @{ Label = (T 'tw.menuUndo'); Value = 'undo'; Hint = (T 'tw.menuUndoHint'); Hotkey = 'u' }
@@ -131,6 +139,12 @@ function Show-WNTweaksMenu {
         $choice = Show-WNMenu -Title (T 'tw.title') -Items $items
         if (-not $choice) { return }
         switch -Wildcard ($choice) {
+            'level:*' {
+                $lv = $choice.Substring(6)
+                $title = if ($lv -eq 'Advanced') { T 'tw.levelAdvTitle' } else { T 'tw.levelRecTitle' }
+                $list = @($WN.Config.tweaks | Where-Object Level -eq $lv | Sort-Object { [array]::IndexOf($script:TweakCategories, $_.Category) }, Name)
+                Show-WNTweakList -Title $title -Tweaks $list -ShowCategory
+            }
             'cat:*'   { $cat = $choice.Substring(4); Show-WNTweakList -Title (T 'tw.catTitle' (T "cat.$cat")) -Tweaks @($WN.Config.tweaks | Where-Object { $_.Category -eq $cat }) }
             'presets' { Show-WNPresets }
             'all'     { Show-WNTweakList -Title (T 'tw.all') -Tweaks @($WN.Config.tweaks | Where-Object { $_.Type -ne 'Toggle' }) -ShowCategory }

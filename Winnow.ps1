@@ -41,6 +41,9 @@
 .PARAMETER GUI
     Open the graphical interface (preview) instead of the terminal menus.
 
+.PARAMETER NoUpdateCheck
+    Do not ask GitHub for a newer release at startup.
+
 .EXAMPLE
     .\Winnow.ps1
     .\Winnow.ps1 -DryRun
@@ -63,6 +66,7 @@ param(
     [switch]$NoRestorePoint,
     [ValidateSet('en', 'es')][string]$Lang,
     [switch]$GUI,
+    [switch]$NoUpdateCheck,
     [switch]$NoElevate
 )
 
@@ -108,7 +112,7 @@ function Resolve-WNTweakKeys {
 
 if ($List) {
     Write-Host ''
-    $WN.Config.tweaks | Sort-Object Category, Name | Format-Table @{ n = 'Key'; e = { $_.Key } }, Category, Type, Risk, Name -AutoSize | Out-Host
+    $WN.Config.tweaks | Sort-Object Category, Name | Format-Table @{ n = 'Key'; e = { $_.Key } }, Category, Type, Risk, Level, Name -AutoSize | Out-Host
     Write-Host '  Presets:' -ForegroundColor Cyan
     foreach ($p in $WN.Config.presets.PSObject.Properties) { Write-Host ("   {0,-9} {1}" -f $p.Name, ($p.Value.Tweaks -join ', ')) }
     exit 0
@@ -158,6 +162,7 @@ if ($GUI) {
     $l = if ($Lang) { $Lang } elseif ((Get-WNSettings).Lang -in 'en', 'es') { (Get-WNSettings).Lang } else { 'en' }
     Set-WNLanguage $l
     . "$root\gui\Gui.ps1"
+    if (-not $NoUpdateCheck -and (Invoke-WNGuiUpdateCheck)) { Restart-WNApp -Gui; exit 0 }
     # Switching language closes the window and opens it again in the other language
     while ($next = Show-WNGui) { Set-WNLanguage $next; Save-WNSetting 'Lang' $next }
     exit 0
@@ -171,28 +176,37 @@ if (-not $Lang) {
     if (-not $picked) { Set-WNCursor $true; exit 0 }
     Set-WNLanguage $picked
 }
+# Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut.
+if (-not $NoUpdateCheck -and (Invoke-WNUpdateCheck)) { Restart-WNApp; exit 0 }
+if (-not (Get-WNSettings).ShortcutAsked) { Show-WNShortcutOffer }
 
 try {
     while ($true) {
         $sim = if ($WN.DryRun) { T 'main.simOn' } else { T 'main.simOff' }
+        # Same groups and order as the GUI sidebar; 1-9 for the everyday modules, letters for the rest
         $items = @(
             @{ Separator = $true; Label = (T 'main.secOptimize') }
             @{ Label = (T 'main.tweaks'); Value = 'tweaks'; Hint = (T 'main.tweaksHint' @($WN.Config.tweaks | Where-Object Type -ne 'Toggle').Count) }
             @{ Label = (T 'main.prefs'); Value = 'prefs'; Hint = (T 'main.prefsHint') }
-            @{ Label = (T 'main.apps'); Value = 'apps'; Hint = (T 'main.appsHint' @($WN.Config.apps).Count) }
-            @{ Label = (T 'main.uninstall'); Value = 'uninstall'; Hint = (T 'main.uninstallHint') }
             @{ Label = (T 'main.services'); Value = 'services'; Hint = (T 'main.servicesHint') }
             @{ Label = (T 'main.startup'); Value = 'startup'; Hint = (T 'main.startupHint') }
+            @{ Separator = $true; Label = (T 'main.secApps') }
+            @{ Label = (T 'main.apps'); Value = 'apps'; Hint = (T 'main.appsHint' @($WN.Config.apps).Count) }
+            @{ Label = (T 'main.uninstall'); Value = 'uninstall'; Hint = (T 'main.uninstallHint') }
             @{ Separator = $true; Label = (T 'main.secMaintain') }
             @{ Label = (T 'main.repair'); Value = 'repair'; Hint = (T 'main.repairHint') }
             @{ Label = (T 'main.updates'); Value = 'updates'; Hint = (T 'main.updatesHint') }
-            @{ Label = (T 'main.dns'); Value = 'dns'; Hint = (T 'main.dnsHint') }
+            @{ Label = (T 'main.backups'); Value = 'backups'; Hint = (T 'main.backupsHint') }
+            @{ Separator = $true; Label = (T 'main.secNetwork') }
+            @{ Label = (T 'main.dns'); Value = 'dns'; Hint = (T 'main.dnsHint'); Hotkey = 'd' }
             @{ Label = (T 'main.hosts'); Value = 'hosts'; Hint = (T 'main.hostsHint'); Hotkey = 'h' }
-            @{ Label = (T 'main.backups'); Value = 'backups'; Hint = (T 'main.backupsHint'); Hotkey = 'b' }
-            @{ Separator = $true; Label = (T 'main.secTool') }
-            @{ Label = (T 'main.gui'); Value = 'gui'; Hint = (T 'main.guiHint'); Hotkey = 'g' }
+            @{ Separator = $true; Label = (T 'main.secSystem') }
             @{ Label = (T 'main.info'); Value = 'info'; Hint = (T 'main.infoHint'); Hotkey = 'y' }
             @{ Label = (T 'main.logs'); Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
+            @{ Separator = $true; Label = (T 'main.secTool') }
+            @{ Label = (T 'main.gui'); Value = 'gui'; Hint = (T 'main.guiHint'); Hotkey = 'g' }
+            @{ Label = (T 'main.update'); Value = 'update'; Hint = (T 'main.updateHint'); Hotkey = 'u' }
+            @{ Label = (T 'main.shortcut'); Value = 'shortcut'; Hint = (T 'main.shortcutHint'); Hotkey = 'k' }
             @{ Label = (T 'lang.menu'); Value = 'lang'; Hint = (T 'lang.menuHint'); Hotkey = 'i' }
             @{ Label = (T 'main.sim' $sim); Value = 'sim'; Hint = (T 'main.simHint'); Hotkey = 'm' }
         )
@@ -222,6 +236,8 @@ try {
                 Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
                 Write-WNStatus (T 'main.guiOpened') Ok
             }
+            'update'   { if (Invoke-WNUpdateCheck -Manual) { Restart-WNApp; exit 0 } }
+            'shortcut' { Write-WNHeader (T 'main.shortcut'); [void](New-WNShortcut); Save-WNSetting 'ShortcutAsked' $true; Wait-WNKey }
             'info'     { Show-WNSystemInfo }
             'logs'     { Show-WNLogsMenu }
             'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }
