@@ -9,7 +9,7 @@ All notable changes to Winnow are listed here. The format follows
 - Graphical interface: leave preview, per-step progress bars.
 - Shorter launch URL for the one-line installer.
 
-## [1.0.7.1] - 2026-10-27 - Release Build
+## [1.0.7.1] - 2026-10-27 - HotFix & Preview Update
 
 ### Added
 - **Graphical interface with every module** (still a preview): Tweaks, Preferences, Services, Startup apps,

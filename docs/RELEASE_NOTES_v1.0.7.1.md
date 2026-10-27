@@ -1,6 +1,6 @@
 ![Winnow](https://raw.githubusercontent.com/eperez98/Winnow/main/LOGO/Winnow_logo.png)
 
-## Winnow 1.0.7.1 — Release Build
+## Winnow 1.0.7.1 — HotFix & Preview Update
 
 ### Run it
 
