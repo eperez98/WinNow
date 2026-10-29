@@ -9,6 +9,30 @@ All notable changes to Winnow are listed here. The format follows
 - Graphical interface: leave preview, per-step progress bars.
 - Shorter launch URL for the one-line installer.
 
+## [1.0.7.2] - 2026-10-28 - GUI Release Candidate
+
+Only the graphical interface changes. The terminal edition stays at **1.0.7.1 Stable Release**; the graphical
+interface is **1.0.7.2 Release Candidate**.
+
+### Added
+- **Light and dark mode** with a sun / moon switch in the top bar. It starts in the Windows apps setting and
+  remembers the choice; every colour, badge and the title bar follow it at once.
+- **EN | ES** language switch in the top bar (the active language is highlighted) instead of the globe button.
+- **Update status button**: "Check for this tool updates". After checking it reads "No updates available", or
+  "Update available: x.y.z", which opens the changelog with update now / keep this version / skip this version.
+  The startup check now runs in the background after the window opens instead of before it.
+
+### Changed
+- **New look**: translucent and flat, in the Windows 11 / iOS style. Acrylic backdrop on Windows 11 22H2 or later
+  (solid colour on older builds), frosted cards, rounded corners, blue accent, and app-icon style tiles on the
+  home page.
+- Version labels: the terminal shows `1.0.7.1 Stable Release`, the window `1.0.7.2 Release Candidate`. The update
+  check compares a release with the newer of the two.
+
+### Fixed
+- The graphical interface opened minimized when it was started from a minimized console (`Launch-GUI.bat`, after an
+  update or a language switch).
+
 ## [1.0.7.1] - 2026-10-27 - HotFix & Preview Update
 
 ### Added
@@ -114,7 +138,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.1...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.2...HEAD
+[1.0.7.2]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.2
 [1.0.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.1
 [1.0.5]: https://github.com/eperez98/Winnow/releases/tag/v1.0.5
 [1.0.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.1

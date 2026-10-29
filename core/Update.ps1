@@ -39,7 +39,8 @@ function Get-WNUpdateInfo {
         $headers = @{ 'User-Agent' = 'Winnow'; 'Accept' = 'application/vnd.github+json' }
         $rel = Invoke-RestMethod -Uri "https://api.github.com/repos/$script:WNRepoSlug/releases/latest" -Headers $headers -TimeoutSec $TimeoutSec -UseBasicParsing
         $latest = ConvertTo-WNVersion $rel.tag_name
-        $current = ConvertTo-WNVersion $WN.Version
+        # The package carries both editions; it is as new as the newer of the two labels
+        $current = @((ConvertTo-WNVersion $WN.Version), (ConvertTo-WNVersion $WN.GuiVersion)) | Sort-Object -Descending | Select-Object -First 1
         $newer = [bool]($latest -and $current -and $latest -gt $current)
         Write-WNLog "Update check: latest $($rel.tag_name), installed $($WN.Version), newer=$newer" -Component 'Update'
         $notes = @()

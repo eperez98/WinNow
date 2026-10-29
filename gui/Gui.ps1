@@ -1,6 +1,7 @@
 # gui/Gui.ps1
-# Graphical interface (preview) with every module of the terminal edition: a dark layout with a
-# sidebar, a search bar and, on the home page, a hero banner with poster cards for each tool.
+# Graphical interface (release candidate) with every module of the terminal edition: a translucent,
+# flat layout in light and dark (acrylic backdrop on Windows 11, iOS-style cards), with a sidebar,
+# a search bar and, on the home page, a banner and a tile for each tool.
 # Changes run in a background runspace that loads core/ and modules/ like the terminal does, so
 # restore points, backups, undo and simulation mode behave exactly the same. Quick read-only
 # queries (registry, files) run on the UI thread; anything slow (CIM, winget, appx) in the worker.
@@ -19,6 +20,7 @@ public class WNRow : INotifyPropertyChanged {
     public string Description { get; set; }
     public string Group { get; set; }
     public string State { get; set; }
+    public string Kind { get; set; }
     public object Item { get; set; }
     public bool Selected { get { return selected; } set { selected = value; Notify("Selected"); } }
     public string Badge { get { return badge; } set { badge = value; Notify("Badge"); Notify("BadgeVisibility"); } }
@@ -28,26 +30,45 @@ public class WNRow : INotifyPropertyChanged {
 }
 
 public static class WNDwm {
+    [StructLayout(LayoutKind.Sequential)]
+    struct Margins { public int Left, Right, Top, Bottom; }
     [DllImport("dwmapi.dll")] static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int value, int size);
-    // 20 = DWMWA_USE_IMMERSIVE_DARK_MODE: dark title bar to match the window
-    public static void DarkTitle(IntPtr hwnd) { int d = 1; DwmSetWindowAttribute(hwnd, 20, ref d, 4); }
+    [DllImport("dwmapi.dll")] static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins m);
+    // 20 = DWMWA_USE_IMMERSIVE_DARK_MODE: title bar and backdrop tint follow the theme
+    public static void SetDark(IntPtr hwnd, bool dark) { int d = dark ? 1 : 0; DwmSetWindowAttribute(hwnd, 20, ref d, 4); }
+    // 38 = DWMWA_SYSTEMBACKDROP_TYPE, 3 = acrylic: the translucent, blurred Windows 11 backdrop
+    public static bool Acrylic(IntPtr hwnd) {
+        var m = new Margins { Left = -1, Right = -1, Top = -1, Bottom = -1 };
+        if (DwmExtendFrameIntoClientArea(hwnd, ref m) != 0) return false;
+        int b = 3;
+        return DwmSetWindowAttribute(hwnd, 38, ref b, 4) == 0;
+    }
 }
 '@
 
-# Brush specs: '#AARRGGBB' is a solid colour; an array is a vertical gradient ('#color@offset' for hard stops)
-$script:WNGuiTheme = @{
-    Bg = '#FF0E0E11'; Pane = '#FF141418'; Card = '#FF1C1C21'; CardBorder = '#FF2A2A31'; Hover = '#FF24242A'; Selected = '#FF2A1D15'
-    Fg = '#FFF5F5F7'; FgDim = '#FFA1A1AA'; AccentText = '#FFFF9A52'; AccentSolid = '#FFEA580C'; AccentFg = '#FFFFFFFF'
-    Accent = @('#FFF97316', '#FFC2410C')
-    Badges = @{ Applied = '#3316A34A|#FF86EFAC'; Partial = '#33F59E0B|#FFFCD34D'; Action = '#333B82F6|#FF93C5FD'; None = '#FF26262C|#FFD4D4D8'; Danger = '#33EF4444|#FFFCA5A5' }
+# Brush specs: '#AARRGGBB' is a solid colour; an array is a vertical gradient ('#color@offset' for hard stops).
+# Bg is used without the acrylic backdrop (Windows 10, older 11); GlassBg tints the backdrop when it is on.
+$script:WNGuiThemes = @{
+    Dark  = @{
+        Bg = '#FF1C1C1E'; GlassBg = '#80141416'; Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
+        Selected = '#330A84FF'; Fg = '#FFFFFFFF'; FgDim = '#FFC7C7CC'; Accent = '#FF0A84FF'; AccentSolid = '#FF0A84FF'; AccentFg = '#FFFFFFFF'; AccentText = '#FF64B5FF'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'
+        Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
+    }
+    Light = @{
+        Bg = '#FFF2F2F7'; GlassBg = '#99F2F2F7'; Pane = '#59FFFFFF'; Card = '#B3FFFFFF'; CardBorder = '#1A000000'; Hover = '#E6FFFFFF'
+        Selected = '#1F007AFF'; Fg = '#FF1C1C1E'; FgDim = '#FF5C5C61'; Accent = '#FF0071E3'; AccentSolid = '#FF0071E3'; AccentFg = '#FFFFFFFF'; AccentText = '#FF0060C7'
+        Warn = '#FF8F5300'; WarnBg = '#26FF9500'
+        Badges = @{ Applied = '#2634C759|#FF1B7A36'; Partial = '#26FF9500|#FF8F5300'; Action = '#1F007AFF|#FF0058B8'; None = '#14000000|#FF3A3A3C'; Danger = '#26FF3B30|#FFB3261E' }
+    }
 }
-# Poster artwork per sidebar group (diagonal gradients)
+# Tool icon colours per sidebar group (diagonal gradients, like app icons)
 $script:WNGuiArt = @{
-    'main.secOptimize' = @('#FFF97316', '#FF7C2D12', '#FF1C0A04')
-    'main.secApps'     = @('#FFA855F7', '#FF4C1D95', '#FF140A26')
-    'main.secMaintain' = @('#FF14B8A6', '#FF115E59', '#FF041A18')
-    'main.secNetwork'  = @('#FF3B82F6', '#FF1E3A8A', '#FF060E24')
-    'main.secSystem'   = @('#FF94A3B8', '#FF334155', '#FF0B1018')
+    'main.secOptimize' = @('#FFFF9F0A', '#FFFF6B00')
+    'main.secApps'     = @('#FFBF5AF2', '#FF7D3CE0')
+    'main.secMaintain' = @('#FF30D158', '#FF14A34A')
+    'main.secNetwork'  = @('#FF40A9FF', '#FF0A6CFF')
+    'main.secSystem'   = @('#FF98989D', '#FF636366')
 }
 
 #region Helpers
@@ -68,7 +89,8 @@ function ConvertTo-WNBrush {
 
 function Set-WNGuiBadge {
     param([Parameter(Mandatory)]$Row, [string]$Text, [string]$Kind = 'None')
-    $bg, $fg = $script:WNGuiTheme.Badges[$Kind] -split '\|'
+    $bg, $fg = $script:WNGui.Theme.Badges[$Kind] -split '\|'
+    $Row.Kind = $Kind
     $Row.Badge = $Text
     # Casts unwrap the PSObject that New-Object returns; WPF needs the Brush itself in object slots
     $Row.BadgeBg = [Windows.Media.Brush](ConvertTo-WNBrush $bg)
@@ -309,7 +331,10 @@ function New-WNGuiList {
         $l.GroupStyle.Add($gs)
     }
     $l.ItemsSource = $view
-    return @{ List = $l; Rows = $rows; View = $view }
+    $list = @{ List = $l; Rows = $rows; View = $view }
+    # Kept so a theme switch can recolour every badge
+    $script:WNGui.Lists.Add($list)
+    return $list
 }
 
 function Set-WNGuiRows {
@@ -1111,44 +1136,38 @@ function Build-WNGuiLogs {
     $p.OnShow = { & $script:WNGui.LogShow }
 }
 
-# ---- Home: hero banner, start-here card, poster row, this PC
+# ---- Home: banner, start-here card, tool tiles, this PC
 function New-WNGuiChip {
     param([string]$Text)
     $b = New-Object Windows.Controls.Border
-    $b.CornerRadius = 11
-    $b.Padding = '10,3'
+    $b.CornerRadius = 12
+    $b.Padding = '11,4'
     $b.Margin = '0,0,6,0'
-    $b.Background = [Windows.Media.Brush](ConvertTo-WNBrush '#66000000')
+    $b.Background = [Windows.Media.Brush](ConvertTo-WNBrush '#38FFFFFF')
     $b.Child = New-WNGuiText $Text -Size 12
     $b.Child.Foreground = 'White'
     return $b
 }
 
-function New-WNGuiPoster {
+function New-WNGuiTile {
+    # Translucent card with an app-icon style square in the colour of the tool's group
     param($Page)
     $b = New-Object Windows.Controls.Button
-    $b.Style = $script:WNGui.Window.Resources['Poster']
-    $b.Background = [Windows.Media.Brush](ConvertTo-WNBrush $script:WNGuiArt[$Page.Section] -Diagonal)
+    $b.Style = $script:WNGui.Window.Resources['Tile']
     $b.Tag = $Page.Id
-    $grid = New-Object Windows.Controls.Grid
-    # Big faded icon as the artwork, then a dark fade under the title for contrast
-    $art = New-WNGuiIcon $Page.Icon 84
-    $art.Foreground = 'White'
-    $art.Opacity = 0.22
-    $art.HorizontalAlignment = 'Right'
-    $art.VerticalAlignment = 'Top'
-    $art.Margin = '0,10,12,0'
-    $fade = New-Object Windows.Controls.Border
-    $fade.CornerRadius = '0,0,10,10'
-    $fade.VerticalAlignment = 'Bottom'
-    $fade.Height = 78
-    $fade.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#00000000', '#CC000000'))
-    $text = New-WNGuiPanel -Orientation Vertical -Children @((New-WNGuiText $Page.Title -Bold -Size 14.5 -Wrap), (New-WNGuiText (T $Page.Section) -Size 11.5))
-    $text.VerticalAlignment = 'Bottom'
-    $text.Margin = '14,0,14,12'
-    $text.Children[1].Opacity = 0.75
-    foreach ($c in $art, $fade, $text) { [void]$grid.Children.Add($c) }
-    $b.Content = $grid
+    $squircle = New-Object Windows.Controls.Border
+    $squircle.Width = 44; $squircle.Height = 44
+    $squircle.CornerRadius = 12
+    $squircle.HorizontalAlignment = 'Left'
+    $squircle.Background = [Windows.Media.Brush](ConvertTo-WNBrush $script:WNGuiArt[$Page.Section] -Diagonal)
+    $icon = New-WNGuiIcon $Page.Icon 21
+    $icon.Foreground = 'White'
+    $icon.HorizontalAlignment = 'Center'
+    $squircle.Child = $icon
+    $b.Content = New-WNGuiPanel -Orientation Vertical -Children @(
+        $squircle,
+        (New-WNGuiText $Page.Title -Bold -Size 13.5 -Wrap -Margin '0,10,0,0'),
+        (New-WNGuiText (T $Page.Section) -Dim -Size 12))
     [Windows.Automation.AutomationProperties]::SetName($b, $Page.Title)
     $b.ToolTip = $Page.Hint
     $b.Add_Click({ Show-WNGuiPage $this.Tag })
@@ -1162,43 +1181,39 @@ function Build-WNGuiHome {
     $tweaks = @($WN.Config.tweaks | Where-Object Type -ne 'Toggle')
     $rec = @($tweaks | Where-Object Level -eq 'Recommended')
 
-    # Hero banner
+    # Banner: same colours in light and dark, white text
     $hero = New-Object Windows.Controls.Border
-    $hero.CornerRadius = 16
-    $hero.Height = 290
-    $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#FF1A0B05', '#FF7C2D12', '#FFC2410C', '#FF3B0764') -Diagonal)
+    $hero.CornerRadius = 22
+    $hero.Height = 300
+    $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#FF0A84FF', '#FF5E5CE6', '#FFBF5AF2') -Diagonal)
     $heroGrid = New-Object Windows.Controls.Grid
-    $mark = New-WNGuiImage 'Winnow_icon_512.png' 250 0.35
-    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,36,0'; [void]$heroGrid.Children.Add($mark) }
-    $shade = New-Object Windows.Controls.Border
-    $shade.CornerRadius = 16
-    $shade.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#B3000000@0', '#40000000@0.55', '#00000000@1'))
-    ([Windows.Media.LinearGradientBrush]$shade.Background).EndPoint = '1,0'
-    [void]$heroGrid.Children.Add($shade)
+    $mark = New-WNGuiImage 'Winnow_icon_512.png' 230 0.28
+    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,40,0'; [void]$heroGrid.Children.Add($mark) }
     $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
     $chips.VerticalAlignment = 'Top'
-    $chips.Margin = '26,22,0,0'
-    $title = New-WNGuiText 'WINNOW' -Size 58 -Bold
+    $chips.Margin = '28,24,0,0'
+    $title = New-WNGuiText 'Winnow' -Size 56
     $title.FontFamily = 'Segoe UI Variable Display, Segoe UI'
-    $title.FontWeight = 'Black'
+    $title.FontWeight = 'Bold'
     $title.Foreground = 'White'
     $tag = New-WNGuiText (T 'tagline') -Size 16
     $tag.Foreground = 'White'
     $stats = New-WNGuiText (T 'gui.heroStats' $tweaks.Count @($WN.Config.apps).Count ($g.Pages.Count - 1)) -Size 12.5 -Margin '0,10,0,0'
-    $stats.Foreground = [Windows.Media.Brush](ConvertTo-WNBrush '#FFFFD7B5')
+    $stats.Foreground = 'White'
+    $stats.Opacity = 0.85
     $heroText = New-WNGuiPanel -Orientation Vertical -Children @($title, $tag, $stats)
     $heroText.VerticalAlignment = 'Bottom'
-    $heroText.Margin = '26,0,0,24'
+    $heroText.Margin = '28,0,0,26'
     [void]$heroGrid.Children.Add($chips)
     [void]$heroGrid.Children.Add($heroText)
     $hero.Child = $heroGrid
 
     # Start-here card next to the banner
     $card = New-Object Windows.Controls.Border
-    $card.CornerRadius = 16
+    $card.CornerRadius = 22
     $card.Padding = '22,20'
     $card.Margin = '16,0,0,0'
-    $card.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#FF2E1A0E', '#FF1C1C21'))
+    $card.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Card')
     $card.SetResourceReference([Windows.Controls.Border]::BorderBrushProperty, 'CardBorder')
     $card.BorderThickness = 1
     $go = New-WNGuiButton (T 'gui.recBtn') -Icon 'E73E' -Accent -Always -OnClick {
@@ -1215,12 +1230,13 @@ function Build-WNGuiHome {
     $note = New-WNGuiText (T 'gui.previewShort') -Dim -Size 11.5 -Wrap -Margin '0,0,0,12'
     [Windows.Controls.DockPanel]::SetDock($note, 'Bottom')
     [void]$cardBody.Children.Add($note)
-    [void]$cardBody.Children.Add((New-WNGuiPanel -Orientation Vertical -Children @(
+    $info = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiText (T 'gui.recKicker') -Accent -Bold -Size 12),
         (New-WNGuiText (T 'gui.recTitle') -Bold -Size 21 -Margin '0,6,0,0'),
         (New-WNGuiText (T 'gui.recText') -Dim -Size 12.5 -Wrap -Margin '0,8,0,0'),
-        (New-WNGuiText (T 'gui.recStat' $rec.Count) -Accent -Bold -Size 13 -Wrap -Margin '0,12,0,0'))))
-    $cardBody.Children[2].VerticalAlignment = 'Top'
+        (New-WNGuiText (T 'gui.recStat' $rec.Count) -Accent -Bold -Size 13 -Wrap -Margin '0,12,0,0'))
+    $info.VerticalAlignment = 'Top'
+    [void]$cardBody.Children.Add($info)
     $card.Child = $cardBody
 
     $top = New-Object Windows.Controls.Grid
@@ -1232,8 +1248,8 @@ function Build-WNGuiHome {
     [void]$top.Children.Add($hero)
     [void]$top.Children.Add($card)
 
-    $posters = New-WNGuiPanel -Wrap
-    foreach ($id in @($g.Pages.Keys | Where-Object { $_ -ne 'home' })) { [void]$posters.Children.Add((New-WNGuiPoster $g.Pages[$id])) }
+    $tiles = New-WNGuiPanel -Wrap
+    foreach ($id in @($g.Pages.Keys | Where-Object { $_ -ne 'home' })) { [void]$tiles.Children.Add((New-WNGuiTile $g.Pages[$id])) }
 
     $g.HomeInfo = New-WNGuiPanel -Wrap
     $g.SysInfoListeners += {
@@ -1247,38 +1263,94 @@ function Build-WNGuiHome {
     }
     $p.Body = New-WNGuiScroll (New-WNGuiPanel -Orientation Vertical -Children @(
         $top,
-        (New-WNGuiText (T 'gui.allTools') -Style Section), $posters,
+        (New-WNGuiText (T 'gui.allTools') -Style Section), $tiles,
         (New-WNGuiText (T 'gui.thisPc') -Style Section), $g.HomeInfo))
     $p.OnShow = { param($p) if ($p.Shown -eq 1) { Update-WNGuiSysInfo } }
 }
 #endregion
 
-function Show-WNGuiUpdate {
-    # Release notes in a dialog. Returns $true when the user chose to update.
-    # Yes = update now, No = keep this version, Cancel = skip this version
-    param($Update, [switch]$Manual)
-    $owner = if ($script:WNGui) { $script:WNGui.Window } else { $null }
-    $show = { param($text, $buttons, $icon) if ($owner) { [Windows.MessageBox]::Show($owner, $text, 'Winnow', $buttons, $icon) } else { [Windows.MessageBox]::Show($text, 'Winnow', $buttons, $icon) } }
-    if (-not $Update) { if ($Manual) { [void](& $show (T 'au.offline') 'OK' 'Warning') }; return $false }
-    if (-not $Update.Newer) { if ($Manual) { [void](& $show (T 'au.upToDate' $WN.Version) 'OK' 'Information') }; return $false }
-    if (-not $Manual -and (Get-WNSettings).SkipVersion -eq $Update.Version) { return $false }
-    $notes = @($Update.Notes | Select-Object -First 22) -join "`n"
-    $r = & $show (T 'au.gui' $Update.Version $WN.Version $notes) 'YesNoCancel' 'Information'
-    if ("$r" -eq 'Cancel') { Save-WNSetting 'SkipVersion' $Update.Version }
-    return ("$r" -eq 'Yes')
+#region Theme and updates
+function Set-WNGuiTheme {
+    # Light / Dark at any time: brushes, title bar and backdrop tint, every badge, and the switch icon
+    param([ValidateSet('Light', 'Dark')][string]$Name, [switch]$Save)
+    $g = $script:WNGui
+    $t = $script:WNGuiThemes[$Name]
+    $g.Theme = $t
+    $g.ThemeName = $Name
+    foreach ($k in $t.Keys) {
+        if ($k -in 'Badges', 'GlassBg', 'Bg') { continue }
+        $g.Window.Resources[$k] = [Windows.Media.Brush](ConvertTo-WNBrush $t[$k])
+    }
+    $g.Window.Resources['Bg'] = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.Glass) { $t.GlassBg } else { $t.Bg }))
+    if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, $Name -eq 'Dark') } catch { } }
+    foreach ($l in $g.Lists) { foreach ($r in $l.Rows) { if ($r.Badge -and $r.Kind) { Set-WNGuiBadge $r $r.Badge $r.Kind } } }
+    # The button shows the mode it switches to
+    $g.Ctl.ThemeBtn.Content = [string][char]$(if ($Name -eq 'Dark') { 0xE706 } else { 0xE708 })
+    $tip = T $(if ($Name -eq 'Dark') { 'gui.themeLight' } else { 'gui.themeDark' })
+    $g.Ctl.ThemeBtn.ToolTip = $tip
+    [Windows.Automation.AutomationProperties]::SetName($g.Ctl.ThemeBtn, $tip)
+    if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
 
-function Invoke-WNGuiUpdateCheck {
-    # Before the window opens: same check as the terminal, answered with a dialog. $true = updated, restart.
-    Add-Type -AssemblyName PresentationFramework
-    $u = Get-WNUpdateInfo
-    if (-not (Show-WNGuiUpdate $u)) { return $false }
-    if (Install-WNUpdate $u) { return $true }
-    [void][Windows.MessageBox]::Show((T 'au.failedGui'), 'Winnow', 'OK', 'Error')
-    return $false
+function Set-WNGuiUpdateState {
+    # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
+    param([string]$State, $Update)
+    $g = $script:WNGui
+    $g.UpdateState = $State
+    $g.Update = $Update
+    $c = $g.Ctl
+    $c.UpdateBtn.IsEnabled = $State -ne 'Checking'
+    $c.UpdateIcon.Text = [string][char]$(switch ($State) { 'None' { 0xE73E } 'Available' { 0xE896 } 'Offline' { 0xE7BA } default { 0xE895 } })
+    $c.UpdateText.Text = switch ($State) {
+        'Checking'  { T 'gui.updChecking' }
+        'None'      { T 'gui.updNone' }
+        'Offline'   { T 'gui.updOffline' }
+        'Available' { T 'gui.updAvailable' $Update.Version }
+        default     { T 'gui.updCheck' }
+    }
+    if ($State -eq 'Available') {
+        $c.UpdateBtn.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, 'Accent')
+        $c.UpdateBtn.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'AccentFg')
+    } else {
+        $c.UpdateBtn.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, 'Card')
+        $c.UpdateBtn.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, $(if ($State -eq 'None') { 'AccentText' } else { 'Fg' }))
+    }
+    [Windows.Automation.AutomationProperties]::SetName($c.UpdateBtn, $c.UpdateText.Text)
 }
+
+function Start-WNGuiUpdateCheck {
+    # Runs in the worker so the window never waits on GitHub. -Startup: an update offers its dialog once,
+    # unless that version was skipped; otherwise the pill just shows the result.
+    param([switch]$Startup)
+    Set-WNGuiUpdateState 'Checking'
+    $script:WNGui.AutoOffer = [bool]$Startup
+    Start-WNGuiJob -Label (T 'au.checking') -Script { Get-WNUpdateInfo }.ToString() -OnDone {
+        param($out)
+        $u = $out[0]
+        if (-not $u) { Set-WNGuiUpdateState 'Offline'; return }
+        if (-not $u.Newer) { Set-WNGuiUpdateState 'None'; return }
+        Set-WNGuiUpdateState 'Available' $u
+        if ($script:WNGui.AutoOffer -and (Get-WNSettings).SkipVersion -ne $u.Version) { Invoke-WNGuiUpdate }
+    }
+}
+
+function Invoke-WNGuiUpdate {
+    # Release notes in a dialog. Yes = update now, No = keep this version, Cancel = skip this version.
+    $g = $script:WNGui
+    $u = $g.Update
+    $notes = @($u.Notes | Select-Object -First 22) -join "`n"
+    $r = [Windows.MessageBox]::Show($g.Window, (T 'au.gui' $u.Version $WN.GuiVersion $notes), 'Winnow', 'YesNoCancel', 'Information')
+    if ("$r" -eq 'Cancel') { Save-WNSetting 'SkipVersion' $u.Version; return }
+    if ("$r" -ne 'Yes') { return }
+    Start-WNGuiJob -Label (T 'au.downloading' $u.Version) -Arguments @($WN.DryRun, $u) -Script { param($dry, $u) $WN.DryRun = $dry; Install-WNUpdate $u }.ToString() -OnDone {
+        param($o)
+        if ($o[0]) { Restart-WNApp -Gui; $script:WNGui.Window.Close() } else { Show-WNGuiInfo (T 'au.failedGui') }
+    }
+}
+#endregion
 
 function Show-WNGui {
+    param([switch]$NoUpdateCheck)
     Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
     if (-not ('WNRow' -as [type])) { Add-Type -TypeDefinition $script:WNGuiTypes }
 
@@ -1286,27 +1358,35 @@ function Show-WNGui {
     $xamlText = Get-Content (Join-Path $WN.Root 'gui\MainWindow.xaml') -Raw -Encoding UTF8
     $xamlText = [regex]::Replace($xamlText, '@@([\w.]+)@@', { param($m) [Security.SecurityElement]::Escape((T $m.Groups[1].Value)) })
     $window = [Windows.Markup.XamlReader]::Parse($xamlText)
-    foreach ($k in $script:WNGuiTheme.Keys) { if ($k -ne 'Badges') { $window.Resources[$k] = [Windows.Media.Brush](ConvertTo-WNBrush $script:WNGuiTheme[$k]) } }
 
     $ctl = @{}
-    foreach ($n in 'UpdateBtn', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText', 'SimToggle', 'SimBadge', 'ModeText', 'LangBtn', 'TerminalBtn', 'NavPanel', 'SearchBox',
-                   'Header', 'ActionsHost', 'PageTitle', 'PageSub', 'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
+    foreach ($n in 'UpdateBtn', 'UpdateIcon', 'UpdateText', 'ThemeBtn', 'LangEn', 'LangEs', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText',
+                   'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
+                   'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
 
     $script:WNGui = @{
         Window = $window; Ctl = $ctl; Job = $null; Relaunch = $null
         Log = $ctl.LogBox; Status = $ctl.StatusText; Busy = $ctl.Busy; SimToggle = $ctl.SimToggle
         ActionButtons = New-Object 'System.Collections.Generic.List[object]'
+        Lists = New-Object 'System.Collections.Generic.List[object]'
         Pages = [ordered]@{}; NavButtons = @{}; SysInfoListeners = @(); Queue = New-Object 'System.Collections.Generic.List[object]'
         Timer = New-Object Windows.Threading.DispatcherTimer
+        StartupCheck = -not $NoUpdateCheck
     }
     $g = $script:WNGui
-    $g.ActionButtons.Add($ctl.LangBtn)
     $g.Timer.Interval = [TimeSpan]::FromMilliseconds(150)
     $g.Timer.Add_Tick({ Receive-WNGuiJob })
 
+    # ---- Theme: the saved choice, else the Windows apps setting
+    $saved = (Get-WNSettings).GuiTheme
+    $light = (Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -ne 0
+    $theme = if ($saved -in 'Light', 'Dark') { $saved } elseif ($light) { 'Light' } else { 'Dark' }
+    Set-WNGuiTheme $theme
+
     # ---- Window chrome and identity
-    $window.Title = "Winnow $($WN.Version)"
+    $window.Title = "Winnow $($WN.GuiVersion) $($WN.GuiChannel)"
     $window.Height = [Math]::Min(860, [Windows.SystemParameters]::WorkArea.Height - 20)
+    $window.Width = [Math]::Min(1320, [Windows.SystemParameters]::WorkArea.Width - 20)
     $icon = Join-Path $WN.Root 'LOGO\Winnow_icon_128.png'
     if (Test-Path $icon) {
         $bmp = New-Object Windows.Media.Imaging.BitmapImage (New-Object Uri $icon)
@@ -1314,9 +1394,21 @@ function Show-WNGui {
         $ctl.Logo.Source = $bmp
         $ctl.Avatar.Source = $bmp
     }
-    $window.Add_SourceInitialized({ try { [WNDwm]::DarkTitle((New-Object Windows.Interop.WindowInteropHelper $this).Handle) } catch { } })
-    $ctl.VersionText.Text = "Winnow $($WN.Version)"
-    $ctl.AdminText.Text = T 'gui.preview'
+    $g.WantGlass = $WN.OSBuild -ge 22621
+    $window.Add_SourceInitialized({
+        $g = $script:WNGui
+        $g.Hwnd = (New-Object Windows.Interop.WindowInteropHelper $this).Handle
+        try {
+            if ($g.WantGlass) {
+                [Windows.Interop.HwndSource]::FromHwnd($g.Hwnd).CompositionTarget.BackgroundColor = [Windows.Media.Colors]::Transparent
+                $g.Glass = [WNDwm]::Acrylic($g.Hwnd)
+            }
+        } catch { $g.Glass = $false }
+        Set-WNGuiTheme $g.ThemeName
+        Write-WNLog "GUI backdrop: acrylic=$([bool]$g.Glass) theme=$($g.ThemeName)" -Component 'Gui'
+    })
+    $ctl.VersionText.Text = "Winnow $($WN.GuiVersion)"
+    $ctl.AdminText.Text = $WN.GuiChannel
     $ctl.ModeText.Text = if ($WN.IsAdmin) { T 'gui.modeAdmin' } else { T 'gui.modeUser' }
     $ctl.SimToggle.IsChecked = $WN.DryRun
     $ctl.SimToggle.IsEnabled = $WN.IsAdmin
@@ -1326,31 +1418,27 @@ function Show-WNGui {
         $script:WNGui.Ctl.SimBadge.Visibility = if ($WN.DryRun) { 'Visible' } else { 'Collapsed' }
         Write-WNLog "GUI simulation mode: $($WN.DryRun)" -Component 'Gui'
     })
+    $ctl.ThemeBtn.Add_Click({ Set-WNGuiTheme $(if ($script:WNGui.ThemeName -eq 'Dark') { 'Light' } else { 'Dark' }) -Save })
     $ctl.TerminalBtn.Add_Click({
         $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Lang', $WN.Lang)
         if ($WN.DryRun) { $a += '-DryRun' }
         Start-Process powershell.exe -ArgumentList $a
     })
-    $ctl.LangBtn.Add_Click({
-        $script:WNGui.Relaunch = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }
-        $script:WNGui.Window.Close()
-    })
+    # EN | ES: the current language is filled; picking the other one reopens the window in it
+    $ctl["Lang$(if ($WN.Lang -eq 'es') { 'Es' } else { 'En' })"].IsChecked = $true
+    foreach ($b in $ctl.LangEn, $ctl.LangEs) {
+        $b.Add_Checked({
+            if ($this.Tag -eq $WN.Lang) { return }
+            if ($script:WNGui.Job) { $script:WNGui.Ctl["Lang$(if ($WN.Lang -eq 'es') { 'Es' } else { 'En' })"].IsChecked = $true; return }
+            $script:WNGui.Relaunch = $this.Tag
+            $script:WNGui.Window.Close()
+        })
+    }
     $ctl.ShortcutBtn.Add_Click({
         if (New-WNShortcut) { Show-WNGuiInfo $(if ($WN.DryRun) { T 'sc.dryGui' } else { T 'sc.doneGui' }) } else { Show-WNGuiInfo (T 'sc.failedGui') }
     })
-    $ctl.UpdateBtn.Add_Click({
-        # Checked in the worker so the window never freezes on a slow connection
-        Start-WNGuiJob -Label (T 'au.checking') -Script { Get-WNUpdateInfo }.ToString() -OnDone {
-            param($out)
-            $u = $out[0]
-            if (Show-WNGuiUpdate $u -Manual) {
-                Start-WNGuiJob -Label (T 'au.downloading' $u.Version) -Arguments @($WN.DryRun, $u) -Script { param($dry, $u) $WN.DryRun = $dry; Install-WNUpdate $u }.ToString() -OnDone {
-                    param($o)
-                    if ($o[0]) { Restart-WNApp -Gui; $script:WNGui.Window.Close() } else { Show-WNGuiInfo (T 'au.failedGui') }
-                }
-            }
-        }
-    })
+    Set-WNGuiUpdateState 'Idle'
+    $ctl.UpdateBtn.Add_Click({ if ($script:WNGui.UpdateState -eq 'Available') { Invoke-WNGuiUpdate } else { Start-WNGuiUpdateCheck } })
     $ctl.LogToggle.Add_Click({ $script:WNGui.Log.Visibility = if ($script:WNGui.Ctl.LogToggle.IsChecked) { 'Visible' } else { 'Collapsed' } })
     $ctl.SearchBox.Add_TextChanged({ Update-WNGuiFilter })
     $ctl.SearchBox.Add_KeyDown({
@@ -1392,9 +1480,15 @@ function Show-WNGui {
         [void]$ctl.NavPanel.Children.Add($r)
     }
 
-    # ---- Start: worker, then the home page
+    # ---- Start: worker, home page, then the update check in the background
     $g.Runspace = New-WNGuiWorker
-    $window.Add_ContentRendered({ Show-WNGuiPage 'home' })
+    $window.Add_ContentRendered({
+        # Started from a minimized console (Launch-GUI.bat, restarts), Windows hands the window that state too
+        if ($this.WindowState -eq 'Minimized') { $this.WindowState = 'Normal' }
+        [void]$this.Activate()
+        Show-WNGuiPage 'home'
+        if ($script:WNGui.StartupCheck) { Start-WNGuiUpdateCheck -Startup }
+    })
     $window.Add_Closing({
         param($s, $e)
         $g = $script:WNGui

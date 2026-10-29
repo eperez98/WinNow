@@ -162,9 +162,9 @@ if ($GUI) {
     $l = if ($Lang) { $Lang } elseif ((Get-WNSettings).Lang -in 'en', 'es') { (Get-WNSettings).Lang } else { 'en' }
     Set-WNLanguage $l
     . "$root\gui\Gui.ps1"
-    if (-not $NoUpdateCheck -and (Invoke-WNGuiUpdateCheck)) { Restart-WNApp -Gui; exit 0 }
     # Switching language closes the window and opens it again in the other language
-    while ($next = Show-WNGui) { Set-WNLanguage $next; Save-WNSetting 'Lang' $next }
+    # The update check runs once; reopening in another language skips it
+    while ($next = Show-WNGui -NoUpdateCheck:$NoUpdateCheck) { Set-WNLanguage $next; Save-WNSetting 'Lang' $next; $NoUpdateCheck = $true }
     exit 0
 }
 

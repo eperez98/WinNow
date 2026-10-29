@@ -2,10 +2,11 @@
   <img src="LOGO/Winnow_logo.png" width="560" alt="Winnow - sift Windows down to what matters"/>
 </p>
 
-<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (preview).</b></p>
+<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (release candidate).</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.7.1%20HotFix%20%26%20Preview%20Update-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/terminal-1.0.7.1%20Stable%20Release-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/GUI-1.0.7.2%20Release%20Candidate-0A84FF?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -19,14 +20,19 @@ what you use. It is a keyboard-driven terminal app built around a declarative tw
 declares the value it applies **and** the value it restores, so Winnow can tell what is already applied,
 apply it, and undo it. A backup is saved before every change. The whole interface is available in
 **English and Spanish**. Tweaks come in two levels: **Recommended** (gentle changes that are safe for any PC)
-and **Advanced** (changes that need care). Since 1.0.7.1 the **graphical interface** (preview) has every module of
-the terminal, grouped the same way. See the [CHANGELOG](CHANGELOG.md).
+and **Advanced** (changes that need care). The **graphical interface** has every module of the terminal, grouped the
+same way. See the [CHANGELOG](CHANGELOG.md).
+
+| Edition | Version | Status |
+|---|---|---|
+| Terminal | **1.0.7.1** | Stable Release |
+| Graphical interface | **1.0.7.2** | Release Candidate |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
-> The **terminal edition is still the reference and the most tested one**; the graphical interface is a
-> **preview** running on the same engine. The window has a button that opens the terminal edition.
+> The **terminal edition (1.0.7.1 Stable Release) is the reference and the most tested one**; the graphical
+> interface (1.0.7.2 Release Candidate) runs on the same engine. The window has a button that opens the terminal.
 
 ## Quick start
 
@@ -43,7 +49,7 @@ The first screen asks for the language (English / Español) before showing any o
 & ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -DryRun
 ```
 
-To open the **graphical interface** (preview) instead of the terminal menus:
+To open the **graphical interface** (release candidate) instead of the terminal menus:
 
 ```powershell
 & ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -GUI
@@ -57,7 +63,7 @@ Or from a terminal in that folder:
 .\Winnow.ps1            # interactive menu (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
 .\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
-.\Winnow.ps1 -GUI      # graphical interface (preview)
+.\Winnow.ps1 -GUI      # graphical interface (release candidate)
 ```
 
 ### Desktop shortcut and updates
@@ -69,13 +75,17 @@ Or from a terminal in that folder:
   there is a newer one, Winnow shows which version it is and its changelog, and lets you choose: **update now**
   (download, replace this copy, restart), **keep using the current version** (asks again next time), or **skip
   this version**. A failed update leaves the current copy as it was. Check by hand with `U` in the main menu or the
-  update button in the GUI; `-NoUpdateCheck` turns the startup check off.
+  **Check for this tool updates** button in the GUI, which then reads **No updates available** or **Update available**
+  (click it to see the changelog and update); `-NoUpdateCheck` turns the startup check off.
 
-## Graphical interface (preview)
+## Graphical interface (1.0.7.2 Release Candidate)
 
-A dark WPF window with an orange accent: a sidebar with every tool, a search bar on top, and a home page with
-a large banner, a **Start here** card that opens the recommended tweaks, and a poster card for every tool. Open it
-with `-GUI`, `Launch-GUI.bat`, or `G` in the terminal main menu.
+A modern, translucent and flat window in the Windows 11 / iOS style: on Windows 11 22H2 or later the background is
+the blurred acrylic backdrop of Windows (a solid colour on older builds), with frosted cards, rounded corners and a
+blue accent. It has a **light and a dark mode** that you switch with the sun / moon button (it starts in the Windows
+setting and remembers your choice), and an **EN | ES** switch for the language. A sidebar lists every tool, a search
+bar sits on top, and the home page has a banner, a **Start here** card that opens the recommended tweaks, and a tile
+for every tool. Open it with `-GUI`, `Launch-GUI.bat`, or `G` in the terminal main menu.
 
 The search bar works on every page: it filters the current list (tweaks, services, apps, programs, backups...).
 On the App Manager, pressing Enter in it searches all of winget.
@@ -95,16 +105,18 @@ simulation mode. Long tasks run in the background and stream their output into t
 
 | | |
 |---|---|
-| ![GUI home](screenshots/15-gui-home.png) | ![GUI tweaks](screenshots/16-gui-tweaks.png) |
-| Home: banner, Start here card and every tool | Recommended tweaks: gentle changes, live state of each one |
-| ![GUI advanced tweaks](screenshots/23-gui-tweaks-advanced-es.png) | ![GUI home Spanish](screenshots/18-gui-home-es.png) |
-| Advanced tweaks with their caution note (Spanish) | Home in Spanish |
+| | |
+|---|---|
+| ![GUI home](screenshots/15-gui-home.png) | ![GUI home light](screenshots/18-gui-home-es.png) |
+| Home, dark mode | Home, light mode (Spanish) |
+| ![GUI tweaks](screenshots/16-gui-tweaks.png) | ![GUI advanced tweaks](screenshots/23-gui-tweaks-advanced-es.png) |
+| Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
 | ![GUI services](screenshots/21-gui-services.png) | ![GUI uninstall](screenshots/22-gui-uninstall.png) |
-| Services: current vs recommended | Uninstall programs (silent or wizard) |
+| Services, light | Uninstall programs, dark |
 | ![GUI repair](screenshots/19-gui-repair.png) | ![GUI updates](screenshots/20-gui-updates-es.png) |
-| Repair & maintenance | Windows Update (Spanish) |
+| Repair & maintenance, light | Windows Update, dark (Spanish) |
 | ![GUI apps](screenshots/17-gui-apps-es.png) | |
-| App Manager (Spanish) | |
+| App Manager, light (Spanish) | |
 
 ## Screenshots
 
@@ -173,7 +185,7 @@ show the compact `\/\/. winnow` mark in the header.
 | **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
 | **Updates** | Checks GitHub at every start; shows the new version and its changelog; update now, keep the current version, or skip that version |
 | **Desktop shortcut** | Offered on the first start: Winnow logo on the desktop that opens the local copy directly |
-| **Graphical interface** | Preview window with every module above, a page search bar and a home page with every tool (`G` in the main menu, or `-GUI`) |
+| **Graphical interface** | 1.0.7.2 Release Candidate: translucent light / dark window with every module above, EN / ES switch, page search bar, update status (`G` in the main menu, or `-GUI`) |
 
 ### Safety
 
@@ -221,7 +233,7 @@ modules/
   Uninstall.ps1          Uninstall programs (desktop + Store apps)
   Apps.ps1 Services.ps1 Startup.ps1 Repair.ps1 Updates.ps1 Network.ps1 System.ps1
 gui/
-  Gui.ps1                Graphical interface (WPF): every page, background worker, search, theme
+  Gui.ps1                Graphical interface (WPF): every page, background worker, search, light / dark theme
   MainWindow.xaml        Window shell (sidebar, search bar, page hosts) and styles
 tests/                   Self-checks for the parsers (run with powershell -File)
 config/
