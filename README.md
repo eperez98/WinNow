@@ -25,7 +25,7 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 | Edition | Version | Status |
 |---|---|---|
 | Terminal | **1.0.7.3** | HotFix Update Fixer |
-| Graphical interface | **1.0.7.3** | HotFix Update Fixer |
+| Graphical interface | **1.0.7.3** | HotFix Update Fixer (full GUI release: **1.2**, estimated **November 8, 2026**) |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall

@@ -718,7 +718,6 @@ function Build-WNGuiApps {
         $mode = $this.Tag
         $g = $script:WNGui
         if ($mode -eq 'upgrade') {
-            if (-not (Confirm-WNGui (T 'apps.upgradeAsk'))) { return }
             Start-WNGuiJob -Label (T 'apps.upgradeTitle') -Arguments @(, $WN.DryRun) -Script {
                 param($dry)
                 $WN.DryRun = $dry

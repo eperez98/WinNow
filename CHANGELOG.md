@@ -6,7 +6,7 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- Graphical interface: leave preview, per-step progress bars.
+- **1.2 — Full GUI Release**, estimated for **November 8, 2026**: the graphical interface leaves preview, with per-step progress bars.
 - Shorter launch URL for the one-line installer.
 
 ## [1.0.7.3] - 2026-10-29 - HotFix Update Fixer
@@ -16,7 +16,8 @@ The terminal edition and the graphical interface are both **1.0.7.3 HotFix Updat
 ### Changed
 - **Update all apps** (winget) no longer creates a System Restore point first, in the terminal and in the
   graphical interface. Creating one could take minutes, and winget upgrades are not something a restore point
-  undoes. The JSON backup with the list of installed apps is still saved. Tweaks, services, DNS and every other
+  undoes. It also no longer asks for confirmation: the button (or `G` in the terminal) runs `winget upgrade --all`
+  right away. The JSON backup with the list of installed apps is still saved. Tweaks, services, DNS and every other
   change still create the restore point as before.
 
 ## [1.0.7.2] - 2026-10-28 - GUI Release Candidate

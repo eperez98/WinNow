@@ -20,9 +20,10 @@ Offline: download **Winnow.zip** below, extract it, and run `Launch.bat` as admi
 
 ### Changed
 
-- **Update all apps** (winget) starts right away: it no longer creates a System Restore point first, in the terminal and in the graphical interface. The JSON backup with the list of installed apps is still saved. Tweaks, services, DNS and every other change still create the restore point.
+- **Update all apps** (winget) starts right away, in the terminal and in the graphical interface: no confirmation and no System Restore point first. The JSON backup with the list of installed apps is still saved. Tweaks, services, DNS and every other change still create the restore point.
 
 ### Notes
 
 - Copies of 1.0.7.1 and 1.0.7.2 see this version in their update check.
+- Coming next: **1.2 — Full GUI Release**, estimated for **November 8, 2026**.
 - Full history in the [CHANGELOG](https://github.com/eperez98/Winnow/blob/main/CHANGELOG.md).
