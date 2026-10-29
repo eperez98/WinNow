@@ -5,8 +5,7 @@
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (release candidate).</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/terminal-1.0.7.1%20Stable%20Release-10B981?style=flat-square"/>
-  <img src="https://img.shields.io/badge/GUI-1.0.7.2%20Release%20Candidate-0A84FF?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.0.7.3%20HotFix%20Update%20Fixer-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -25,14 +24,14 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 
 | Edition | Version | Status |
 |---|---|---|
-| Terminal | **1.0.7.1** | Stable Release |
-| Graphical interface | **1.0.7.2** | Release Candidate |
+| Terminal | **1.0.7.3** | HotFix Update Fixer |
+| Graphical interface | **1.0.7.3** | HotFix Update Fixer |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
-> The **terminal edition (1.0.7.1 Stable Release) is the reference and the most tested one**; the graphical
-> interface (1.0.7.2 Release Candidate) runs on the same engine. The window has a button that opens the terminal.
+> The **terminal edition is the reference and the most tested one**; the graphical interface runs on the same
+> engine. Both are at 1.0.7.3. The window has a button that opens the terminal.
 
 ## Quick start
 
@@ -78,7 +77,7 @@ Or from a terminal in that folder:
   **Check for this tool updates** button in the GUI, which then reads **No updates available** or **Update available**
   (click it to see the changelog and update); `-NoUpdateCheck` turns the startup check off.
 
-## Graphical interface (1.0.7.2 Release Candidate)
+## Graphical interface
 
 A modern, translucent and flat window in the Windows 11 / iOS style: on Windows 11 22H2 or later the background is
 the blurred acrylic backdrop of Windows (a solid colour on older builds), with frosted cards, rounded corners and a
@@ -185,7 +184,7 @@ show the compact `\/\/. winnow` mark in the header.
 | **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
 | **Updates** | Checks GitHub at every start; shows the new version and its changelog; update now, keep the current version, or skip that version |
 | **Desktop shortcut** | Offered on the first start: Winnow logo on the desktop that opens the local copy directly |
-| **Graphical interface** | 1.0.7.2 Release Candidate: translucent light / dark window with every module above, EN / ES switch, page search bar, update status (`G` in the main menu, or `-GUI`) |
+| **Graphical interface** | Translucent light / dark window with every module above, EN / ES switch, page search bar, update status (`G` in the main menu, or `-GUI`) |
 
 ### Safety
 

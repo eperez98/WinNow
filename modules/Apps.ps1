@@ -194,7 +194,7 @@ function Show-WNAppsMenu {
             'installed' { $set = Get-WNInstalledAppIds; Show-WNAppList -Title (T 'apps.installedTitle') -Apps @($apps | Where-Object { $set.Contains($_.Winget) }) }
             'upgrade' {
                 Write-WNHeader (T 'apps.upgradeTitle')
-                if ((Test-WNCanChange) -and (Read-WNConfirm (T 'apps.upgradeAsk') -DefaultYes) -and (Start-WNChange -Label 'upgrade all apps' -Apps)) {
+                if ((Test-WNCanChange) -and (Read-WNConfirm (T 'apps.upgradeAsk') -DefaultYes) -and (Start-WNChange -Label 'upgrade all apps' -Apps -SkipRestorePoint)) {
                     [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent'))
                     [void](Get-WNInstalledAppIds -Refresh)
                 }

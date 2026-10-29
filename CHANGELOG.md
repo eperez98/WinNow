@@ -9,6 +9,16 @@ All notable changes to Winnow are listed here. The format follows
 - Graphical interface: leave preview, per-step progress bars.
 - Shorter launch URL for the one-line installer.
 
+## [1.0.7.3] - 2026-10-29 - HotFix Update Fixer
+
+The terminal edition and the graphical interface are both **1.0.7.3 HotFix Update Fixer**.
+
+### Changed
+- **Update all apps** (winget) no longer creates a System Restore point first, in the terminal and in the
+  graphical interface. Creating one could take minutes, and winget upgrades are not something a restore point
+  undoes. The JSON backup with the list of installed apps is still saved. Tweaks, services, DNS and every other
+  change still create the restore point as before.
+
 ## [1.0.7.2] - 2026-10-28 - GUI Release Candidate
 
 Only the graphical interface changes. The terminal edition stays at **1.0.7.1 Stable Release**; the graphical
@@ -138,7 +148,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.2...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.3...HEAD
+[1.0.7.3]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.3
 [1.0.7.2]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.2
 [1.0.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.1
 [1.0.5]: https://github.com/eperez98/Winnow/releases/tag/v1.0.5

@@ -313,10 +313,12 @@ function Start-WNChange {
         [string[]]$Services = @(),
         [switch]$Dns,
         [switch]$Apps,
-        [string[]]$Items = @()
+        [string[]]$Items = @(),
+        [switch]$SkipRestorePoint
     )
     if (-not (Test-WNCanChange)) { return $false }
-    if (-not (Confirm-WNRestorePoint)) { return $false }
+    # App upgrades skip it: creating one takes minutes and winget changes nothing a restore point would undo
+    if (-not $SkipRestorePoint -and -not (Confirm-WNRestorePoint)) { return $false }
     $file = New-WNBackup -Label $Label -Registry $Registry -Services $Services -Dns:$Dns -Apps:$Apps -Items $Items
     if (-not $file -and -not $WN.Yes) { return (Read-WNConfirm (T 'bk.continueWithout')) }
     return $true

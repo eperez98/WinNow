@@ -722,7 +722,7 @@ function Build-WNGuiApps {
             Start-WNGuiJob -Label (T 'apps.upgradeTitle') -Arguments @(, $WN.DryRun) -Script {
                 param($dry)
                 $WN.DryRun = $dry
-                if (Start-WNChange -Label 'upgrade all apps' -Apps) { [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent')) }
+                if (Start-WNChange -Label 'upgrade all apps' -Apps -SkipRestorePoint) { [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent')) }
             }.ToString() -OnDone { Update-WNGuiInstalled }
             return
         }
