@@ -38,21 +38,13 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 Open **PowerShell** (or Windows Terminal) and run:
 
 ```powershell
-irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex
+irm eperez98.github.io/WinNow | iex
 ```
 
 It downloads the latest release to `%TEMP%\Winnow-app` and starts it (asking for administrator rights).
-The first screen asks for the language (English / Español) before showing any option. Nothing is installed. To explore first without changing anything (simulation mode, no admin needed):
-
-```powershell
-& ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -DryRun
-```
-
-To open the **graphical interface** (release candidate) instead of the terminal menus:
-
-```powershell
-& ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -GUI
-```
+The first screen asks for the language (English / Español), the second one whether to use the **Terminal** or the
+**Graphical interface (GUI) (Preview)**. Nothing is installed. To explore first without changing anything, turn on
+simulation mode with `M` in the main menu (or the simulation switch in the window).
 
 **Offline / manual:** download `Winnow.zip` from [Releases](https://github.com/eperez98/Winnow/releases/latest),
 extract it, right-click `Launch.bat` -> *Run as administrator* (or double-click `Launch-GUI.bat` for the window).
@@ -62,7 +54,8 @@ Or from a terminal in that folder:
 .\Winnow.ps1            # interactive menu (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
 .\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
-.\Winnow.ps1 -GUI      # graphical interface (release candidate)
+.\Winnow.ps1 -GUI      # graphical interface (preview), without the Terminal / GUI screen
+.\Winnow.ps1 -Terminal # terminal menus, without the Terminal / GUI screen
 ```
 
 ### Desktop shortcut and updates

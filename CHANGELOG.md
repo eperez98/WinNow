@@ -14,6 +14,14 @@ All notable changes to Winnow are listed here. The format follows
 
 The terminal edition and the graphical interface are both **1.0.8 Update Fixer**.
 
+### Added
+- **Terminal or GUI on every start.** After the language, the first screen asks how to use Winnow: **Terminal**
+  (keyboard menus) or **Graphical interface (GUI) (Preview)**. The last choice is highlighted first. `-Terminal`
+  and `-GUI` skip the question; `Launch-GUI.bat`, the terminal button in the window and restarts after an update
+  skip it too.
+- **Shorter one-line command:** `irm eperez98.github.io/WinNow | iex`. It runs the launcher of the latest release, like the old
+  `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`, which keeps working.
+
 ### Fixed
 - **Updating from the graphical interface works again.** From 1.0.7.1 to 1.0.7.3 the window kept the logo files
   open, so the update stopped with "The process cannot access the file ... Winnow_icon_128.png" and only the

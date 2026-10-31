@@ -413,3 +413,12 @@ function Show-WNText {
     }
     Wait-WNKey
 }
+
+function Show-WNModePicker {
+    # Asked on every interactive start, after the language; the last choice is highlighted first
+    $modes = if ((Get-WNSettings).Mode -eq 'gui') { @('gui', 'terminal') } else { @('terminal', 'gui') }
+    $items = @($modes | ForEach-Object { @{ Label = (T "mode.$_"); Value = $_; Hint = (T "mode.$($_)Hint") } })
+    $choice = Show-WNMenu -Title (T 'mode.title') -Subtitle (T 'mode.subtitle') -Items $items -BackLabel (T 'lang.exit') -Banner
+    if ($choice) { Save-WNSetting 'Mode' $choice }
+    return $choice
+}

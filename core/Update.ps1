@@ -110,7 +110,7 @@ function Restart-WNApp {
     # Starts the (updated) copy again with the same language and mode; this process should exit after it
     param([switch]$Gui)
     $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Lang', $WN.Lang, '-NoUpdateCheck')
-    if ($Gui) { $a = @('-STA') + $a + '-GUI' }
+    if ($Gui) { $a = @('-STA') + $a + '-GUI' } else { $a += '-Terminal' }
     if ($WN.DryRun) { $a += '-DryRun' }
     Start-Process powershell.exe -ArgumentList $a -WindowStyle $(if ($Gui) { 'Minimized' } else { 'Normal' })
 }

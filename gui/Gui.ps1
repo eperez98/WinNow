@@ -1432,7 +1432,7 @@ function Show-WNGui {
     })
     $ctl.ThemeBtn.Add_Click({ Set-WNGuiTheme $(if ($script:WNGui.ThemeName -eq 'Dark') { 'Light' } else { 'Dark' }) -Save })
     $ctl.TerminalBtn.Add_Click({
-        $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Lang', $WN.Lang)
+        $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Terminal', '-Lang', $WN.Lang)
         if ($WN.DryRun) { $a += '-DryRun' }
         Start-Process powershell.exe -ArgumentList $a
     })

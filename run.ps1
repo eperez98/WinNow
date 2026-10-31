@@ -1,11 +1,10 @@
 <#
     Winnow one-line launcher.
 
-        irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex
+        irm eperez98.github.io/WinNow | iex
 
-    With options (e.g. simulation mode):
-
-        & ([scriptblock]::Create((irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1))) -DryRun
+    That page (the gh-pages branch) runs this file from the latest release. Options still work when it is run
+    directly: & ([scriptblock]::Create((irm https://github.com/eperez98/WinNow/releases/latest/download/run.ps1))) -DryRun
 
     Downloads the latest release zip to %TEMP%\Winnow-app, then starts Winnow.ps1
     (elevated when needed). Nothing is installed.

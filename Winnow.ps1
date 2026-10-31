@@ -39,7 +39,10 @@
     Interface language: en or es. Without it the interactive app asks at startup.
 
 .PARAMETER GUI
-    Open the graphical interface (preview) instead of the terminal menus.
+    Open the graphical interface (preview) without asking for the mode.
+
+.PARAMETER Terminal
+    Use the terminal menus without asking for the mode.
 
 .PARAMETER NoUpdateCheck
     Do not ask GitHub for a newer release at startup.
@@ -66,6 +69,7 @@ param(
     [switch]$NoRestorePoint,
     [ValidateSet('en', 'es')][string]$Lang,
     [switch]$GUI,
+    [switch]$Terminal,
     [switch]$NoUpdateCheck,
     [switch]$NoElevate
 )
@@ -176,6 +180,18 @@ if (-not $Lang) {
     if (-not $picked) { Set-WNCursor $true; exit 0 }
     Set-WNLanguage $picked
 }
+function Start-WNGuiProcess {
+    # The window runs in its own STA process, with the same language and mode as this console
+    $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate', '-Lang', $WN.Lang)
+    if ($WN.DryRun) { $a += '-DryRun' }
+    Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+}
+# Every start asks for the mode, unless -Terminal (or -GUI, handled above) already says it
+if (-not $Terminal) {
+    $mode = Show-WNModePicker
+    if (-not $mode) { Set-WNCursor $true; exit 0 }
+    if ($mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
+}
 # Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut.
 if (-not $NoUpdateCheck -and (Invoke-WNUpdateCheck)) { Restart-WNApp; exit 0 }
 if (-not (Get-WNSettings).ShortcutAsked) { Show-WNShortcutOffer }
@@ -231,9 +247,7 @@ try {
             'hosts'    { Show-WNHostsMenu }
             'backups'  { Show-WNBackupsMenu }
             'gui' {
-                $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate', '-Lang', $WN.Lang)
-                if ($WN.DryRun) { $a += '-DryRun' }
-                Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+                Start-WNGuiProcess
                 Write-WNStatus (T 'main.guiOpened') Ok
             }
             'update'   { if (Invoke-WNUpdateCheck -Manual) { Restart-WNApp; exit 0 } }
