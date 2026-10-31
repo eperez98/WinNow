@@ -6,8 +6,19 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.2 — Full GUI Release**, estimated for **November 8, 2026**: the graphical interface leaves preview, with per-step progress bars.
+- **Full GUI Release**: first planned as 1.2 for November 8, 2026, now **postponed to 1.5, with no release date yet**.
+  The graphical interface leaves preview, with per-step progress bars.
 - Shorter launch URL for the one-line installer.
+
+## [1.0.8] - 2026-10-31 - Update Fixer
+
+The terminal edition and the graphical interface are both **1.0.8 Update Fixer**.
+
+### Fixed
+- **Updating from the graphical interface works again.** From 1.0.7.1 to 1.0.7.3 the window kept the logo files
+  open, so the update stopped with "The process cannot access the file ... Winnow_icon_128.png" and only the
+  terminal could update. The window now reads its images into memory, and the logos are renamed
+  (`LOGO/Winnow_128.png`, `LOGO/Winnow_512.png`) so the 1.0.7.x windows can install this release too.
 
 ## [1.0.7.3] - 2026-10-29 - HotFix Update Fixer
 
@@ -149,7 +160,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.7.3...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.8...HEAD
+[1.0.8]: https://github.com/eperez98/Winnow/releases/tag/v1.0.8
 [1.0.7.3]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.3
 [1.0.7.2]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.2
 [1.0.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.1

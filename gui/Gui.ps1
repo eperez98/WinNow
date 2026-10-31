@@ -364,12 +364,26 @@ function New-WNGuiSegments {
     return $p
 }
 
-function New-WNGuiImage {
-    param([string]$File, [double]$Size, [double]$Opacity = 1)
+function Get-WNGuiBitmap {
+    # Read into memory (OnLoad): a file kept open would block the updater from replacing it
+    param([string]$File)
     $path = Join-Path $WN.Root "LOGO\$File"
     if (-not (Test-Path $path)) { return $null }
+    $b = New-Object Windows.Media.Imaging.BitmapImage
+    $b.BeginInit()
+    $b.CacheOption = 'OnLoad'
+    $b.UriSource = New-Object Uri $path
+    $b.EndInit()
+    $b.Freeze()
+    return $b
+}
+
+function New-WNGuiImage {
+    param([string]$File, [double]$Size, [double]$Opacity = 1)
+    $src = Get-WNGuiBitmap $File
+    if (-not $src) { return $null }
     $i = New-Object Windows.Controls.Image
-    $i.Source = New-Object Windows.Media.Imaging.BitmapImage (New-Object Uri $path)
+    $i.Source = $src
     $i.Width = $Size; $i.Height = $Size
     $i.Opacity = $Opacity
     [Windows.Media.RenderOptions]::SetBitmapScalingMode($i, 'HighQuality')
@@ -1186,7 +1200,7 @@ function Build-WNGuiHome {
     $hero.Height = 300
     $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#FF0A84FF', '#FF5E5CE6', '#FFBF5AF2') -Diagonal)
     $heroGrid = New-Object Windows.Controls.Grid
-    $mark = New-WNGuiImage 'Winnow_icon_512.png' 230 0.28
+    $mark = New-WNGuiImage 'Winnow_512.png' 230 0.28
     if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,40,0'; [void]$heroGrid.Children.Add($mark) }
     $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
     $chips.VerticalAlignment = 'Top'
@@ -1386,9 +1400,8 @@ function Show-WNGui {
     $window.Title = "Winnow $($WN.GuiVersion) $($WN.GuiChannel)"
     $window.Height = [Math]::Min(860, [Windows.SystemParameters]::WorkArea.Height - 20)
     $window.Width = [Math]::Min(1320, [Windows.SystemParameters]::WorkArea.Width - 20)
-    $icon = Join-Path $WN.Root 'LOGO\Winnow_icon_128.png'
-    if (Test-Path $icon) {
-        $bmp = New-Object Windows.Media.Imaging.BitmapImage (New-Object Uri $icon)
+    $bmp = Get-WNGuiBitmap 'Winnow_128.png'
+    if ($bmp) {
         $window.Icon = $bmp
         $ctl.Logo.Source = $bmp
         $ctl.Avatar.Source = $bmp
