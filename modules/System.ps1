@@ -202,3 +202,24 @@ function Show-WNBackupsMenu {
         }
     }
 }
+
+function Show-WNAbout {
+    # Same content as the About page of the window
+    $lines = @("$($WN.Name) $($WN.Version) $($WN.Channel) - $($WN.Author)", (T 'tagline'), $WN.Repo, '')
+    foreach ($s in 'what', 'core', 'releases', 'future') {
+        $lines += (T "about.$($s)Title").ToUpper()
+        if ($s -eq 'future') { $lines += "  $(T 'about.futureNote')" }
+        # Wrap at whole words to the console width, continuation lines indented under the text
+        $width = (Get-WNConsoleSize).Width - 8
+        foreach ($para in (T "about.$s") -split "`n") {
+            $line = ''
+            foreach ($word in $para -split ' ') {
+                if ($line -and ($line.Length + 1 + $word.Length) -gt $width) { $lines += "  $line"; $line = "  $word" }
+                else { $line = if ($line) { "$line $word" } else { $word } }
+            }
+            $lines += "  $line"
+        }
+        $lines += ''
+    }
+    Show-WNText (T 'about.title') $lines
+}

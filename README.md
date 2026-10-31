@@ -91,6 +91,7 @@ Every terminal module is in the window, grouped like the terminal main menu:
 | **Maintain** | Repair & maintenance, Windows Update (status, recommended, defaults, pause, resume), Backups & restore |
 | **Network** | DNS (current servers and every provider), Hosts file (telemetry / Adobe blocks, active entries) |
 | **System** | System information, Logs |
+| **Winnow** | About Winnow (what it is, its core, every release, and 1.5 on the way) |
 
 It uses the same engine as the terminal, so every change still gets a restore point, a backup, real undo and
 simulation mode. Long tasks run in the background and stream their output into the log at the bottom.
@@ -140,7 +141,7 @@ The **Standard** preset is exactly the recommended set; **Heavy** adds a selecti
 
 The main menu is grouped like the GUI sidebar: **Optimize** (1-4), **Apps** (5-6), **Maintain** (7-9),
 **Network** (`D` DNS, `H` hosts), **System** (`Y` information, `L` logs) and **Winnow** (`G` graphical interface,
-`U` check for updates, `K` desktop shortcut, `I` language, `M` simulation mode).
+`A` about Winnow, `U` check for updates, `K` desktop shortcut, `I` language, `M` simulation mode).
 
 The full logo banner appears on the main menu when the terminal is at least 40 rows tall; smaller windows
 show the compact `\/\/. winnow` mark in the header.

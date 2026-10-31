@@ -21,6 +21,9 @@ The terminal edition and the graphical interface are both **1.0.8 Update Fixer**
   skip it too.
 - **Shorter one-line command:** `irm eperez98.github.io/WinNow | iex`. It runs the launcher of the latest release, like the old
   `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`, which keeps working.
+- **About Winnow**: `A` in the terminal main menu and Winnow > About Winnow in the window. What Winnow is, how
+  its core works, every published release in one line, and what is on the way: **1.5 Full GUI Release** with
+  all its upcoming changes. More changes may be added and others removed.
 
 ### Fixed
 - **Updating from the graphical interface works again.** From 1.0.7.1 to 1.0.7.3 the window kept the logo files

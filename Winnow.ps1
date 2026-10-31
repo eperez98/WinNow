@@ -221,6 +221,7 @@ try {
             @{ Label = (T 'main.logs'); Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
             @{ Separator = $true; Label = (T 'main.secTool') }
             @{ Label = (T 'main.gui'); Value = 'gui'; Hint = (T 'main.guiHint'); Hotkey = 'g' }
+            @{ Label = (T 'about.title'); Value = 'about'; Hint = (T 'about.subtitle'); Hotkey = 'a' }
             @{ Label = (T 'main.update'); Value = 'update'; Hint = (T 'main.updateHint'); Hotkey = 'u' }
             @{ Label = (T 'main.shortcut'); Value = 'shortcut'; Hint = (T 'main.shortcutHint'); Hotkey = 'k' }
             @{ Label = (T 'lang.menu'); Value = 'lang'; Hint = (T 'lang.menuHint'); Hotkey = 'i' }
@@ -254,6 +255,7 @@ try {
             'shortcut' { Write-WNHeader (T 'main.shortcut'); [void](New-WNShortcut); Save-WNSetting 'ShortcutAsked' $true; Wait-WNKey }
             'info'     { Show-WNSystemInfo }
             'logs'     { Show-WNLogsMenu }
+            'about'    { Show-WNAbout }
             'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }
             'sim' {
                 if ($WN.DryRun -and -not $WN.IsAdmin) {

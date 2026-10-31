@@ -398,7 +398,7 @@ function Show-WNCheckListFallback {
 
 function Show-WNText {
     # Paged display of text lines (logs, lists)
-    param([Parameter(Mandatory)][string]$Title, [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$Lines)
+    param([Parameter(Mandatory)][string]$Title, [Parameter(Mandatory)][AllowEmptyCollection()][AllowEmptyString()][string[]]$Lines)
     Write-WNHeader $Title
     if ($Lines.Count -eq 0) { Write-Host ('  ' + (T 'text.empty')) -ForegroundColor DarkGray; Wait-WNKey; return }
     $pageSize = [Math]::Max(10, (Get-WNConsoleSize).Height - 10)

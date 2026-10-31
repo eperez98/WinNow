@@ -69,6 +69,7 @@ $script:WNGuiArt = @{
     'main.secMaintain' = @('#FF30D158', '#FF14A34A')
     'main.secNetwork'  = @('#FF40A9FF', '#FF0A6CFF')
     'main.secSystem'   = @('#FF98989D', '#FF636366')
+    'main.secTool'     = @('#FF0A84FF', '#FF5E5CE6')
 }
 
 #region Helpers
@@ -1149,6 +1150,49 @@ function Build-WNGuiLogs {
     $p.OnShow = { & $script:WNGui.LogShow }
 }
 
+# ---- About
+function New-WNGuiAboutLines {
+    # One text line per entry of a multi-line string; "version - text" lines get the version in bold
+    param([string]$Key)
+    $rows = foreach ($line in (T $Key) -split "`n") {
+        $t = New-WNGuiText '' -Wrap -Size 12.5 -Margin '0,4,0,0'
+        $head, $rest = $line -split ' - ', 2
+        if ($rest) {
+            $b = New-Object Windows.Documents.Run $head
+            $b.FontWeight = 'SemiBold'
+            $t.Inlines.Add($b)
+            $t.Inlines.Add((New-Object Windows.Documents.Run "  $rest"))
+        } else { $t.Text = $line }
+        $t
+    }
+    return (New-WNGuiPanel -Orientation Vertical -Children @($rows))
+}
+
+function Build-WNGuiAbout {
+    param($p)
+    $logo = New-WNGuiImage 'Winnow_128.png' 64
+    if ($logo) { $logo.Margin = '0,0,18,0' }
+    $info = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiText $WN.Name -Bold -Size 24),
+        (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim),
+        (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'))
+    $info.VerticalAlignment = 'Center'
+    $repo = New-WNGuiButton (T 'about.repo') -Icon 'E71B' -Always -OnClick { Start-Process $WN.Repo }
+    $repo.VerticalAlignment = 'Center'
+    [Windows.Controls.DockPanel]::SetDock($repo, 'Right')
+    $head = New-Object Windows.Controls.DockPanel
+    [void]$head.Children.Add($repo)
+    [void]$head.Children.Add((New-WNGuiPanel -Children @($logo, $info)))
+    $stack = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiGlass $head),
+        (New-WNGuiCard -Title (T 'about.whatTitle') -Text (T 'about.what') -Icon 'E946'),
+        (New-WNGuiCard -Title (T 'about.coreTitle') -Icon 'E950' -Extra (New-WNGuiAboutLines 'about.core')),
+        (New-WNGuiCard -Title (T 'about.releasesTitle') -Icon 'E81C' -Extra (New-WNGuiAboutLines 'about.releases')),
+        (New-WNGuiCard -Title (T 'about.futureTitle') -Text (T 'about.futureNote') -Icon 'E82F' -Extra (New-WNGuiAboutLines 'about.future'))
+    )
+    $p.Body = New-WNGuiScroll $stack
+}
+
 # ---- Home: banner, start-here card, tool tiles, this PC
 function New-WNGuiChip {
     param([string]$Text)
@@ -1475,6 +1519,7 @@ function Show-WNGui {
     Register-WNGuiPage 'hosts' 'E72E' 'main.secNetwork' (T 'main.hosts') (T 'main.hostsHint') ${function:Build-WNGuiHosts} -Hint (T 'main.hostsHint')
     Register-WNGuiPage 'system' 'E7F4' 'main.secSystem' (T 'main.info') (T 'main.infoHint') ${function:Build-WNGuiSystem} -Hint (T 'main.infoHint')
     Register-WNGuiPage 'logs' 'E8A5' 'main.secSystem' (T 'main.logs') $WN.LogFile ${function:Build-WNGuiLogs} -Hint (T 'logs.errorsHint')
+    Register-WNGuiPage 'about' 'E946' 'main.secTool' (T 'about.title') (T 'about.subtitle') ${function:Build-WNGuiAbout} -Hint (T 'about.subtitle')
 
     $section = $null
     foreach ($pg in $g.Pages.Values) {
