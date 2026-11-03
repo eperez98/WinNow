@@ -14,10 +14,10 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'Winnow'
-        Version          = '1.0.8'
-        Channel          = 'Update Fixer'
-        GuiVersion       = '1.0.8'
-        GuiChannel       = 'Update Fixer'
+        Version          = '1.0.9'
+        Channel          = 'Selection Fix'
+        GuiVersion       = '1.0.9'
+        GuiChannel       = 'Selection Fix'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Root             = $Root

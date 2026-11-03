@@ -6,9 +6,24 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **Full GUI Release**: first planned as 1.2 for November 8, 2026, now **postponed to 1.5, with no release date yet**.
-  The graphical interface leaves preview, with per-step progress bars.
-- Shorter launch URL for the one-line installer.
+- **1.1 Full GUI Release**: the window leaves preview; step-by-step progress bar; list of available upgrades.
+- **1.1.5 Restore Point Choice**: skip the restore point if you want.
+- **1.2 Exit & Launcher Update**: desktop shortcut question on exit; one launcher.
+- **1.2.2 Secure Update**: update panel with Restart now or Later; downloads checked before they are installed; admin-only data folder.
+- **1.5 Stable Release**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
+- More changes may be added and others removed.
+
+## [1.0.9] - 2026-11-03 - Selection Fix
+
+The terminal edition and the graphical interface are both **1.0.9 Selection Fix**.
+
+### Fixed
+- Graphical interface: with two or more rows selected, **Uninstall programs**, **Install / Uninstall selected** in the
+  App Manager and **Enable / Disable** in the Startup Manager sent one empty item named "Item" instead of the
+  selected entries ("Uninstall of Item ended with code Cannot bind argument to parameter 'Line'").
+
+### Changed
+- Uninstalls (apps, programs, Store apps) print `[i/N]` before each item, like installs and tweaks.
 
 ## [1.0.8] - 2026-10-31 - Update Fixer
 
@@ -171,7 +186,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.8...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.9...HEAD
+[1.0.9]: https://github.com/eperez98/Winnow/releases/tag/v1.0.9
 [1.0.8]: https://github.com/eperez98/Winnow/releases/tag/v1.0.8
 [1.0.7.3]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.3
 [1.0.7.2]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.2

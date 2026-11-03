@@ -649,7 +649,7 @@ function Build-WNGuiStartup {
         $sel = Get-WNGuiSelected $script:WNGui.StartupList.Rows
         if (-not $sel.Count) { return }
         if (-not (Confirm-WNGui (T $(if ($enable) { 'gui.confirmEnable' } else { 'gui.confirmDisable' }) $sel.Count))) { return }
-        Start-WNGuiJob -Label (T 'st.title') -Arguments @($WN.DryRun, @($sel.Item), $enable) -Script {
+        Start-WNGuiJob -Label (T 'st.title') -Arguments @($WN.DryRun, @($sel | ForEach-Object Item), $enable) -Script {
             param($dry, $entries, $enable)
             $WN.DryRun = $dry
             $regs = @($entries | ForEach-Object { [pscustomobject]@{ Path = $_.ApprovedPath; Name = $_.Name } })
@@ -744,7 +744,7 @@ function Build-WNGuiApps {
         if (-not $sel.Count) { return }
         $key = if ($mode -eq 'install') { 'gui.confirmInstall' } else { 'gui.confirmUninstallApps' }
         if (-not (Confirm-WNGui (T $key $sel.Count))) { return }
-        Start-WNGuiJob -Label (T $(if ($mode -eq 'install') { 'gui.install' } else { 'gui.uninstallApps' })) -Arguments @($WN.DryRun, @($sel.Item), $mode) -Script {
+        Start-WNGuiJob -Label (T $(if ($mode -eq 'install') { 'gui.install' } else { 'gui.uninstallApps' })) -Arguments @($WN.DryRun, @($sel | ForEach-Object Item), $mode) -Script {
             param($dry, $apps, $mode)
             $WN.DryRun = $dry
             if ($mode -eq 'install') { Install-WNApps -Apps @($apps) } else { Uninstall-WNApps -Apps @($apps) }
@@ -804,7 +804,7 @@ function Build-WNGuiUninstall {
             $msg = T 'un.confirmTitle' $sel.Count
             if (-not $store -and ($sel | Where-Object { -not $_.Item.Silent })) { $msg += "`n`n" + (T 'un.wizardNote') }
             if (-not (Confirm-WNGui $msg -Danger)) { return }
-            Start-WNGuiJob -Label (T 'un.title') -Arguments @($WN.DryRun, @($sel.Item), $store) -Script {
+            Start-WNGuiJob -Label (T 'un.title') -Arguments @($WN.DryRun, @($sel | ForEach-Object Item), $store) -Script {
                 param($dry, $items, $store)
                 $WN.DryRun = $dry
                 if ($store) { Uninstall-WNStoreApps -Packages @($items) } else { Uninstall-WNPrograms -Programs @($items) }

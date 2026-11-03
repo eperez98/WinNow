@@ -82,9 +82,11 @@ function Split-WNCommandLine {
 function Uninstall-WNPrograms {
     param([Parameter(Mandatory)][object[]]$Programs)
     if (-not (Start-WNChange -Label 'uninstall programs' -Apps -Items @($Programs | ForEach-Object Name))) { return }
-    $ok = 0
+    $ok = 0; $i = 0
     foreach ($pr in $Programs) {
+        $i++
         Write-Host ''
+        Write-Host ("  [{0}/{1}] {2}" -f $i, $Programs.Count, $pr.Name) -ForegroundColor White
         if ($WN.DryRun) {
             $how = if ($pr.MsiCode) { "msiexec /x $($pr.MsiCode) /qn" } elseif ($pr.Quiet) { $pr.Quiet } else { $pr.Command }
             Write-WNStatus (T 'un.dry' $pr.Name $how) Dry 'Uninstall'
@@ -119,8 +121,10 @@ function Uninstall-WNPrograms {
 function Uninstall-WNStoreApps {
     param([Parameter(Mandatory)][object[]]$Packages)
     if (-not (Start-WNChange -Label 'uninstall store apps' -Apps -Items @($Packages | ForEach-Object Name))) { return }
-    $ok = 0
+    $ok = 0; $i = 0
     foreach ($p in $Packages) {
+        $i++
+        Write-Host ("  [{0}/{1}] {2}" -f $i, $Packages.Count, $p.Name) -ForegroundColor White
         if ($WN.DryRun) { Write-WNStatus (T 'appx.dry' $p.Name $p.Version) Dry 'Uninstall'; $ok++; continue }
         try {
             Remove-AppxPackage -Package $p.PackageFullName -ErrorAction Stop

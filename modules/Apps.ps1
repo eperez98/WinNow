@@ -81,9 +81,11 @@ function Uninstall-WNApps {
     param([Parameter(Mandatory)][object[]]$Apps)
     if (-not (Start-WNChange -Label 'uninstall apps' -Apps -Items @($Apps | ForEach-Object Winget))) { return }
     $installed = Get-WNInstalledAppIds
+    $i = 0
     foreach ($a in $Apps) {
+        $i++
         Write-Host ''
-        Write-Host "  $($a.Name)" -ForegroundColor White
+        Write-Host ("  [{0}/{1}] {2}" -f $i, $Apps.Count, $a.Name) -ForegroundColor White
         if (-not $installed.Contains($a.Winget)) { Write-WNStatus (T 'apps.notInstalled' $a.Name) Skip 'Apps'; continue }
         $code = Invoke-WNWinget @('uninstall', '--id', $a.Winget, '-e', '--silent')
         if ($code -eq 0) { Write-WNStatus (T 'apps.uninstalled' $a.Name) Ok 'Apps'; if (-not $WN.DryRun) { [void]$installed.Remove($a.Winget) } }

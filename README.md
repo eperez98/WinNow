@@ -5,7 +5,7 @@
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (release candidate).</b></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.8%20Update%20Fixer-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.0.9%20Selection%20Fix-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -24,14 +24,14 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 
 | Edition | Version | Status |
 |---|---|---|
-| Terminal | **1.0.8** | Update Fixer |
-| Graphical interface | **1.0.8** | Update Fixer (full GUI release: postponed from 1.2 to **1.5**, no release date yet) |
+| Terminal | **1.0.9** | Selection Fix |
+| Graphical interface | **1.0.9** | Selection Fix (preview; full GUI release: **1.1**, on the way) |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
 > The **terminal edition is the reference and the most tested one**; the graphical interface runs on the same
-> engine. Both are at 1.0.8. The window has a button that opens the terminal.
+> engine. Both are at 1.0.9. The window has a button that opens the terminal.
 
 ## Quick start
 
