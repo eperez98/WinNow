@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="LOGO/Winnow_logo.png" width="560" alt="Winnow - sift Windows down to what matters"/>
+  <img src="LOGO/Winnow_logo_patria.png" width="560" alt="WinNow - sift Windows down to what matters (Mes de la Patria, Panamá)"/>
 </p>
 
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (release candidate).</b></p>
