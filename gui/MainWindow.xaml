@@ -22,6 +22,8 @@
     <SolidColorBrush x:Key="AccentText" Color="#FF64B5FF"/>
     <SolidColorBrush x:Key="Warn" Color="#FFFFB340"/>
     <SolidColorBrush x:Key="WarnBg" Color="#33FF9F0A"/>
+    <SolidColorBrush x:Key="IconBg" Color="#1AFFFFFF"/>
+    <SolidColorBrush x:Key="IconFg" Color="#FFFFFFFF"/>
     <FontFamily x:Key="Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <!-- Card: translucent, flat, rounded -->
@@ -469,12 +471,12 @@
           </Border>
           <Button x:Name="ShortcutBtn" Style="{StaticResource RoundBtn}" Content="&#xE71B;" ToolTip="@@main.shortcut@@" AutomationProperties.Name="@@main.shortcut@@"/>
           <Button x:Name="TerminalBtn" Style="{StaticResource RoundBtn}" Content="&#xE756;" ToolTip="@@gui.terminal@@" AutomationProperties.Name="@@gui.terminal@@"/>
-          <Border CornerRadius="20" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="5,3,14,3" Margin="10,0,0,0">
+          <Border x:Name="IdentityPill" Cursor="Hand" ToolTip="@@about.title@@" CornerRadius="20" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="4,2,10,2" Margin="8,0,0,0">
             <StackPanel Orientation="Horizontal">
-              <Image x:Name="Avatar" Width="28" Height="28" RenderOptions.BitmapScalingMode="HighQuality"/>
+              <Image x:Name="Avatar" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
               <StackPanel Margin="9,0,0,0" VerticalAlignment="Center">
-                <TextBlock x:Name="VersionText" FontSize="12.5" FontWeight="SemiBold"/>
-                <TextBlock x:Name="AdminText" FontSize="11" Foreground="{DynamicResource FgDim}"/>
+                <TextBlock x:Name="VersionText" FontSize="12" FontWeight="SemiBold"/>
+                <TextBlock x:Name="AdminText" FontSize="10.5" Foreground="{DynamicResource FgDim}"/>
               </StackPanel>
             </StackPanel>
           </Border>

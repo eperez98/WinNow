@@ -24,6 +24,14 @@ first planned as 1.2 for November 8, 2026.
   simulation mode.
 
 ### Changed
+- **Theme picker**: the theme button unfolds a panel inside the window that grows out of the button, and the
+  themes slide in one after the other, each with a swatch of its colours. A click outside it, Esc or a choice folds
+  it back.
+- **Minimal icons**: home tool icons are line glyphs on a quiet tile, white or black, and Panama blue on white
+  in mes patrio.
+- The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
+  About.
+- **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
 - "Preview" / "Release Candidate" labels removed from the window, menus and docs.
 - **Theme menu with mes patrio**: the theme button opens **Light**, **Dark** (the default logo and banner) and
   **Mes patrio**. November is Panama's patriotic month: mes patrio uses the Panama icon (window, taskbar, desktop

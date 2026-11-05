@@ -52,13 +52,13 @@ $script:WNGuiThemes = @{
     Dark  = @{
         Bg = '#FF1C1C1E'; GlassBg = '#80141416'; Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
         Selected = '#330A84FF'; Fg = '#FFFFFFFF'; FgDim = '#FFC7C7CC'; Accent = '#FF0A84FF'; AccentSolid = '#FF0A84FF'; AccentFg = '#FFFFFFFF'; AccentText = '#FF64B5FF'
-        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#1AFFFFFF'; IconFg = '#FFFFFFFF'
         Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
     }
     Light = @{
         Bg = '#FFF2F2F7'; GlassBg = '#99F2F2F7'; Pane = '#59FFFFFF'; Card = '#B3FFFFFF'; CardBorder = '#1A000000'; Hover = '#E6FFFFFF'
         Selected = '#1F007AFF'; Fg = '#FF1C1C1E'; FgDim = '#FF5C5C61'; Accent = '#FF0071E3'; AccentSolid = '#FF0071E3'; AccentFg = '#FFFFFFFF'; AccentText = '#FF0060C7'
-        Warn = '#FF8F5300'; WarnBg = '#26FF9500'
+        Warn = '#FF8F5300'; WarnBg = '#26FF9500'; IconBg = '#0D000000'; IconFg = '#FF1C1C1E'
         Badges = @{ Applied = '#2634C759|#FF1B7A36'; Partial = '#26FF9500|#FF8F5300'; Action = '#1F007AFF|#FF0058B8'; None = '#14000000|#FF3A3A3C'; Danger = '#26FF3B30|#FFB3261E' }
     }
     # Mes patrio (November, Panama): the acrylic tinted Panama navy, fading to deep red at the bottom
@@ -66,10 +66,11 @@ $script:WNGuiThemes = @{
         Bg = @('#FF0B2A52@0', '#FF0B2A52@0.6', '#FF4A1222@1'); GlassBg = @('#A60B2A52@0', '#A60B2A52@0.55', '#A64A1222@1')
         Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
         Selected = '#40D21034'; Fg = '#FFFFFFFF'; FgDim = '#FFD3DAE6'; Accent = '#FFD21034'; AccentSolid = '#FFD21034'; AccentFg = '#FFFFFFFF'; AccentText = '#FFFF8C99'
-        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#FFFFFFFF'; IconFg = '#FF005293'
         Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
     }
 }
+$script:WNGuiThemeNames = @('Light', 'Dark', 'Patria')
 # Tool icon colours per sidebar group (diagonal gradients, like app icons)
 $script:WNGuiArt = @{
     'main.secOptimize' = @('#FFFF9F0A', '#FFFF6B00')
@@ -1215,6 +1216,13 @@ function Build-WNGuiAbout {
     [Windows.Controls.DockPanel]::SetDock($repo, 'Right')
     $head = New-Object Windows.Controls.DockPanel
     [void]$head.Children.Add($repo)
+    # Support development: PayPal donation page
+    $donate = New-WNGuiButton (T 'about.donate') -Icon 'EB51' -Always -OnClick { Start-Process $WN.Donate }
+    $donate.ToolTip = T 'about.donateTip'
+    $donate.VerticalAlignment = 'Center'
+    $donate.Margin = '0,0,8,0'
+    [Windows.Controls.DockPanel]::SetDock($donate, 'Right')
+    [void]$head.Children.Add($donate)
     [void]$head.Children.Add((New-WNGuiPanel -Children @($logo, $info)))
     $stack = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiGlass $head),
@@ -1249,9 +1257,10 @@ function New-WNGuiTile {
     $squircle.Width = 44; $squircle.Height = 44
     $squircle.CornerRadius = 12
     $squircle.HorizontalAlignment = 'Left'
-    $squircle.Background = [Windows.Media.Brush](ConvertTo-WNBrush $script:WNGuiArt[$Page.Section] -Diagonal)
+    # Minimal line icon on a quiet tile, in the theme's icon colours (Panama blue on white for mes patrio)
+    $squircle.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'IconBg')
     $icon = New-WNGuiIcon $Page.Icon 21
-    $icon.Foreground = 'White'
+    $icon.SetResourceReference([Windows.Controls.TextBlock]::ForegroundProperty, 'IconFg')
     $icon.HorizontalAlignment = 'Center'
     $squircle.Child = $icon
     $b.Content = New-WNGuiPanel -Orientation Vertical -Children @(
@@ -1405,6 +1414,125 @@ function Build-WNGuiHome {
 #endregion
 
 #region Theme and updates
+# Theme picker: each theme's two colours for its swatch
+$script:WNGuiThemeSwatch = @{ Light = @('#FFF3F3F3', '#FF0071E3'); Dark = @('#FF1C1C1E', '#FF0A84FF'); Navidad = @('#FF10301F', '#FFC8102E'); Linux = @('#FF2B2B2B', '#FFE95420'); Patria = @('#FF0B2A52', '#FFD21034') }
+
+function Show-WNGuiThemeFlyout {
+    # Theme picker: a panel that unfolds from the theme button inside the window (no separate window); the options
+    # slide in one after the other. A click outside it, Esc or a choice folds it back.
+    $g = $script:WNGui
+    $root = $g.Window.FindName('Root')
+    if (-not $g.ThemeFly) {
+        $layer = New-Object Windows.Controls.Grid
+        $layer.Background = [Windows.Media.Brushes]::Transparent
+        $layer.Visibility = 'Collapsed'
+        [Windows.Controls.Grid]::SetColumnSpan($layer, 2)
+        $panel = New-Object Windows.Controls.Border
+        $panel.Width = 250
+        $panel.HorizontalAlignment = 'Left'
+        $panel.VerticalAlignment = 'Top'
+        $panel.CornerRadius = 10
+        $panel.BorderThickness = 1
+        $panel.Padding = '6'
+        $panel.SetResourceReference([Windows.Controls.Border]::BorderBrushProperty, 'CardBorder')
+        $panel.Effect = New-Object Windows.Media.Effects.DropShadowEffect -Property @{ BlurRadius = 24; ShadowDepth = 6; Opacity = 0.3; Direction = 270 }
+        $panel.RenderTransformOrigin = '1,0'
+        $scale = New-Object Windows.Media.ScaleTransform 1, 1
+        $panel.RenderTransform = $scale
+        $stack = New-Object Windows.Controls.StackPanel
+        $panel.Child = $stack
+        [void]$layer.Children.Add($panel)
+        $layer.Add_MouseLeftButtonDown({ param($s, $e) if ($e.OriginalSource -eq $s) { Hide-WNGuiThemeFlyout } })
+        $layer.Add_KeyDown({ param($s, $e) if ($e.Key -eq 'Escape') { Hide-WNGuiThemeFlyout; $e.Handled = $true } })
+        [void]$root.Children.Add($layer)
+        $style = [Windows.Markup.XamlReader]::Parse(@'
+<Style xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="Button">
+  <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+  <Setter Property="Cursor" Value="Hand"/>
+  <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+  <Setter Property="Template">
+    <Setter.Value>
+      <ControlTemplate TargetType="Button">
+        <Border x:Name="bd" CornerRadius="6" Background="Transparent" Padding="10,8"><ContentPresenter/></Border>
+        <ControlTemplate.Triggers>
+          <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+          <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+        </ControlTemplate.Triggers>
+      </ControlTemplate>
+    </Setter.Value>
+  </Setter>
+</Style>
+'@)
+        $g.ThemeFly = @{ Layer = $layer; Panel = $panel; Stack = $stack; Scale = $scale; Style = $style }
+    }
+    $f = $g.ThemeFly
+    if ($f.Layer.Visibility -eq 'Visible') { Hide-WNGuiThemeFlyout; return }
+    # Opaque in the current theme, its top-right corner under the button
+    $f.Panel.Background = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.ThemeName -eq 'Light') { '#FFF9F9FB' } else { '#FA26282C' }))
+    $btn = $g.Ctl.ThemeBtn
+    $pt = $btn.TranslatePoint((New-Object Windows.Point $btn.ActualWidth, ($btn.ActualHeight + 6)), $root)
+    $f.Panel.Margin = "$([Math]::Max(8, $pt.X - 250)),$($pt.Y),0,0"
+    $f.Stack.Children.Clear()
+    $ease = New-Object Windows.Media.Animation.CubicEase
+    $i = 0
+    foreach ($n in $script:WNGuiThemeNames) {
+        $b = New-Object Windows.Controls.Button
+        $b.Style = $f.Style
+        $b.Tag = $n
+        $c = $script:WNGuiThemeSwatch[$n]
+        $sw = New-Object Windows.Shapes.Ellipse
+        $sw.Width = 18; $sw.Height = 18
+        $sw.Margin = '0,0,12,0'
+        $sw.Fill = [Windows.Media.Brush](ConvertTo-WNBrush @("$($c[0])@0", "$($c[0])@0.5", "$($c[1])@0.5", "$($c[1])@1") -Diagonal)
+        $sw.SetResourceReference([Windows.Shapes.Shape]::StrokeProperty, 'CardBorder')
+        $check = New-WNGuiIcon 'E73E' 12 -Accent
+        $check.Visibility = if ($g.ThemeName -eq $n) { 'Visible' } else { 'Hidden' }
+        $dock = New-Object Windows.Controls.DockPanel
+        [Windows.Controls.DockPanel]::SetDock($check, 'Right')
+        [void]$dock.Children.Add($check)
+        [void]$dock.Children.Add($sw)
+        [void]$dock.Children.Add((New-WNGuiText (T "gui.themeOpt$n") -Size 13.5))
+        $b.Content = $dock
+        [Windows.Automation.AutomationProperties]::SetName($b, (T "gui.themeOpt$n"))
+        $b.Add_Click({ $n = $this.Tag; Hide-WNGuiThemeFlyout; Set-WNGuiTheme $n -Save })
+        # Each option slides in a little after the one above it
+        $b.Opacity = 0
+        $shift = New-Object Windows.Media.TranslateTransform 16, 0
+        $b.RenderTransform = $shift
+        $d = [Windows.Duration][TimeSpan]::FromMilliseconds(280)
+        $fa = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, $d
+        $sa = New-Object Windows.Media.Animation.DoubleAnimation 16, 0, $d
+        foreach ($a in $fa, $sa) { $a.BeginTime = [TimeSpan]::FromMilliseconds(80 + 50 * $i); $a.EasingFunction = $ease }
+        $b.BeginAnimation([Windows.UIElement]::OpacityProperty, $fa)
+        $shift.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $sa)
+        [void]$f.Stack.Children.Add($b)
+        $i++
+    }
+    $f.Layer.Visibility = 'Visible'
+    # The panel unfolds from the button: it grows out of its top-right corner while it fades in
+    $d = [Windows.Duration][TimeSpan]::FromMilliseconds(260)
+    $fade = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, ([Windows.Duration][TimeSpan]::FromMilliseconds(180))
+    $sx = New-Object Windows.Media.Animation.DoubleAnimation 0.7, 1, $d
+    $sy = New-Object Windows.Media.Animation.DoubleAnimation 0.2, 1, $d
+    $sx.EasingFunction = $ease; $sy.EasingFunction = $ease
+    $f.Panel.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+    $f.Scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $sx)
+    $f.Scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $sy)
+    $current = @($f.Stack.Children | Where-Object { $_.Tag -eq $g.ThemeName }) + @($f.Stack.Children) | Select-Object -First 1
+    [void]$current.Focus()
+}
+
+function Hide-WNGuiThemeFlyout {
+    $f = $script:WNGui.ThemeFly
+    if (-not $f -or $f.Layer.Visibility -ne 'Visible') { return }
+    $d = [Windows.Duration][TimeSpan]::FromMilliseconds(140)
+    $out = New-Object Windows.Media.Animation.DoubleAnimation 0, $d
+    $out.Add_Completed({ $script:WNGui.ThemeFly.Layer.Visibility = 'Collapsed' })
+    $f.Panel.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)
+    $s = New-Object Windows.Media.Animation.DoubleAnimation 0.92, $d
+    $f.Scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $s)
+}
+
 function Set-WNGuiTheme {
     # Light / Dark at any time: brushes, title bar and backdrop tint, every badge, and the switch icon
     param([ValidateSet('Light', 'Dark', 'Patria')][string]$Name, [switch]$Save)
@@ -1556,21 +1684,10 @@ function Show-WNGui {
         $script:WNGui.Ctl.SimBadge.Visibility = if ($WN.DryRun) { 'Visible' } else { 'Collapsed' }
         Write-WNLog "GUI simulation mode: $($WN.DryRun)" -Component 'Gui'
     })
-    # Theme menu: Light, Dark (the default logo) and Mes patrio
-    $ctl.ThemeBtn.Add_Click({
-        $m = New-Object Windows.Controls.ContextMenu
-        foreach ($n in 'Light', 'Dark', 'Patria') {
-            $i = New-Object Windows.Controls.MenuItem
-            $i.Header = T "gui.themeOpt$n"
-            $i.Tag = $n
-            $i.IsChecked = $script:WNGui.ThemeName -eq $n
-            $i.Add_Click({ Set-WNGuiTheme $this.Tag -Save })
-            [void]$m.Items.Add($i)
-        }
-        $m.PlacementTarget = $this
-        $m.Placement = 'Bottom'
-        $m.IsOpen = $true
-    })
+    # Theme picker: unfolds from the button, inside the window
+    $ctl.ThemeBtn.Add_Click({ Show-WNGuiThemeFlyout })
+    # The name pill in the top bar opens About
+    $window.FindName('IdentityPill').Add_MouseLeftButtonUp({ Show-WNGuiPage 'about' })
     $ctl.TerminalBtn.Add_Click({
         $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Terminal', '-Lang', $WN.Lang)
         if ($WN.DryRun) { $a += '-DryRun' }
@@ -1593,6 +1710,9 @@ function Show-WNGui {
     $ctl.UpdateBtn.Add_Click({ if ($script:WNGui.UpdateState -eq 'Available') { Invoke-WNGuiUpdate } else { Start-WNGuiUpdateCheck } })
     $ctl.LogToggle.Add_Click({ $script:WNGui.Log.Visibility = if ($script:WNGui.Ctl.LogToggle.IsChecked) { 'Visible' } else { 'Collapsed' } })
     $ctl.SearchBox.Add_TextChanged({ Update-WNGuiFilter })
+    # A click in the search box selects what is there, so typing replaces it
+    $ctl.SearchBox.Add_GotKeyboardFocus({ $this.SelectAll() })
+    $ctl.SearchBox.Add_PreviewMouseLeftButtonDown({ param($s, $e) if (-not $s.IsKeyboardFocusWithin) { [void]$s.Focus(); $e.Handled = $true } })
     $ctl.SearchBox.Add_KeyDown({
         param($s, $e)
         $p = $script:WNGui.Pages[$script:WNGui.Current]

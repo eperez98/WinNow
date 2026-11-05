@@ -119,8 +119,8 @@ simulation mode. Long tasks run in the background and stream their output into t
 | Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
 | ![GUI services](screenshots/21-gui-services.png) | ![GUI repair](screenshots/19-gui-repair.png) |
 | Services, light | Repair & maintenance, light |
-| ![GUI updates](screenshots/20-gui-updates-es.png) |  |
-| Windows Update, dark (Spanish) |  |
+| ![GUI updates](screenshots/20-gui-updates-es.png) | ![Theme picker](screenshots/31-gui-theme-picker-es.png) |
+| Windows Update, dark (Spanish) | The theme picker, unfolded from its button (Spanish) |
 
 ## Screenshots
 

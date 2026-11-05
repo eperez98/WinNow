@@ -20,6 +20,7 @@ function Initialize-WNContext {
         GuiChannel       = 'Full GUI Release'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
+        Donate           = 'https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD'
         Root             = $Root
         DryRun           = [bool]$DryRun
         Yes              = [bool]$Yes
