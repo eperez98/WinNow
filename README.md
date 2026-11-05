@@ -86,8 +86,9 @@ Or from a terminal in that folder:
 
 A modern, translucent and flat window in the Windows 11 / iOS style: on Windows 11 22H2 or later the background is
 the blurred acrylic backdrop of Windows (a solid colour on older builds), with frosted cards, rounded corners and a
-blue accent. It has a **light and a dark mode** that you switch with the sun / moon button (it starts in the Windows
-setting and remembers your choice), and an **EN | ES** switch for the language. A sidebar lists every tool, a search
+blue accent. It has three themes in the theme button: **Light**, **Dark** and **Mes patrio** (November is Panama's patriotic
+month: the Panama icon, the flag on the home banner and an aero background in Panama navy and red). It starts in
+mes patrio in November, otherwise in the Windows setting, and remembers your choice, and an **EN | ES** switch for the language. A sidebar lists every tool, a search
 bar sits on top, and the home page has a banner, a **Start here** card that opens the recommended tweaks, and a tile
 for every tool. Open it with `-GUI`, `Launch-GUI.bat`, or `G` in the terminal main menu.
 
@@ -110,18 +111,16 @@ simulation mode. Long tasks run in the background and stream their output into t
 
 | | |
 |---|---|
-| | |
-|---|---|
+| ![Home, mes patrio](screenshots/29-gui-home-patria-es.png) | ![About, mes patrio](screenshots/30-gui-about-patria.png) |
+| Home in the mes patrio theme (Spanish) | About, mes patrio |
 | ![GUI home](screenshots/15-gui-home.png) | ![GUI home light](screenshots/18-gui-home-es.png) |
-| Home, dark mode | Home, light mode (Spanish) |
+| Home, dark | Home, light (Spanish) |
 | ![GUI tweaks](screenshots/16-gui-tweaks.png) | ![GUI advanced tweaks](screenshots/23-gui-tweaks-advanced-es.png) |
 | Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
-| ![GUI services](screenshots/21-gui-services.png) | ![GUI uninstall](screenshots/22-gui-uninstall.png) |
-| Services, light | Uninstall programs, dark |
-| ![GUI repair](screenshots/19-gui-repair.png) | ![GUI updates](screenshots/20-gui-updates-es.png) |
-| Repair & maintenance, light | Windows Update, dark (Spanish) |
-| ![GUI apps](screenshots/17-gui-apps-es.png) | |
-| App Manager, light (Spanish) | |
+| ![GUI services](screenshots/21-gui-services.png) | ![GUI repair](screenshots/19-gui-repair.png) |
+| Services, light | Repair & maintenance, light |
+| ![GUI updates](screenshots/20-gui-updates-es.png) |  |
+| Windows Update, dark (Spanish) |  |
 
 ## Screenshots
 

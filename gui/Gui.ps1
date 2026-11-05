@@ -61,6 +61,14 @@ $script:WNGuiThemes = @{
         Warn = '#FF8F5300'; WarnBg = '#26FF9500'
         Badges = @{ Applied = '#2634C759|#FF1B7A36'; Partial = '#26FF9500|#FF8F5300'; Action = '#1F007AFF|#FF0058B8'; None = '#14000000|#FF3A3A3C'; Danger = '#26FF3B30|#FFB3261E' }
     }
+    # Mes patrio (November, Panama): the acrylic tinted Panama navy, fading to deep red at the bottom
+    Patria = @{
+        Bg = @('#FF0B2A52@0', '#FF0B2A52@0.6', '#FF4A1222@1'); GlassBg = @('#A60B2A52@0', '#A60B2A52@0.55', '#A64A1222@1')
+        Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
+        Selected = '#40D21034'; Fg = '#FFFFFFFF'; FgDim = '#FFD3DAE6'; Accent = '#FFD21034'; AccentSolid = '#FFD21034'; AccentFg = '#FFFFFFFF'; AccentText = '#FFFF8C99'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'
+        Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
+    }
 }
 # Tool icon colours per sidebar group (diagonal gradients, like app icons)
 $script:WNGuiArt = @{
@@ -1193,7 +1201,8 @@ function New-WNGuiAboutLines {
 
 function Build-WNGuiAbout {
     param($p)
-    $logo = New-WNGuiImage 'Winnow_128.png' 64
+    $logo = New-WNGuiImage (Get-WNGuiLogoFile) 64
+    $script:WNGui.AboutLogo = $logo
     if ($logo) { $logo.Margin = '0,0,18,0' }
     $info = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiText $WN.Name -Bold -Size 24),
@@ -1282,6 +1291,17 @@ function New-WNGuiPanamaFlag {
 "@)
 }
 
+function Update-WNGuiHero {
+    # Home banner per theme: the blue gradient with the faded mark, or Panama blue with the flag (mes patrio)
+    $h = $script:WNGui.Hero
+    if (-not $h) { return }
+    $patria = $script:WNGui.ThemeName -eq 'Patria'
+    $h.Box.Background = [Windows.Media.Brush]$(if ($patria) { ConvertTo-WNBrush '#FF003A70' } else { ConvertTo-WNBrush @('#FF0A84FF', '#FF5E5CE6', '#FFBF5AF2') -Diagonal })
+    if ($h.Mark) { $h.Mark.Visibility = if ($patria) { 'Collapsed' } else { 'Visible' } }
+    # On a narrow window the flag would sit under the name: it steps aside
+    $h.Flag.Visibility = if ($patria -and $h.Box.ActualWidth -ge 640) { 'Visible' } else { 'Collapsed' }
+}
+
 function Build-WNGuiHome {
     param($p)
     $g = $script:WNGui
@@ -1293,16 +1313,17 @@ function Build-WNGuiHome {
     $hero = New-Object Windows.Controls.Border
     $hero.CornerRadius = 22
     $hero.Height = 300
-    # November is Panama's patriotic month: the banner is Panama blue and carries the flag
-    $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush '#FF003A70')
+    # Background and art follow the theme (Update-WNGuiHero): the faded mark, or the flag for mes patrio
     $heroGrid = New-Object Windows.Controls.Grid
+    $mark = New-WNGuiImage 'Winnow_512.png' 230 0.28
+    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,40,0'; [void]$heroGrid.Children.Add($mark) }
     $flag = New-WNGuiPanamaFlag
     $flag.HorizontalAlignment = 'Right'
     $flag.VerticalAlignment = 'Center'
     $flag.Margin = '0,0,44,0'
     [void]$heroGrid.Children.Add($flag)
-    # On a narrow window the flag would sit under the name: it steps aside
-    $hero.Add_SizeChanged({ $this.Child.Children[0].Visibility = if ($this.ActualWidth -lt 640) { 'Collapsed' } else { 'Visible' } })
+    $g.Hero = @{ Box = $hero; Mark = $mark; Flag = $flag }
+    $hero.Add_SizeChanged({ Update-WNGuiHero })
     $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
     $chips.VerticalAlignment = 'Top'
     $chips.Margin = '28,24,0,0'
@@ -1386,7 +1407,7 @@ function Build-WNGuiHome {
 #region Theme and updates
 function Set-WNGuiTheme {
     # Light / Dark at any time: brushes, title bar and backdrop tint, every badge, and the switch icon
-    param([ValidateSet('Light', 'Dark')][string]$Name, [switch]$Save)
+    param([ValidateSet('Light', 'Dark', 'Patria')][string]$Name, [switch]$Save)
     $g = $script:WNGui
     $t = $script:WNGuiThemes[$Name]
     $g.Theme = $t
@@ -1396,15 +1417,25 @@ function Set-WNGuiTheme {
         $g.Window.Resources[$k] = [Windows.Media.Brush](ConvertTo-WNBrush $t[$k])
     }
     $g.Window.Resources['Bg'] = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.Glass) { $t.GlassBg } else { $t.Bg }))
-    if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, $Name -eq 'Dark') } catch { } }
+    if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, $Name -ne 'Light') } catch { } }
     foreach ($l in $g.Lists) { foreach ($r in $l.Rows) { if ($r.Badge -and $r.Kind) { Set-WNGuiBadge $r $r.Badge $r.Kind } } }
-    # The button shows the mode it switches to
-    $g.Ctl.ThemeBtn.Content = [string][char]$(if ($Name -eq 'Dark') { 0xE706 } else { 0xE708 })
-    $tip = T $(if ($Name -eq 'Dark') { 'gui.themeLight' } else { 'gui.themeDark' })
+    # The button shows the current theme and opens the theme menu
+    $g.Ctl.ThemeBtn.Content = [string][char]$(switch ($Name) { 'Light' { 0xE706 } 'Dark' { 0xE708 } default { 0xE7C1 } })
+    $tip = T 'gui.themeTip' (T "gui.themeOpt$Name")
     $g.Ctl.ThemeBtn.ToolTip = $tip
     [Windows.Automation.AutomationProperties]::SetName($g.Ctl.ThemeBtn, $tip)
+    # Logo for this theme (the Panama one for mes patrio), also as the window icon
+    $file = Get-WNGuiLogoFile
+    if (-not $g.LogoCache) { $g.LogoCache = @{} }
+    if (-not $g.LogoCache[$file]) { $g.LogoCache[$file] = Get-WNGuiBitmap $file }
+    $logo = $g.LogoCache[$file]
+    foreach ($img in @($g.Ctl.Logo, $g.Ctl.Avatar, $g.AboutLogo)) { if ($img -and $logo) { $img.Source = $logo } }
+    if ($logo) { $g.Window.Icon = $logo }
+    Update-WNGuiHero
     if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
+
+function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Patria' { 'Winnow_128_patria.png' } 'Light' { 'Winnow_128.png' } default { 'Winnow_128.png' } } }
 
 function Set-WNGuiUpdateState {
     # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
@@ -1491,22 +1522,16 @@ function Show-WNGui {
     $g.Timer.Interval = [TimeSpan]::FromMilliseconds(150)
     $g.Timer.Add_Tick({ Receive-WNGuiJob })
 
-    # ---- Theme: the saved choice, else the Windows apps setting
+    # ---- Theme: the saved choice; in November (Panama's patriotic month) mes patrio; else the Windows apps setting
     $saved = (Get-WNSettings).GuiTheme
     $light = (Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -ne 0
-    $theme = if ($saved -in 'Light', 'Dark') { $saved } elseif ($light) { 'Light' } else { 'Dark' }
+    $theme = if ($saved -in 'Light', 'Dark', 'Patria') { $saved } elseif ((Get-Date).Month -eq 11) { 'Patria' } elseif ($light) { 'Light' } else { 'Dark' }
     Set-WNGuiTheme $theme
 
     # ---- Window chrome and identity
     $window.Title = "Winnow $($WN.GuiVersion) $($WN.GuiChannel)"
     $window.Height = [Math]::Min(860, [Windows.SystemParameters]::WorkArea.Height - 20)
     $window.Width = [Math]::Min(1320, [Windows.SystemParameters]::WorkArea.Width - 20)
-    $bmp = Get-WNGuiBitmap 'Winnow_128.png'
-    if ($bmp) {
-        $window.Icon = $bmp
-        $ctl.Logo.Source = $bmp
-        $ctl.Avatar.Source = $bmp
-    }
     $g.WantGlass = $WN.OSBuild -ge 22621
     $window.Add_SourceInitialized({
         $g = $script:WNGui
@@ -1531,7 +1556,21 @@ function Show-WNGui {
         $script:WNGui.Ctl.SimBadge.Visibility = if ($WN.DryRun) { 'Visible' } else { 'Collapsed' }
         Write-WNLog "GUI simulation mode: $($WN.DryRun)" -Component 'Gui'
     })
-    $ctl.ThemeBtn.Add_Click({ Set-WNGuiTheme $(if ($script:WNGui.ThemeName -eq 'Dark') { 'Light' } else { 'Dark' }) -Save })
+    # Theme menu: Light, Dark (the default logo) and Mes patrio
+    $ctl.ThemeBtn.Add_Click({
+        $m = New-Object Windows.Controls.ContextMenu
+        foreach ($n in 'Light', 'Dark', 'Patria') {
+            $i = New-Object Windows.Controls.MenuItem
+            $i.Header = T "gui.themeOpt$n"
+            $i.Tag = $n
+            $i.IsChecked = $script:WNGui.ThemeName -eq $n
+            $i.Add_Click({ Set-WNGuiTheme $this.Tag -Save })
+            [void]$m.Items.Add($i)
+        }
+        $m.PlacementTarget = $this
+        $m.Placement = 'Bottom'
+        $m.IsOpen = $true
+    })
     $ctl.TerminalBtn.Add_Click({
         $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Terminal', '-Lang', $WN.Lang)
         if ($WN.DryRun) { $a += '-DryRun' }

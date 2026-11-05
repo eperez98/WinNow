@@ -189,7 +189,9 @@ function New-WNShortcut {
         $s.TargetPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
         $s.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $target 'Winnow.ps1')`""
         $s.WorkingDirectory = $target
-        $ico = Join-Path $target 'LOGO\Winnow.ico'
+        $saved = (Get-WNSettings).GuiTheme
+        $patria = $saved -eq 'Patria' -or (-not $saved -and (Get-Date).Month -eq 11)
+        $ico = Join-Path $target "LOGO\$(if ($patria) { 'Winnow_patria.ico' } else { 'Winnow.ico' })"
         if (Test-Path $ico) { $s.IconLocation = "$ico,0" }
         $s.Description = 'Winnow'
         $s.Save()

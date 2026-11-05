@@ -25,9 +25,12 @@ first planned as 1.2 for November 8, 2026.
 
 ### Changed
 - "Preview" / "Release Candidate" labels removed from the window, menus and docs.
-- **Mes patrio**: November is Panama's patriotic month. The app icon (window, taskbar, desktop shortcut) and the
-  README banner wear the flag of Panama, and the Home banner is Panama blue with the flag on it. "Proudly made in
-  Panama PTY507" sits next to the logo on Home, About, the terminal banner and the README.
+- **Theme menu with mes patrio**: the theme button opens **Light**, **Dark** (the default logo and banner) and
+  **Mes patrio**. November is Panama's patriotic month: mes patrio uses the Panama icon (window, taskbar, desktop
+  shortcut), the flag on the Home banner and an aero background in Panama navy and red, and it is the starting theme
+  in November. The README banner wears the flag of Panama, and "Proudly made in Panama PTY507" sits next to the
+  logo on Home, About, the terminal banner and the README.
+- README screenshots retaken for 1.1, including the mes patrio theme.
 
 ## [1.0.9] - 2026-11-03 - Selection Fix
 
