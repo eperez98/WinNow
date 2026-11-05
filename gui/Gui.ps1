@@ -238,7 +238,7 @@ function Update-WNGuiFilter {
     $p.List.View.Filter = if ($q -or $lvl -or $badge) {
         [Predicate[object]] { param($r)
             (-not $lvl -or $r.Item.Level -eq $lvl) -and (-not $badge -or $r.Badge -eq $badge) -and
-            (-not $q -or ("$($r.Name) $($r.Description)").IndexOf($q, [StringComparison]::OrdinalIgnoreCase) -ge 0) }.GetNewClosure()
+            (-not $q -or $r.Item.Query -eq $q -or ("$($r.Name) $($r.Description)").IndexOf($q, [StringComparison]::OrdinalIgnoreCase) -ge 0) }.GetNewClosure()
     } else { $null }
     if ($p.OnFilter) { & $p.OnFilter $p }
 }
@@ -730,23 +730,77 @@ function Build-WNGuiApps {
     $p.Body = $g.AppList.List
     $p.SearchHint = T 'gui.searchApps'
     $p.OnFilter = { $script:WNGui.AppCount.Text = T 'gui.results' @($script:WNGui.AppList.View).Count }
-    # Enter in the top search box looks the name up in all of winget
+    # Searching all of winget runs in its own runspace, so it never waits behind the window's tasks (opening this page
+    # reads the installed apps, which can take a while). Typing searches after a short pause; Enter and the button
+    # always search. The list keeps the catalog apps that match and adds every winget result for that text.
     $p.OnSearch = {
-        $q = $script:WNGui.Ctl.SearchBox.Text.Trim()
-        if (-not $q) { return }
-        Start-WNGuiJob -Label (T 'gui.searchWinget') -Arguments @(, $q) -Script { param($q) @(Search-WNWinget $q) }.ToString() -OnDone {
-            param($out)
-            $g = $script:WNGui
-            $g.Pages['apps'].OnlyBadge = $null
-            # Results are already the answer to the query; showing them unfiltered avoids hiding ids that differ from the name
-            $g.Ctl.SearchBox.Text = ''
-            Set-WNGuiApps @($out)
+        param([switch]$Auto)
+        $g = $script:WNGui
+        $q = $g.Ctl.SearchBox.Text.Trim()
+        if ($q.Length -lt 2) {
+            if (-not $Auto) { $g.Status.Text = T 'gui.searchTypeFirst'; [void]$g.Ctl.SearchBox.Focus() }
+            return
         }
+        if ($Auto -and $q -eq $g.AppSearched) { return }
+        $g.AppSearched = $q
+        $wg = Find-WNWinget
+        if (-not $wg) { Show-WNGuiInfo (T 'apps.noWinget'); return }
+        if ($g.WingetSearch) { try { $g.WingetSearch.PS.Stop(); $g.WingetSearch.PS.Dispose() } catch { } }
+        $ps = [powershell]::Create()
+        [void]$ps.AddScript({
+            param($wg, $q)
+            $enc = [Console]::OutputEncoding
+            try { [Console]::OutputEncoding = [Text.Encoding]::UTF8; & $wg search --query $q --source winget --accept-source-agreements --disable-interactivity 2>$null }
+            finally { [Console]::OutputEncoding = $enc }
+        }.ToString()).AddArgument($wg).AddArgument($q)
+        $g.WingetSearch = @{ PS = $ps; Handle = $ps.BeginInvoke(); Query = $q; Started = Get-Date }
+        Add-WNGuiLog "---- $(T 'gui.searchingWinget' $q)"
+        $g.Status.Text = T 'gui.searchingWinget' $q
+        $g.WingetPoll.Start()
     }
+    $g.WingetPoll = New-Object Windows.Threading.DispatcherTimer
+    $g.WingetPoll.Interval = [TimeSpan]::FromMilliseconds(200)
+    $g.WingetPoll.Add_Tick({
+        param($t)
+        $g = $script:WNGui
+        $s = $g.WingetSearch
+        if (-not $s) { $t.Stop(); return }
+        if (-not $s.Handle.IsCompleted) {
+            # winget can hang on a source update or a prompt; the window stays usable and says so
+            if (((Get-Date) - $s.Started).TotalSeconds -gt 60) {
+                $t.Stop(); try { $s.PS.Stop(); $s.PS.Dispose() } catch { }; $g.WingetSearch = $null
+                $g.Status.Text = T 'gui.searchTimeout' $s.Query; Add-WNGuiLog (T 'gui.searchTimeout' $s.Query)
+            }
+            return
+        }
+        $t.Stop()
+        $lines = @()
+        try { $lines = @($s.PS.EndInvoke($s.Handle) | ForEach-Object { "$_" }) } catch { Add-WNGuiLog "ERROR: $($_.Exception.Message)" }
+        $s.PS.Dispose()
+        $g.WingetSearch = $null
+        $found = @(ConvertFrom-WNWingetTable $lines | ForEach-Object {
+            [pscustomobject]@{ Name = $_.Name; Winget = $_.Id; Choco = 'na'; Description = "v$($_.Version)"; Category = $null; Foss = $false; Query = $s.Query } })
+        # A newer search has started meanwhile, or the text changed: that one fills the list
+        if ($g.Ctl.SearchBox.Text.Trim() -ne $s.Query) { return }
+        $g.Pages['apps'].OnlyBadge = $null
+        $catalog = @($WN.Config.apps | Sort-Object Name)
+        $known = @{}; foreach ($a in $catalog) { $known[$a.Winget] = $true }
+        # Results are already the answer to the query (some match by tag, not by name): they stay visible
+        $new = @($found | Where-Object { -not $known[$_.Winget] })
+        Set-WNGuiApps @($catalog + $new)
+        $msg = if ($found.Count) { T 'gui.wingetFound' $new.Count $s.Query } else { T 'apps.searchNone' $s.Query }
+        $g.Status.Text = $msg
+        Add-WNGuiLog $msg
+    })
+    $g.AppSearchTimer = New-Object Windows.Threading.DispatcherTimer
+    $g.AppSearchTimer.Interval = [TimeSpan]::FromMilliseconds(800)
+    $g.AppSearchTimer.Add_Tick({ param($s) $s.Stop(); if ($script:WNGui.Current -eq 'apps') { & $script:WNGui.Pages['apps'].OnSearch -Auto } })
+    $g.Ctl.SearchBox.Add_TextChanged({ $t = $script:WNGui.AppSearchTimer; if ($t -and $script:WNGui.Current -eq 'apps') { $t.Stop(); $t.Start() } })
     Add-WNGuiTools $p @(
         (New-WNGuiSegments 'appsView' @(@{ Text = (T 'gui.catalog'); Value = 'all' }, @{ Text = (T 'gui.installedOnly'); Value = 'installed' }) {
             $g = $script:WNGui
             $g.Pages['apps'].OnlyBadge = if ($this.Tag -eq 'installed') { T 'gui.installed' } else { $null }
+            $g.AppSearched = $null
             if ($this.Tag -eq 'all') { Set-WNGuiApps @($WN.Config.apps | Sort-Object Name) } else { Update-WNGuiFilter }
         }),
         (New-WNGuiButton (T 'gui.searchWinget') -Icon 'E721' -OnClick { & $script:WNGui.Pages['apps'].OnSearch }),

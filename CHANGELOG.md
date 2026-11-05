@@ -24,6 +24,10 @@ first planned as 1.2 for November 8, 2026.
   simulation mode.
 
 ### Changed
+- **Search winget never waits**: the winget search runs on its own instead of queuing behind the window's tasks
+  (opening the App Manager reads the installed apps, which can take a while on some PCs), says "Searching all of
+  winget..." at once, and reports a winget that does not answer within 60 seconds. With an empty box, Search winget
+  asks for an app name. In the window, typing also searches all of winget after a short pause.
 - **Theme picker**: the theme button unfolds a panel inside the window that grows out of the button, and the
   themes slide in one after the other, each with a swatch of its colours. A click outside it, Esc or a choice folds
   it back.
