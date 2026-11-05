@@ -6,12 +6,28 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.1 Full GUI Release**: the window leaves preview; step-by-step progress bar; list of available upgrades.
 - **1.1.5 Restore Point Choice**: skip the restore point if you want.
 - **1.2 Exit & Launcher Update**: desktop shortcut question on exit; one launcher.
 - **1.2.2 Secure Update**: update panel with Restart now or Later; downloads checked before they are installed; admin-only data folder.
-- **1.5 Stable Release**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
+- **1.5 November Update**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
 - More changes may be added and others removed.
+
+## [1.1] - 2026-11-04 - Full GUI Release
+
+The graphical interface leaves preview: the terminal and the window have the same tools. The Full GUI Release was
+first planned as 1.2 for November 8, 2026.
+
+### Added
+- Graphical interface: **step-by-step progress bar** in the status bar for batches (tweaks, app installs and
+  uninstalls, uninstall programs, Store apps), with "Step 2 of 5: name".
+- Graphical interface: **List available upgrades** in the App Manager (what `winget upgrade` would update), also in
+  simulation mode.
+
+### Changed
+- "Preview" / "Release Candidate" labels removed from the window, menus and docs.
+- **Mes patrio**: November is Panama's patriotic month. The app icon (window, taskbar, desktop shortcut) and the
+  README banner wear the flag of Panama, and the Home banner is Panama blue with the flag on it. "Proudly made in
+  Panama PTY507" sits next to the logo on Home, About, the terminal banner and the README.
 
 ## [1.0.9] - 2026-11-03 - Selection Fix
 
@@ -186,7 +202,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.0.9...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.1...HEAD
+[1.1]: https://github.com/eperez98/Winnow/releases/tag/v1.1
 [1.0.9]: https://github.com/eperez98/Winnow/releases/tag/v1.0.9
 [1.0.8]: https://github.com/eperez98/Winnow/releases/tag/v1.0.8
 [1.0.7.3]: https://github.com/eperez98/Winnow/releases/tag/v1.0.7.3

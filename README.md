@@ -1,16 +1,28 @@
 <p align="center">
-  <img src="LOGO/Winnow_logo_patria.png" width="560" alt="WinNow - sift Windows down to what matters (Mes de la Patria, Panamá)"/>
+  <img src="LOGO/Winnow_logo.png" width="560" alt="Winnow - sift Windows down to what matters"/>
 </p>
 
-<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal, or from the graphical interface (release candidate).</b></p>
+<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal or from the graphical interface.</b></p>
+<p align="center"><sub>Proudly made in Panama PTY507</sub></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.9%20Selection%20Fix-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.1%20Full%20GUI%20Release-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
   <img src="https://img.shields.io/badge/license-GPL--3.0-FBBF24?style=flat-square"/>
 </p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> &nbsp;&middot;&nbsp;
+  <a href="#graphical-interface">Graphical interface</a> &nbsp;&middot;&nbsp;
+  <a href="#screenshots">Screenshots</a> &nbsp;&middot;&nbsp;
+  <a href="#features">Features</a> &nbsp;&middot;&nbsp;
+  <a href="#roadmap">Roadmap</a> &nbsp;&middot;&nbsp;
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
+<p align="center"><code>irm eperez98.github.io/WinNow | iex</code></p>
 
 ---
 
@@ -24,14 +36,14 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 
 | Edition | Version | Status |
 |---|---|---|
-| Terminal | **1.0.9** | Selection Fix |
-| Graphical interface | **1.0.9** | Selection Fix (preview; full GUI release: **1.1**, on the way) |
+| Terminal | **1.1** | Full GUI Release |
+| Graphical interface | **1.1** | Full GUI Release (the window leaves preview) |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
 > The **terminal edition is the reference and the most tested one**; the graphical interface runs on the same
-> engine. Both are at 1.0.9. The window has a button that opens the terminal.
+> engine. Both are at 1.1. The window has a button that opens the terminal.
 
 ## Quick start
 
@@ -43,7 +55,7 @@ irm eperez98.github.io/WinNow | iex
 
 It downloads the latest release to `%TEMP%\Winnow-app` and starts it (asking for administrator rights).
 The first screen asks for the language (English / Español), the second one whether to use the **Terminal** or the
-**Graphical interface (GUI) (Preview)**. Nothing is installed. To explore first without changing anything, turn on
+**Graphical interface (GUI)**. Nothing is installed. To explore first without changing anything, turn on
 simulation mode with `M` in the main menu (or the simulation switch in the window).
 
 **Offline / manual:** download `Winnow.zip` from [Releases](https://github.com/eperez98/Winnow/releases/latest),
@@ -54,7 +66,7 @@ Or from a terminal in that folder:
 .\Winnow.ps1            # interactive menu (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
 .\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
-.\Winnow.ps1 -GUI      # graphical interface (preview), without the Terminal / GUI screen
+.\Winnow.ps1 -GUI      # graphical interface, without the Terminal / GUI screen
 .\Winnow.ps1 -Terminal # terminal menus, without the Terminal / GUI screen
 ```
 
@@ -257,7 +269,7 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 
 ## Roadmap
 
-- **Graphical interface:** leave preview after more testing, per-step progress bars, and a manual light / dark switch.
+- **Graphical interface:** an update panel in the window, a desktop shortcut question on exit.
 - Short launch URL (custom domain) for the one-liner.
 
 ## Requirements
@@ -272,3 +284,7 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 ## License
 
 GPL-3.0 © ErickP (Eperez98) — [github.com/eperez98](https://github.com/eperez98)
+
+---
+
+<p align="center"><sub>Winnow by ErickP (Eperez98) &middot; Proudly made in Panama PTY507</sub></p>

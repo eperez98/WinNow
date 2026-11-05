@@ -59,7 +59,7 @@ function Write-WNBanner {
         Write-Host $script:WNMark[$r][0] -ForegroundColor $script:WNMark[$r][1] -NoNewline
         Write-Host "   $name" -ForegroundColor $rowColors[$r]
     }
-    Write-Host ('                 ' + (T 'tagline')) -ForegroundColor DarkGray
+    Write-Host ('                 ' + (T 'tagline') + '  -  ' + (T 'brand.madeIn')) -ForegroundColor DarkGray
 }
 
 function Write-WNHeader {

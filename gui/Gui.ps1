@@ -1,5 +1,5 @@
 # gui/Gui.ps1
-# Graphical interface (release candidate) with every module of the terminal edition: a translucent,
+# Graphical interface with every module of the terminal edition: a translucent,
 # flat layout in light and dark (acrylic backdrop on Windows 11, iOS-style cards), with a sidebar,
 # a search bar and, on the home page, a banner and a tile for each tool.
 # Changes run in a background runspace that loads core/ and modules/ like the terminal does, so
@@ -103,13 +103,26 @@ function Add-WNGuiLog {
     $g = $script:WNGui
     $g.Log.AppendText("$Line`r`n")
     $g.Log.ScrollToEnd()
-    if ($Line.Trim()) { $g.Status.Text = $Line.Trim() }
+    if ($Line.Trim()) { $g.Status.Text = "$($g.StepPrefix)$($Line.Trim())" }
+}
+
+function Set-WNGuiProgress {
+    # Batch jobs print "[i/N] name" before each step: the status-bar bar and text follow them
+    param([int]$Step, [int]$Total, [string]$Name)
+    $g = $script:WNGui
+    $g.Busy.IsIndeterminate = $false
+    $g.Busy.Maximum = $Total
+    $g.Busy.Value = $Step - 1
+    $g.StepPrefix = "($Step/$Total)  "
+    $g.Status.Text = T 'gui.step' $Step $Total $Name
 }
 
 function Set-WNGuiBusy {
     param([bool]$On, [string]$Label)
     $g = $script:WNGui
     $g.Busy.Visibility = if ($On) { 'Visible' } else { 'Collapsed' }
+    $g.Busy.IsIndeterminate = $true
+    $g.StepPrefix = ''
     foreach ($b in $g.ActionButtons) { $b.IsEnabled = -not $On }
     $g.SimToggle.IsEnabled = (-not $On) -and $WN.IsAdmin
     $g.Status.Text = if ($On) { T 'gui.busy' $Label } else { T 'gui.ready' }
@@ -145,6 +158,7 @@ function Receive-WNGuiJob {
             if ($m.NoNewLine) { continue }
         } else { $job.Line += "$m" }
         Add-WNGuiLog $job.Line
+        if ($job.Line -match '^\s*\[(\d+)/(\d+)\]\s+(.+)$') { Set-WNGuiProgress ([int]$Matches[1]) ([int]$Matches[2]) $Matches[3].Trim() }
         $job.Line = ''
     }
     if (-not $job.Handle.IsCompleted) { return }
@@ -727,6 +741,15 @@ function Build-WNGuiApps {
             if ($this.Tag -eq 'all') { Set-WNGuiApps @($WN.Config.apps | Sort-Object Name) } else { Update-WNGuiFilter }
         }),
         (New-WNGuiButton (T 'gui.searchWinget') -Icon 'E721' -OnClick { & $script:WNGui.Pages['apps'].OnSearch }),
+        (New-WNGuiButton (T 'apps.listUpgrades') -Icon 'E8FD' -OnClick {
+            # Read-only, so it also runs in simulation mode; the list goes to the log panel
+            $script:WNGui.Ctl.LogToggle.IsChecked = $true
+            $script:WNGui.Log.Visibility = 'Visible'
+            Start-WNGuiJob -Label (T 'apps.upgradesTitle') -Script {
+                $d = $WN.DryRun; $WN.DryRun = $false
+                try { [void](Invoke-WNWinget @('upgrade', '--include-unknown')) } finally { $WN.DryRun = $d }
+            }.ToString()
+        }),
         $g.AppCount
     )
     $run = {
@@ -1175,7 +1198,8 @@ function Build-WNGuiAbout {
     $info = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiText $WN.Name -Bold -Size 24),
         (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim),
-        (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'))
+        (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'),
+        (New-WNGuiText (T 'brand.madeIn') -Dim -Size 12 -Margin '0,2,0,0'))
     $info.VerticalAlignment = 'Center'
     $repo = New-WNGuiButton (T 'about.repo') -Icon 'E71B' -Always -OnClick { Start-Process $WN.Repo }
     $repo.VerticalAlignment = 'Center'
@@ -1231,6 +1255,33 @@ function New-WNGuiTile {
     return $b
 }
 
+function New-WNGuiPanamaFlag {
+    # The flag of Panama for the Home banner in November (mes patrio): white, red, blue and white quarters,
+    # a blue star and a red star
+    $star = {
+        param([double]$cx, [double]$cy, [double]$r)
+        (0..9 | ForEach-Object {
+            $rad = if ($_ % 2) { $r * 0.382 } else { $r }
+            $a = [Math]::PI * (-90 + 36 * $_) / 180
+            '{0:0.#},{1:0.#}' -f ($cx + $rad * [Math]::Cos($a)), ($cy + $rad * [Math]::Sin($a))
+        }) -join ' '
+    }
+    [Windows.Markup.XamlReader]::Parse(@"
+<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='246' Height='164' CornerRadius='12'
+        BorderBrush='#66FFFFFF' BorderThickness='3'>
+  <Grid>
+    <Grid.Clip><RectangleGeometry Rect='0,0,240,158' RadiusX='9' RadiusY='9'/></Grid.Clip>
+    <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+    <Canvas Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FF005293'/></Canvas>
+    <Border Grid.Column='1' Background='#FFD21034'/>
+    <Border Grid.Row='1' Background='#FF005293'/>
+    <Canvas Grid.Row='1' Grid.Column='1' Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FFD21034'/></Canvas>
+  </Grid>
+</Border>
+"@)
+}
+
 function Build-WNGuiHome {
     param($p)
     $g = $script:WNGui
@@ -1242,10 +1293,16 @@ function Build-WNGuiHome {
     $hero = New-Object Windows.Controls.Border
     $hero.CornerRadius = 22
     $hero.Height = 300
-    $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush @('#FF0A84FF', '#FF5E5CE6', '#FFBF5AF2') -Diagonal)
+    # November is Panama's patriotic month: the banner is Panama blue and carries the flag
+    $hero.Background = [Windows.Media.Brush](ConvertTo-WNBrush '#FF003A70')
     $heroGrid = New-Object Windows.Controls.Grid
-    $mark = New-WNGuiImage 'Winnow_512.png' 230 0.28
-    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,40,0'; [void]$heroGrid.Children.Add($mark) }
+    $flag = New-WNGuiPanamaFlag
+    $flag.HorizontalAlignment = 'Right'
+    $flag.VerticalAlignment = 'Center'
+    $flag.Margin = '0,0,44,0'
+    [void]$heroGrid.Children.Add($flag)
+    # On a narrow window the flag would sit under the name: it steps aside
+    $hero.Add_SizeChanged({ $this.Child.Children[0].Visibility = if ($this.ActualWidth -lt 640) { 'Collapsed' } else { 'Visible' } })
     $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
     $chips.VerticalAlignment = 'Top'
     $chips.Margin = '28,24,0,0'
@@ -1255,7 +1312,7 @@ function Build-WNGuiHome {
     $title.Foreground = 'White'
     $tag = New-WNGuiText (T 'tagline') -Size 16
     $tag.Foreground = 'White'
-    $stats = New-WNGuiText (T 'gui.heroStats' $tweaks.Count @($WN.Config.apps).Count ($g.Pages.Count - 1)) -Size 12.5 -Margin '0,10,0,0'
+    $stats = New-WNGuiText "$(T 'gui.heroStats' $tweaks.Count @($WN.Config.apps).Count ($g.Pages.Count - 1))  -  $(T 'brand.madeIn')" -Size 12.5 -Margin '0,10,0,0'
     $stats.Foreground = 'White'
     $stats.Opacity = 0.85
     $heroText = New-WNGuiPanel -Orientation Vertical -Children @($title, $tag, $stats)

@@ -39,7 +39,7 @@
     Interface language: en or es. Without it the interactive app asks at startup.
 
 .PARAMETER GUI
-    Open the graphical interface (preview) without asking for the mode.
+    Open the graphical interface without asking for the mode.
 
 .PARAMETER Terminal
     Use the terminal menus without asking for the mode.
@@ -152,7 +152,7 @@ if ($Preset -or $Apply -or $Undo -or $Install) {
     exit ([int]($WN.ErrorCount -gt 0))
 }
 
-# ---- Graphical interface (preview) -------------------------------------------------------------
+# ---- Graphical interface -----------------------------------------------------------------------
 if ($GUI) {
     if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
         # WPF needs a single-threaded apartment; Windows PowerShell 5.1 starts in one

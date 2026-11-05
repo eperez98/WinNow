@@ -507,7 +507,7 @@
                 </ControlTemplate>
               </ToggleButton.Template>
             </ToggleButton>
-            <ProgressBar x:Name="Busy" Width="90" Height="4" Margin="0,0,12,0" IsIndeterminate="True" Visibility="Collapsed"
+            <ProgressBar x:Name="Busy" Width="160" Height="4" Margin="0,0,12,0" IsIndeterminate="True" Visibility="Collapsed"
                          Foreground="{DynamicResource AccentSolid}" Background="{DynamicResource Card}" BorderThickness="0"/>
             <TextBlock x:Name="StatusText" Foreground="{DynamicResource FgDim}" FontSize="12.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
           </DockPanel>
