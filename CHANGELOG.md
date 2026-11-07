@@ -6,22 +6,19 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.1.5 Restore Point Choice**: skip the restore point if you want.
 - **1.2 Exit & Launcher Update**: desktop shortcut question on exit; one launcher.
 - **1.2.2 Secure Update**: update panel with Restart now or Later; downloads checked before they are installed; admin-only data folder.
 - **1.5 November Update**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
 - More changes may be added and others removed.
 
-## [1.1] - 2026-11-04 - Full GUI Release
+## [1.1.5] - 2026-11-07 - Restore Point Choice
 
-The graphical interface leaves preview: the terminal and the window have the same tools. The Full GUI Release was
-first planned as 1.2 for November 8, 2026.
+The terminal edition and the graphical interface are both **1.1.5 Restore Point Choice**.
 
 ### Added
-- Graphical interface: **step-by-step progress bar** in the status bar for batches (tweaks, app installs and
-  uninstalls, uninstall programs, Store apps), with "Step 2 of 5: name".
-- Graphical interface: **List available upgrades** in the App Manager (what `winget upgrade` would update), also in
-  simulation mode.
+- **Skip the restore point**: before the first change of a session the terminal asks whether to create a System
+  Restore point, and the window's confirmation offers Yes (with restore point), No (without it) or Cancel. The
+  JSON backup is taken either way.
 
 ### Changed
 - **Search winget never waits**: the winget search runs on its own instead of queuing behind the window's tasks
@@ -36,6 +33,18 @@ first planned as 1.2 for November 8, 2026.
 - The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
   About.
 - **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
+## [1.1] - 2026-11-04 - Full GUI Release
+
+The graphical interface leaves preview: the terminal and the window have the same tools. The Full GUI Release was
+first planned as 1.2 for November 8, 2026.
+
+### Added
+- Graphical interface: **step-by-step progress bar** in the status bar for batches (tweaks, app installs and
+  uninstalls, uninstall programs, Store apps), with "Step 2 of 5: name".
+- Graphical interface: **List available upgrades** in the App Manager (what `winget upgrade` would update), also in
+  simulation mode.
+
+### Changed
 - "Preview" / "Release Candidate" labels removed from the window, menus and docs.
 - **Theme menu with mes patrio**: the theme button opens **Light**, **Dark** (the default logo and banner) and
   **Mes patrio**. November is Panama's patriotic month: mes patrio uses the Panama icon (window, taskbar, desktop
@@ -217,7 +226,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.1...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.1.5
 [1.1]: https://github.com/eperez98/Winnow/releases/tag/v1.1
 [1.0.9]: https://github.com/eperez98/Winnow/releases/tag/v1.0.9
 [1.0.8]: https://github.com/eperez98/Winnow/releases/tag/v1.0.8

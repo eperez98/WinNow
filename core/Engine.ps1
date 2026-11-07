@@ -205,8 +205,12 @@ function New-WNRestorePoint {
 }
 
 function Confirm-WNRestorePoint {
-    # Asks to continue if the restore point fails.
+    # Asks first (it can take minutes; the JSON backup is taken either way), then asks to continue if it fails.
     if ($WN.NoRestorePoint -or $WN.RestorePointDone) { return $true }
+    if (-not $WN.DryRun -and -not $WN.Yes -and $WN.Interactive -and -not (Read-WNConfirm (T 'rp.ask') -DefaultYes)) {
+        Write-WNStatus (T 'rp.skipped') Skip 'Restore'
+        return $true
+    }
     if (New-WNRestorePoint) { return $true }
     if ($WN.Yes) { return $true }
     return (Read-WNConfirm (T 'rp.continueWithout'))

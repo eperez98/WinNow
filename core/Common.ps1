@@ -14,10 +14,10 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'Winnow'
-        Version          = '1.1'
-        Channel          = 'Full GUI Release'
-        GuiVersion       = '1.1'
-        GuiChannel       = 'Full GUI Release'
+        Version          = '1.1.5'
+        Channel          = 'Restore Point Choice'
+        GuiVersion       = '1.1.5'
+        GuiChannel       = 'Restore Point Choice'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Donate           = 'https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD'

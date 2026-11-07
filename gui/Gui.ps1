@@ -139,10 +139,13 @@ function Set-WNGuiBusy {
 
 function Start-WNGuiJob {
     # Runs $Script in the worker runspace. Write-Host output streams into the log; $OnDone gets the output.
-    param([Parameter(Mandatory)][string]$Label, [Parameter(Mandatory)][string]$Script, [object[]]$Arguments = @(), [scriptblock]$OnDone)
+    param([Parameter(Mandatory)][string]$Label, [Parameter(Mandatory)][string]$Script, [object[]]$Arguments = @(), [scriptblock]$OnDone, $NoRp)
     $g = $script:WNGui
+    # "No restore point" from the confirmation belongs to the job that confirmation started
+    if ($null -eq $NoRp) { $NoRp = [bool]$g.SkipRp; $g.SkipRp = $false }
     # Page loads can be requested while another job runs (action buttons are disabled meanwhile): queue them
-    if ($g.Job) { $g.Queue.Add(@{ Label = $Label; Script = $Script; Arguments = $Arguments; OnDone = $OnDone }); return }
+    if ($g.Job) { $g.Queue.Add(@{ Label = $Label; Script = $Script; Arguments = $Arguments; OnDone = $OnDone; NoRp = $NoRp }); return }
+    $g.Runspace.SessionStateProxy.GetVariable('WN').NoRestorePoint = [bool]($WN.NoRestorePoint -or $NoRp)
     $ps = [powershell]::Create()
     $ps.Runspace = $g.Runspace
     [void]$ps.AddScript($Script)
@@ -210,10 +213,25 @@ function New-WNGuiWorker {
 }
 
 function Confirm-WNGui {
-    param([string]$Message, [switch]$Danger)
-    $note = if ($WN.DryRun) { T 'gui.noteSim' } else { T 'gui.noteReal' }
+    # While a restore point is still due this session, real changes offer to skip it for this task:
+    # Yes = with restore point, No = without it (the JSON backup is still taken), Cancel = nothing.
+    # -Plain: actions that never take one (restore point and backup management).
+    param([string]$Message, [switch]$Danger, [switch]$Plain)
+    $g = $script:WNGui
     $icon = if ($Danger) { 'Warning' } else { 'Question' }
-    $r = [Windows.MessageBox]::Show($script:WNGui.Window, "$Message`n`n$note", 'Winnow', 'YesNo', $icon, 'No')
+    $due = $false
+    if (-not $Plain -and -not $WN.DryRun -and -not $WN.NoRestorePoint) {
+        try { $due = -not $g.Runspace.SessionStateProxy.GetVariable('WN').RestorePointDone } catch { $due = $true }
+    }
+    if ($due) {
+        $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$(T 'gui.rpChoice')", 'Winnow', 'YesNoCancel', $icon, 'Cancel')
+        $g.SkipRp = ("$r" -eq 'No')
+        # A job started by this same click reads it first; if the click starts none, it must not reach a later job
+        [void]$g.Window.Dispatcher.BeginInvoke([Action]{ $script:WNGui.SkipRp = $false }, [Windows.Threading.DispatcherPriority]::Background)
+        return ("$r" -ne 'Cancel')
+    }
+    $note = if ($WN.DryRun) { T 'gui.noteSim' } elseif ($Plain) { T 'gui.noteReal' } else { T 'gui.noteBackup' }
+    $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$note", 'Winnow', 'YesNo', $icon, 'No')
     return ($r -eq 'Yes')
 }
 
@@ -1015,9 +1033,9 @@ function Build-WNGuiBackups {
             'oldest' { ((T 'bkm.rpOld') + '?'), $true }
             'all'    { "$(T 'bkm.allWarn1' $script:WNGui.BackupList.Rows.Count $env:SystemDrive)`n$(T 'bkm.allWarn2')", $true }
         }
-        if (-not (Confirm-WNGui $msg -Danger:$danger)) { return }
+        if (-not (Confirm-WNGui $msg -Danger:$danger -Plain)) { return }
         # Deleting every restore point asks twice, like typing DELETE in the terminal
-        if ($mode -eq 'all' -and -not (Confirm-WNGui (T 'gui.reallyAll') -Danger)) { return }
+        if ($mode -eq 'all' -and -not (Confirm-WNGui (T 'gui.reallyAll') -Danger -Plain)) { return }
         Start-WNGuiJob -Label (T 'bkm.secRp') -Arguments @($WN.DryRun, $mode) -Script {
             param($dry, $mode)
             $WN.DryRun = $dry
@@ -1033,8 +1051,8 @@ function Build-WNGuiBackups {
         if (-not $sel.Count) { return }
         if ($mode -eq 'restore') {
             if ($sel.Count -ne 1) { Show-WNGuiInfo (T 'gui.selectOne'); return }
-            if (-not (Confirm-WNGui (T 'bkm.restoreAsk' $sel[0].Item.Created))) { return }
-        } elseif (-not (Confirm-WNGui "$(T 'bkm.delConfirmTitle' $sel.Count)`n`n$(T 'bkm.delWarn')" -Danger)) { return }
+            if (-not (Confirm-WNGui (T 'bkm.restoreAsk' $sel[0].Item.Created) -Plain)) { return }
+        } elseif (-not (Confirm-WNGui "$(T 'bkm.delConfirmTitle' $sel.Count)`n`n$(T 'bkm.delWarn')" -Danger -Plain)) { return }
         Start-WNGuiJob -Label (T 'bkm.secBackups') -Arguments @($WN.DryRun, $mode, @($sel.Key)) -Script {
             param($dry, $mode, $files)
             $WN.DryRun = $dry

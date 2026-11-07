@@ -6,7 +6,7 @@
 <p align="center"><sub>Proudly made in Panama PTY507</sub></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1%20Full%20GUI%20Release-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.1.5%20Restore%20Point%20Choice-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -36,14 +36,14 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 
 | Edition | Version | Status |
 |---|---|---|
-| Terminal | **1.1** | Full GUI Release |
-| Graphical interface | **1.1** | Full GUI Release (the window leaves preview) |
+| Terminal | **1.1.5** | Restore Point Choice |
+| Graphical interface | **1.1.5** | Restore Point Choice (full GUI release since **1.1**) |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
 > The **terminal edition is the reference and the most tested one**; the graphical interface runs on the same
-> engine. Both are at 1.1. The window has a button that opens the terminal.
+> engine. Both are at 1.1.5. The window has a button that opens the terminal.
 
 ## Quick start
 
@@ -119,8 +119,8 @@ simulation mode. Long tasks run in the background and stream their output into t
 | Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
 | ![GUI services](screenshots/21-gui-services.png) | ![GUI repair](screenshots/19-gui-repair.png) |
 | Services, light | Repair & maintenance, light |
-| ![GUI updates](screenshots/20-gui-updates-es.png) | ![Theme picker](screenshots/31-gui-theme-picker-es.png) |
-| Windows Update, dark (Spanish) | The theme picker, unfolded from its button (Spanish) |
+| ![GUI updates](screenshots/20-gui-updates-es.png) |  |
+| Windows Update, dark (Spanish) |  |
 
 ## Screenshots
 
@@ -194,7 +194,7 @@ show the compact `\/\/. winnow` mark in the header.
 ### Safety
 
 - **Simulation mode** (`-DryRun`, or `M` in the main menu) prints every registry, service, app and command step without running it.
-- A **System Restore Point** is created automatically before the first change of each session.
+- A **System Restore Point** is offered before the first change of each session (you can skip it for that task; the JSON backup is always taken).
 - A **Winnow backup** (JSON with the exact current registry values, service startup types, DNS servers and installed-app list) is saved **before every change**: tweaks, apps, services, startup, DNS, updates, repairs. Restore any of them from **Backups & restore**.
 - Undo only touches tweaks that are currently applied, and services are only restored if they are still where Winnow put them.
 - High-risk items are flagged in lists and in the confirmation screen.
