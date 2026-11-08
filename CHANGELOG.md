@@ -6,19 +6,34 @@ All notable changes to Winnow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.2 Exit & Launcher Update**: desktop shortcut question on exit; one launcher.
-- **1.2.2 Secure Update**: update panel with Restart now or Later; downloads checked before they are installed; admin-only data folder.
 - **1.5 November Update**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
 - More changes may be added and others removed.
 
-## [1.1.5] - 2026-11-07 - Restore Point Choice
+## [1.2.2] - 2026-11-07 - Secure Update · Security Compliance Hotfix
 
-The terminal edition and the graphical interface are both **1.1.5 Restore Point Choice**.
+The terminal edition and the graphical interface are both **1.2.2 Secure Update**. It also ships everything
+from 1.2 Exit & Launcher Update, which was not published on its own.
 
 ### Added
-- **Skip the restore point**: before the first change of a session the terminal asks whether to create a System
-  Restore point, and the window's confirmation offers Yes (with restore point), No (without it) or Cancel. The
-  JSON backup is taken either way.
+- **Update panel in the window**: the update button opens a panel over the window with an animation for each
+  step: checking, **Update available** with what changed (Update / Not now / Skip this version), downloading, and
+  **Restart required** with **Restart now** (Winnow closes, updates its files and restarts) or **Later** (the
+  download is discarded and you keep using the current version). It replaces the plain message box. The download
+  and the file swap are separate steps, so nothing is replaced until you choose Restart now.
+
+### Security
+- **Winnow's data folder (`C:\ProgramData\Winnow`) is now admin-only**: owner Administrators, full control for
+  SYSTEM and Administrators, read-only for Users. Before, any standard account on the PC could add a backup file
+  there, and restoring it as administrator would write its registry values. A folder another user created first
+  is taken back, links planted in place of its subfolders are removed, and backups (also the ones imported from
+  the old WinTooler folder) are only used when an administrator, SYSTEM or you wrote them.
+- **Downloaded updates are checked before they are installed**: the SHA256 of every unpacked file is recorded when
+  the update is downloaded and compared again at "Restart now"; if anything changed, the update stops.
+
+### Fixed
+- A failed update could leave a mix of two versions (for example the new `Winnow.ps1` with the old modules), and
+  Winnow would no longer start. Every file and folder the update brings is now set aside first and put back if
+  anything fails.
 
 ### Changed
 - **Search winget never waits**: the winget search runs on its own instead of queuing behind the window's tasks
@@ -33,6 +48,34 @@ The terminal edition and the graphical interface are both **1.1.5 Restore Point 
 - The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
   About.
 - **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
+## [1.2] - 2026-11-02 - Exit & Launcher Update
+
+The terminal edition and the graphical interface are both **1.2 Exit & Launcher Update**.
+
+### Added
+- **Desktop shortcut question on exit**, in the terminal and the window, whenever there is no shortcut yet
+  (always for a copy started with the one-line command). **Yes** creates the shortcut and keeps the files (a
+  downloaded copy is first copied to `%LOCALAPPDATA%\Programs\Winnow`). **No** deletes Winnow's own files from
+  this PC like an uninstall: the download in `%TEMP%`, that copy and the desktop shortcut, once every Winnow window
+  started from them has closed. A folder you extracted yourself is never deleted, and "No" is remembered for it;
+  logs and backups are kept.
+
+### Changed
+- Opening Winnow again (mode choice, update restart, terminal button) builds its arguments in one place, so the
+  language, simulation and update-check settings always carry over.
+
+### Removed
+- `Launch-GUI.bat`. `Launch.bat` is the only launcher and asks for the mode (terminal or graphical interface).
+
+## [1.1.5] - 2026-11-02 - Restore Point Choice
+
+The terminal edition and the graphical interface are both **1.1.5 Restore Point Choice**.
+
+### Added
+- **Skip the restore point**: before the first change of a session the terminal asks whether to create a System
+  Restore point, and the window's confirmation offers Yes (with restore point), No (without it) or Cancel. The
+  JSON backup is taken either way.
+
 ## [1.1] - 2026-11-04 - Full GUI Release
 
 The graphical interface leaves preview: the terminal and the window have the same tools. The Full GUI Release was
@@ -226,7 +269,9 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.2.2...HEAD
+[1.2.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2
+[1.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2
 [1.1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.1.5
 [1.1]: https://github.com/eperez98/Winnow/releases/tag/v1.1
 [1.0.9]: https://github.com/eperez98/Winnow/releases/tag/v1.0.9

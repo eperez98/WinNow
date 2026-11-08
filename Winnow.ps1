@@ -99,6 +99,7 @@ if (-not $isAdmin -and -not $DryRun -and -not $List -and -not $Status -and -not 
 # ---- Load ------------------------------------------------------------------------------------
 foreach ($f in @(Get-ChildItem "$root\core\*.ps1") + @(Get-ChildItem "$root\modules\*.ps1")) { . $f.FullName }
 Initialize-WNContext -Root $root -DryRun:$DryRun -Yes:$Yes -NoRestorePoint:$NoRestorePoint
+Register-WNInstance
 try { Import-WNConfig } catch { Write-Host "  [ERROR] $_" -ForegroundColor Red; exit 1 }
 Set-WNLanguage $(if ($Lang) { $Lang } else { 'en' })
 
@@ -156,10 +157,7 @@ if ($Preset -or $Apply -or $Undo -or $Install) {
 if ($GUI) {
     if ([Threading.Thread]::CurrentThread.ApartmentState -ne 'STA') {
         # WPF needs a single-threaded apartment; Windows PowerShell 5.1 starts in one
-        $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate')
-        if ($DryRun) { $a += '-DryRun' }
-        if ($Lang) { $a += '-Lang', $Lang }
-        Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+        Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs GUI -Lang $Lang -NoUpdateCheck:$NoUpdateCheck) -WindowStyle Minimized
         exit 0
     }
     if (-not $WN.IsAdmin) { $WN.DryRun = $true }
@@ -168,6 +166,7 @@ if ($GUI) {
     . "$root\gui\Gui.ps1"
     # Switching language closes the window and opens it again in the other language
     # The update check runs once; reopening in another language skips it
+    # The exit question (shortcut / remove the download) is asked by the window itself while it closes
     while ($next = Show-WNGui -NoUpdateCheck:$NoUpdateCheck) { Set-WNLanguage $next; Save-WNSetting 'Lang' $next; $NoUpdateCheck = $true }
     exit 0
 }
@@ -182,9 +181,7 @@ if (-not $Lang) {
 }
 function Start-WNGuiProcess {
     # The window runs in its own STA process, with the same language and mode as this console
-    $a = @('-STA', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"", '-GUI', '-NoElevate', '-Lang', $WN.Lang)
-    if ($WN.DryRun) { $a += '-DryRun' }
-    Start-Process powershell.exe -ArgumentList $a -WindowStyle Minimized
+    Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs GUI -NoUpdateCheck:$NoUpdateCheck) -WindowStyle Minimized
 }
 # Every start asks for the mode, unless -Terminal (or -GUI, handled above) already says it
 if (-not $Terminal) {
@@ -192,9 +189,10 @@ if (-not $Terminal) {
     if (-not $mode) { Set-WNCursor $true; exit 0 }
     if ($mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
 }
-# Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut.
+# Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut;
+# a copy downloaded by the one-line launcher asks on exit instead (shortcut, or remove Winnow's files).
 if (-not $NoUpdateCheck -and (Invoke-WNUpdateCheck)) { Restart-WNApp; exit 0 }
-if (-not (Get-WNSettings).ShortcutAsked) { Show-WNShortcutOffer }
+if (-not (Get-WNSettings).ShortcutAsked -and -not (Test-WNTempCopy)) { Show-WNShortcutOffer }
 
 try {
     while ($true) {
@@ -282,5 +280,7 @@ try {
     Set-WNCursor $true
     Write-WNLog '==== exit'
 }
+Show-WNExitPrompt
+Set-WNCursor $true
 Write-Host ''
 Write-Host ('  ' + (T 'main.bye' $WN.LogFile)) -ForegroundColor DarkGray

@@ -330,6 +330,7 @@ function Start-WNChange {
 
 function Get-WNBackups {
     Get-ChildItem -Path (Get-WNBackupDir) -Filter 'backup_*.json' -ErrorAction SilentlyContinue |
+        Where-Object { Test-WNTrustedOwner $_.FullName } |
         Sort-Object Name -Descending |
         ForEach-Object {
             try { $d = Get-Content $_.FullName -Raw | ConvertFrom-Json } catch { return }

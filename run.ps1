@@ -6,8 +6,9 @@
     That page (the gh-pages branch) runs this file from the latest release. Options still work when it is run
     directly: & ([scriptblock]::Create((irm https://github.com/eperez98/WinNow/releases/latest/download/run.ps1))) -DryRun
 
-    Downloads the latest release zip to %TEMP%\Winnow-app, then starts Winnow.ps1
-    (elevated when needed). Nothing is installed.
+    Downloads the latest release zip to %TEMP%\Winnow-app, then starts Winnow.ps1 (elevated when
+    needed), which asks for the language and the mode (terminal or graphical interface). Nothing is
+    installed; on exit Winnow offers a desktop shortcut or deletes the download.
 #>
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$WNArgs)
 

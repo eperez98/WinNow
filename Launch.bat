@@ -1,6 +1,6 @@
 @echo off
 :: Winnow launcher - by Eperez98
-:: Double-click to start Winnow in the terminal as Administrator.
+:: Double-click to start Winnow as Administrator (it asks: terminal or graphical interface).
 :: Add  -DryRun  after the .ps1 path below to start in simulation mode.
 title Winnow
 

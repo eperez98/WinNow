@@ -14,10 +14,10 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'Winnow'
-        Version          = '1.1.5'
-        Channel          = 'Restore Point Choice'
-        GuiVersion       = '1.1.5'
-        GuiChannel       = 'Restore Point Choice'
+        Version          = '1.2.2'
+        Channel          = 'Secure Update'
+        GuiVersion       = '1.2.2'
+        GuiChannel       = 'Secure Update'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Donate           = 'https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD'
@@ -31,6 +31,7 @@ function Initialize-WNContext {
         OSLabel          = if ($os.Build -ge 22000) { 'Windows 11' } else { 'Windows 10' }
         Interactive      = -not [Console]::IsInputRedirected
         Gui              = $false
+        Handoff          = $false
         RestorePointDone = $false
         ErrorCount       = 0
         Config           = @{}
@@ -45,6 +46,7 @@ function Initialize-WNContext {
 
     # Logs and backups live in ProgramData when elevated, otherwise in TEMP (DryRun without admin)
     $base = if ($WN.IsAdmin) { Join-Path $env:ProgramData 'Winnow' } else { Join-Path $env:TEMP 'Winnow' }
+    if ($WN.IsAdmin) { Protect-WNDataDir $base }
     foreach ($d in @($base, (Join-Path $base 'logs'), (Join-Path $base 'backup'))) {
         if (-not (Test-Path $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
     }
@@ -54,8 +56,9 @@ function Initialize-WNContext {
     # Backups taken before the rename live in the old WinTooler folder; copy them over once
     $legacy = Join-Path (Split-Path $base) 'WinTooler\backup'
     if (Test-Path $legacy) {
+        # Only files an admin wrote: that folder is open to every user
         Get-ChildItem -Path $legacy -File -ErrorAction SilentlyContinue |
-            Where-Object { -not (Test-Path (Join-Path $base "backup\$($_.Name)")) } |
+            Where-Object { (Test-WNTrustedOwner $_.FullName) -and -not (Test-Path (Join-Path $base "backup\$($_.Name)")) } |
             Copy-Item -Destination (Join-Path $base 'backup') -ErrorAction SilentlyContinue
     }
 
@@ -64,6 +67,32 @@ function Initialize-WNContext {
     }
 
     Write-WNLog "==== $($WN.Name) $($WN.Version) start | $env:COMPUTERNAME | $($WN.OSLabel) build $($WN.OSBuild) | admin=$($WN.IsAdmin) dryrun=$($WN.DryRun) | PS $($PSVersionTable.PSVersion)"
+}
+
+function Test-WNTrustedOwner {
+    # Owned by Administrators, SYSTEM or the account running Winnow (never another standard user)
+    param([Parameter(Mandatory)][string]$Path)
+    try { $sid = (Get-Acl -LiteralPath $Path).GetOwner([Security.Principal.SecurityIdentifier]).Value } catch { return $false }
+    return ($sid -in 'S-1-5-32-544', 'S-1-5-18', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
+}
+
+function Protect-WNDataDir {
+    # ProgramData lets every user create files in new folders, and an elevated restore applies the backups found
+    # here. Make the folder admin-only: owner Administrators, SYSTEM / Administrators full control, Users read.
+    # Also takes back a folder another user created first, and removes links planted in place of the folders.
+    param([Parameter(Mandatory)][string]$Path)
+    # icacls reports per-file problems on stderr; under a caller's 'Stop' preference that would abort the start
+    $ErrorActionPreference = 'Continue'
+    foreach ($d in @($Path, (Join-Path $Path 'logs'), (Join-Path $Path 'backup'))) {
+        $i = Get-Item -LiteralPath $d -Force -ErrorAction SilentlyContinue
+        if ($i -and ($i.Attributes -band [IO.FileAttributes]::ReparsePoint)) { [IO.Directory]::Delete($d) }
+    }
+    if (-not (Test-Path -LiteralPath $Path)) { New-Item -ItemType Directory -Path $Path -Force | Out-Null }
+    $acl = Get-Acl -LiteralPath $Path
+    if ($acl.AreAccessRulesProtected -and $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value -eq 'S-1-5-32-544') { return }
+    & icacls.exe $Path /setowner '*S-1-5-32-544' /T /C /Q *> $null
+    & icacls.exe $Path /inheritance:r /grant:r '*S-1-5-18:(OI)(CI)F' '*S-1-5-32-544:(OI)(CI)F' '*S-1-5-32-545:(OI)(CI)RX' /Q *> $null
+    if (Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue) { & icacls.exe "$Path\*" /reset /T /C /Q *> $null }
 }
 
 function Write-WNLog {

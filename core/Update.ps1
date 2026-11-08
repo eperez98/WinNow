@@ -66,16 +66,22 @@ function Get-WNUpdateInfo {
     }
 }
 
-function Install-WNUpdate {
-    # Downloads the release zip and puts it in place of this copy. The code folders are swapped as a whole
-    # (old ones kept until the copy succeeds) so a failed update never leaves a half-updated Winnow.
-    param([Parameter(Mandatory)]$Update, [string]$Root = $WN.Root)
-    if ($WN.DryRun) { Write-WNStatus (T 'au.dry' $Update.Version) Dry 'Update'; return $false }
-    if (-not $Update.Zip) { Write-WNStatus (T 'au.failed' 'Winnow.zip' $WN.Version) Error 'Update'; return $false }
+function Get-WNTreeHashes {
+    # SHA256 of every file under a folder, keyed by its relative path
+    param([Parameter(Mandatory)][string]$Path)
+    $h = @{}
+    $cut = ([IO.Path]::GetFullPath($Path).TrimEnd('\')).Length + 1
+    foreach ($f in Get-ChildItem -LiteralPath $Path -Recurse -File -Force) { $h[$f.FullName.Substring($cut)] = (Get-FileHash -LiteralPath $f.FullName -Algorithm SHA256).Hash }
+    return $h
+}
+
+function Save-WNUpdate {
+    # Downloads and unpacks the release in %TEMP%. Returns @{ Path; Hashes } (Hashes are checked again before the
+    # files are installed), or $null; this copy is not touched yet.
+    param([Parameter(Mandatory)]$Update)
+    if (-not $Update.Zip) { Write-WNStatus (T 'au.failed' 'Winnow.zip' $WN.Version) Error 'Update'; return $null }
     $tmp = Join-Path $env:TEMP "Winnow-update-$PID"
     $zip = "$tmp.zip"
-    $stamp = Get-Date -Format 'yyyyMMddHHmmss'
-    $moved = @()
     try {
         Write-WNStatus (T 'au.downloading' $Update.Version) Step 'Update'
         $ProgressPreference = 'SilentlyContinue'
@@ -84,35 +90,72 @@ function Install-WNUpdate {
         Expand-Archive -Path $zip -DestinationPath $tmp -Force
         if (-not (Test-Path (Join-Path $tmp 'Winnow.ps1'))) { throw 'Winnow.ps1 is missing from the package' }
         Get-ChildItem $tmp -Recurse -File | Unblock-File -ErrorAction SilentlyContinue
-        foreach ($d in 'core', 'modules', 'gui', 'config') {
-            $t = Join-Path $Root $d
-            if (Test-Path $t) { Rename-Item -Path $t -NewName "$d.old-$stamp" -ErrorAction Stop; $moved += $d }
+        return [pscustomobject]@{ Path = $tmp; Hashes = (Get-WNTreeHashes $tmp) }
+    } catch {
+        Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        Write-WNStatus (T 'au.failed' $_.Exception.Message $WN.Version) Error 'Update'
+        return $null
+    } finally {
+        Remove-Item $zip -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Install-WNUpdate {
+    # Puts a release in place of this copy: downloads it first unless -Staged gives what Save-WNUpdate returned.
+    # Every top-level file and folder the package brings is set aside before the copy and put back if anything
+    # fails, so a failed update never leaves a mix of two versions.
+    param([Parameter(Mandatory)]$Update, [string]$Root = $WN.Root, $Staged)
+    if ($WN.DryRun) { Write-WNStatus (T 'au.dry' $Update.Version) Dry 'Update'; return $false }
+    $stage = if ($Staged) { $Staged } else { Save-WNUpdate $Update }
+    if (-not $stage -or -not (Test-Path (Join-Path $stage.Path 'Winnow.ps1'))) { return $false }
+    $tmp = $stage.Path
+    $stamp = Get-Date -Format 'yyyyMMddHHmmss'
+    $moved = @(); $added = @()
+    try {
+        # The staged files waited in a folder this user can write: install them only if they are unchanged
+        $now = Get-WNTreeHashes $tmp
+        $changed = @($stage.Hashes.Keys | Where-Object { $now[$_] -ne $stage.Hashes[$_] })
+        if ($now.Count -ne $stage.Hashes.Count -or $changed.Count) { throw (T 'au.tampered') }
+        $items = @(Get-ChildItem -LiteralPath $tmp -Force | ForEach-Object Name)
+        $added = @($items | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Root $_)) })
+        foreach ($n in $items) {
+            if ($n -in $added) { continue }
+            Rename-Item -LiteralPath (Join-Path $Root $n) -NewName "$n.old-$stamp" -ErrorAction Stop
+            $moved += $n
         }
         Copy-Item -Path (Join-Path $tmp '*') -Destination $Root -Recurse -Force -ErrorAction Stop
-        foreach ($d in $moved) { Remove-Item (Join-Path $Root "$d.old-$stamp") -Recurse -Force -ErrorAction SilentlyContinue }
+        foreach ($n in $moved) { Remove-Item -LiteralPath (Join-Path $Root "$n.old-$stamp") -Recurse -Force -ErrorAction SilentlyContinue }
         Write-WNStatus (T 'au.done' $Update.Version) Ok 'Update'
         return $true
     } catch {
-        foreach ($d in $moved) {
-            $new = Join-Path $Root $d
-            if (Test-Path $new) { Remove-Item $new -Recurse -Force -ErrorAction SilentlyContinue }
-            Rename-Item -Path (Join-Path $Root "$d.old-$stamp") -NewName $d -ErrorAction SilentlyContinue
+        foreach ($n in $moved + $added) {
+            $new = Join-Path $Root $n
+            if (Test-Path -LiteralPath $new) { Remove-Item -LiteralPath $new -Recurse -Force -ErrorAction SilentlyContinue }
         }
+        foreach ($n in $moved) { Rename-Item -LiteralPath (Join-Path $Root "$n.old-$stamp") -NewName $n -ErrorAction SilentlyContinue }
         Write-WNStatus (T 'au.failed' $_.Exception.Message $WN.Version) Error 'Update'
         return $false
     } finally {
-        Remove-Item $zip -Force -ErrorAction SilentlyContinue
-        Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
     }
+}
+
+function Get-WNLaunchArgs {
+    # powershell.exe arguments that start this copy in a given mode: the one place every relaunch builds them
+    param([Parameter(Mandatory)][ValidateSet('GUI', 'Terminal')][string]$Mode, [string]$Lang = $WN.Lang, [switch]$NoUpdateCheck)
+    $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", "-$Mode")
+    if ($Mode -eq 'GUI') { $a = @('-STA') + $a + '-NoElevate' }
+    if ($Lang) { $a += '-Lang', $Lang }
+    if ($WN.DryRun) { $a += '-DryRun' }
+    if ($NoUpdateCheck) { $a += '-NoUpdateCheck' }
+    return $a
 }
 
 function Restart-WNApp {
     # Starts the (updated) copy again with the same language and mode; this process should exit after it
     param([switch]$Gui)
-    $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Lang', $WN.Lang, '-NoUpdateCheck')
-    if ($Gui) { $a = @('-STA') + $a + '-GUI' } else { $a += '-Terminal' }
-    if ($WN.DryRun) { $a += '-DryRun' }
-    Start-Process powershell.exe -ArgumentList $a -WindowStyle $(if ($Gui) { 'Minimized' } else { 'Normal' })
+    $mode = if ($Gui) { 'GUI' } else { 'Terminal' }
+    Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs $mode -NoUpdateCheck) -WindowStyle $(if ($Gui) { 'Minimized' } else { 'Normal' })
 }
 
 function Show-WNUpdatePrompt {
@@ -166,6 +209,13 @@ function Invoke-WNUpdateCheck {
     return (Show-WNUpdatePrompt $u)
 }
 
+function Test-WNTempCopy {
+    # True for a copy the one-line launcher extracted below %TEMP% (replaced on every run, safe to remove)
+    $temp = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\')
+    $root = [IO.Path]::GetFullPath($WN.Root).TrimEnd('\')
+    return ($root.StartsWith("$temp\", [StringComparison]::OrdinalIgnoreCase) -and (Test-Path -LiteralPath (Join-Path $root 'Winnow.ps1')))
+}
+
 function New-WNShortcut {
     # Desktop shortcut with the Winnow logo that opens this copy directly. A copy started by the one-line
     # launcher lives in %TEMP% (replaced on every run), so it is first copied to a permanent folder.
@@ -173,8 +223,7 @@ function New-WNShortcut {
         [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'Programs\Winnow'),
         [string]$Path = (Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk')
     )
-    $temp = [IO.Path]::GetFullPath($env:TEMP).TrimEnd('\')
-    $target = if ([IO.Path]::GetFullPath($WN.Root).StartsWith($temp, [StringComparison]::OrdinalIgnoreCase)) { $InstallDir } else { $WN.Root }
+    $target = if (Test-WNTempCopy) { $InstallDir } else { $WN.Root }
     if ($WN.DryRun) { Write-WNStatus (T 'sc.dry' $Path (Join-Path $target 'Winnow.ps1')) Dry 'Shortcut'; return $true }
     try {
         if ($target -ne $WN.Root) {
@@ -210,4 +259,107 @@ function Show-WNShortcutOffer {
     Write-Host ''
     if (Read-WNConfirm (T 'sc.ask') -DefaultYes) { [void](New-WNShortcut); Wait-WNKey }
     Save-WNSetting 'ShortcutAsked' $true
+}
+
+function Get-WNInstallDir { Join-Path $env:LOCALAPPDATA 'Programs\Winnow' }
+
+function Test-WNManagedCopy {
+    # Copies Winnow itself put on this PC (the download in %TEMP% or the shortcut copy); only these are ever deleted
+    if (Test-WNTempCopy) { return $true }
+    $install = [IO.Path]::GetFullPath((Get-WNInstallDir)).TrimEnd('\')
+    return ([IO.Path]::GetFullPath($WN.Root).TrimEnd('\') -eq $install)
+}
+
+function Register-WNInstance {
+    # Copies Winnow may delete on exit note every Winnow process running from them (one empty file per PID),
+    # so the delete waits for all of them however they were started
+    if (-not (Test-WNManagedCopy)) { return }
+    $dir = Join-Path $WN.Root '.instances'
+    try { New-Item -ItemType File -Path (Join-Path $dir "$PID") -Force | Out-Null } catch { }
+}
+
+function Remove-WNPathsOnExit {
+    # A hidden helper waits until no Winnow process registered in these folders is alive (30 minutes at most),
+    # then deletes the folders.
+    param([Parameter(Mandatory)][string[]]$Paths)
+    $list = ($Paths | ForEach-Object { "'" + ($_ -replace "'", "''") + "'" }) -join ', '
+    $cmd = @"
+`$dirs = @($list)
+`$end = (Get-Date).AddMinutes(30)
+do {
+    Start-Sleep -Seconds 2
+    `$busy = @(foreach (`$d in `$dirs) {
+        Get-ChildItem -LiteralPath (Join-Path `$d '.instances') -Name -ErrorAction SilentlyContinue |
+            Where-Object { `$_ -match '^\d+$' -and `$_ -ne "`$PID" -and (Get-Process -Id `$_ -ErrorAction SilentlyContinue | Where-Object { `$_.ProcessName -in 'powershell', 'pwsh' }) }
+    })
+} while (`$busy.Count -and (Get-Date) -lt `$end)
+foreach (`$d in `$dirs) { Remove-Item -LiteralPath `$d -Recurse -Force -ErrorAction SilentlyContinue }
+"@
+    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($cmd))
+    Start-Process powershell.exe -ArgumentList '-NoProfile', '-NonInteractive', '-EncodedCommand', $enc -WindowStyle Hidden -WorkingDirectory $env:SystemRoot
+    Write-WNLog "Scheduled for removal after exit: $($Paths -join '; ')" -Component 'Cleanup'
+}
+
+function Uninstall-WNLocalCopy {
+    # "No" on exit: remove what Winnow put on this PC, like an uninstall: the download in %TEMP%, the shortcut
+    # copy in %LOCALAPPDATA%\Programs\Winnow and its desktop shortcut. Logs and backups in ProgramData are kept.
+    $install = [IO.Path]::GetFullPath((Get-WNInstallDir)).TrimEnd('\')
+    $dirs = @()
+    if (Test-WNTempCopy) { $dirs += [IO.Path]::GetFullPath($WN.Root).TrimEnd('\') }
+    if (Test-Path -LiteralPath (Join-Path $install 'Winnow.ps1')) { $dirs += $install }
+    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk'
+    $ourLnk = $false
+    if (Test-Path -LiteralPath $lnk) {
+        try { $ourLnk = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).Arguments.IndexOf($install, [StringComparison]::OrdinalIgnoreCase) -ge 0 } catch { }
+    }
+    if ($WN.DryRun) {
+        foreach ($d in $dirs) { Write-WNStatus (T 'dl.dryDelete' $d) Dry 'Cleanup' }
+        if ($ourLnk) { Write-WNStatus (T 'dl.dryDelete' $lnk) Dry 'Cleanup' }
+        return
+    }
+    if ($ourLnk) { Remove-Item -LiteralPath $lnk -Force -ErrorAction SilentlyContinue }
+    if ($dirs) { Remove-WNPathsOnExit -Paths $dirs }
+    Save-WNSetting 'ShortcutAsked' $false
+}
+
+function Show-WNExitPrompt {
+    # On exit, while there is no desktop shortcut yet (or from the download in %TEMP%): Yes = create it and keep
+    # the files, No = remove Winnow's own copies. A folder you extracted yourself is never deleted, and No is
+    # remembered for it. Skipped when another Winnow process takes over from these files (update restart).
+    # -Owner: the window the dialogs belong to (the GUI asks while it is closing).
+    param([switch]$Gui, $Owner)
+    if ($WN.Handoff) { return }
+    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk'
+    if (-not (Test-WNTempCopy) -and (Test-Path -LiteralPath $lnk)) { return }
+    $managed = Test-WNManagedCopy
+    $dir = [IO.Path]::GetFullPath($WN.Root).TrimEnd('\')
+    if (-not $managed -and (Get-WNSettings).ShortcutDeclined -eq $dir) { return }
+    $target = if (Test-WNTempCopy) { Get-WNInstallDir } else { $dir }
+    $box = {
+        param($text, $buttons = 'OK', $icon = 'Information')
+        if ($Owner) { [Windows.MessageBox]::Show($Owner, $text, 'Winnow', $buttons, $icon) } else { [Windows.MessageBox]::Show($text, 'Winnow', $buttons, $icon) }
+    }
+    if ($Gui) {
+        $msg = if ($managed) { T 'dl.gui' $dir (Get-WNInstallDir) } else { T 'dl.guiOwn' $dir }
+        $choice = @{ Yes = 'shortcut'; No = 'no' }["$(& $box $msg 'YesNo' 'Question')"]
+    } else {
+        $no = if ($managed) { @{ Label = (T 'dl.delete'); Value = 'no'; Hint = (T 'dl.deleteHint' (Get-WNInstallDir)) } }
+              else { @{ Label = (T 'dl.no'); Value = 'no'; Hint = (T 'dl.noHint') } }
+        $items = @(@{ Label = (T 'dl.shortcut'); Value = 'shortcut'; Hint = (T 'dl.shortcutHint' $target) }, $no)
+        $choice = Show-WNMenu -Title (T 'dl.title') -Subtitle (T 'dl.text' $dir) -Items $items -BackLabel (T 'dl.keep')
+    }
+    if ($choice -eq 'shortcut') {
+        $ok = New-WNShortcut
+        if ($ok) { Save-WNSetting 'ShortcutAsked' $true }
+        if (-not $Gui) { Wait-WNKey }
+        elseif (-not $ok) { [void](& $box (T 'sc.failedGui')) }
+        elseif ($WN.DryRun) { [void](& $box (T 'sc.dryGui')) }
+        else { [void](& $box (T 'dl.shortcutDone')) }
+    } elseif ($choice -eq 'no' -and -not $managed) {
+        Save-WNSetting 'ShortcutDeclined' $dir
+    } elseif ($choice -eq 'no') {
+        Uninstall-WNLocalCopy
+        if ($Gui -and -not $WN.DryRun) { [void](& $box (T 'dl.deleting')) }
+        elseif (-not $Gui -and -not $WN.DryRun) { Write-WNStatus (T 'dl.deleting') Ok 'Cleanup' }
+    }
 }

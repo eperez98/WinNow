@@ -1664,32 +1664,170 @@ function Set-WNGuiUpdateState {
 }
 
 function Start-WNGuiUpdateCheck {
-    # Runs in the worker so the window never waits on GitHub. -Startup: an update offers its dialog once,
-    # unless that version was skipped; otherwise the pill just shows the result.
-    param([switch]$Startup)
+    # Runs in the worker so the window never waits on GitHub. -Show: the update panel follows the whole check
+    # (button in the top bar). -Startup: quiet; an update opens the panel once, unless that version was skipped.
+    param([switch]$Startup, [switch]$Show)
+    $g = $script:WNGui
     Set-WNGuiUpdateState 'Checking'
-    $script:WNGui.AutoOffer = [bool]$Startup
+    $g.AutoOffer = [bool]$Startup
+    $g.UpdShow = [bool]$Show
+    if ($Show) { Show-WNGuiUpdatePanel 'checking' }
     Start-WNGuiJob -Label (T 'au.checking') -Script { Get-WNUpdateInfo }.ToString() -OnDone {
         param($out)
+        $g = $script:WNGui
         $u = $out[0]
-        if (-not $u) { Set-WNGuiUpdateState 'Offline'; return }
-        if (-not $u.Newer) { Set-WNGuiUpdateState 'None'; return }
+        if (-not $u) { Set-WNGuiUpdateState 'Offline'; if ($g.UpdShow) { Show-WNGuiUpdatePanel 'offline' }; return }
+        if (-not $u.Newer) { Set-WNGuiUpdateState 'None'; if ($g.UpdShow) { Show-WNGuiUpdatePanel 'none' }; return }
         Set-WNGuiUpdateState 'Available' $u
-        if ($script:WNGui.AutoOffer -and (Get-WNSettings).SkipVersion -ne $u.Version) { Invoke-WNGuiUpdate }
+        if ($g.UpdShow -or ($g.AutoOffer -and (Get-WNSettings).SkipVersion -ne $u.Version)) { Show-WNGuiUpdatePanel 'available' }
     }
 }
 
-function Invoke-WNGuiUpdate {
-    # Release notes in a dialog. Yes = update now, No = keep this version, Cancel = skip this version.
+function New-WNGuiUpdatePanel {
+    # A dimmed layer over the whole window with one centred card: animation, title, text, notes, buttons
+    $g = $script:WNGui
+    $layer = New-Object Windows.Controls.Grid
+    $layer.Background = [Windows.Media.Brush](ConvertTo-WNBrush '#8C000000')
+    $layer.Visibility = 'Collapsed'
+    [Windows.Controls.Panel]::SetZIndex($layer, 100)
+    [Windows.Controls.Grid]::SetRowSpan($layer, 99)
+    [Windows.Controls.Grid]::SetColumnSpan($layer, 99)
+    $card = New-Object Windows.Controls.Border
+    $card.Width = 540
+    $card.CornerRadius = 20
+    $card.Padding = '36,30'
+    $card.HorizontalAlignment = 'Center'
+    $card.VerticalAlignment = 'Center'
+    $card.Effect = New-Object Windows.Media.Effects.DropShadowEffect -Property @{ BlurRadius = 40; ShadowDepth = 6; Opacity = 0.35 }
+
+    # Art: a spinning ring (checking, installing) or one glyph; the download arrow bobs while downloading
+    $art = New-Object Windows.Controls.Grid
+    $art.Width = 96; $art.Height = 96; $art.Margin = '0,0,0,18'
+    $ring = New-Object Windows.Shapes.Ellipse
+    $ring.StrokeThickness = 7; $ring.Opacity = 0.18
+    $ring.SetResourceReference([Windows.Shapes.Shape]::StrokeProperty, 'AccentText')
+    $arc = New-Object Windows.Shapes.Path
+    $arc.Data = [Windows.Media.Geometry]::Parse('M 48,3.5 A 44.5,44.5 0 0 1 92.5,48')
+    $arc.StrokeThickness = 7; $arc.StrokeStartLineCap = 'Round'; $arc.StrokeEndLineCap = 'Round'
+    $arc.SetResourceReference([Windows.Shapes.Shape]::StrokeProperty, 'AccentText')
+    $spin = New-Object Windows.Media.RotateTransform 0, 48, 48
+    $arc.RenderTransform = $spin
+    $anim = New-Object Windows.Media.Animation.DoubleAnimation 0, 360, ([Windows.Duration][TimeSpan]::FromSeconds(0.9))
+    $anim.RepeatBehavior = [Windows.Media.Animation.RepeatBehavior]::Forever
+    $spin.BeginAnimation([Windows.Media.RotateTransform]::AngleProperty, $anim)
+    $spinner = New-Object Windows.Controls.Grid
+    [void]$spinner.Children.Add($ring); [void]$spinner.Children.Add($arc)
+    $glyph = New-WNGuiIcon 'E896' 56
+    $glyph.HorizontalAlignment = 'Center'
+    $bob = New-Object Windows.Media.TranslateTransform
+    $glyph.RenderTransform = $bob
+    [void]$art.Children.Add($spinner); [void]$art.Children.Add($glyph)
+
+    $title = New-WNGuiText '' -Bold -Size 28 -Wrap
+    $title.TextAlignment = 'Center'
+    $text = New-WNGuiText '' -Dim -Size 14 -Wrap -Margin '0,8,0,0'
+    $text.TextAlignment = 'Center'
+    $notesText = New-WNGuiText '' -Size 12.5 -Wrap
+    $notes = New-Object Windows.Controls.ScrollViewer
+    $notes.MaxHeight = 210; $notes.VerticalScrollBarVisibility = 'Auto'; $notes.Content = $notesText
+    $notesBox = New-Object Windows.Controls.Border
+    $notesBox.CornerRadius = 12; $notesBox.Padding = '14,10'; $notesBox.Margin = '0,18,0,0'
+    $notesBox.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Card')
+    $notesBox.Child = $notes
+    $bar = New-Object Windows.Controls.ProgressBar
+    $bar.IsIndeterminate = $true; $bar.Height = 6; $bar.Width = 320; $bar.Margin = '0,22,0,0'; $bar.BorderThickness = 0
+    $bar.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'AccentSolid')
+    $bar.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, 'Card')
+    $buttons = New-WNGuiPanel
+    $buttons.HorizontalAlignment = 'Center'; $buttons.Margin = '0,24,0,0'
+
+    $stack = New-WNGuiPanel -Orientation Vertical -Children @($art, $title, $text, $notesBox, $bar, $buttons)
+    $card.Child = $stack
+    [void]$layer.Children.Add($card)
+    [void]$g.Window.FindName('Root').Children.Add($layer)
+    $g.Upd = @{ Layer = $layer; Card = $card; Spinner = $spinner; Glyph = $glyph; Bob = $bob; Title = $title; Text = $text
+                Notes = $notesBox; NotesText = $notesText; Bar = $bar; Buttons = $buttons }
+}
+
+function Show-WNGuiUpdatePanel {
+    # States: checking, none, offline, available, dry, downloading, ready, installing, failed
+    param([string]$State)
+    $g = $script:WNGui
+    if (-not $g.Upd) { New-WNGuiUpdatePanel }
+    $p = $g.Upd
+    $u = $g.Update
+    $p.Card.Background = [Windows.Media.Brush](ConvertTo-WNBrush $g.Theme.Bg)
+    $p.Layer.Visibility = 'Visible'
+    $busy = $State -in 'checking', 'installing'
+    $p.Spinner.Visibility = if ($busy) { 'Visible' } else { 'Collapsed' }
+    $p.Glyph.Visibility = if ($busy) { 'Collapsed' } else { 'Visible' }
+    $p.Glyph.Text = [string][char]$(switch ($State) { 'none' { 0xE73E } 'ready' { 0xE72C } 'dry' { 0xE946 } { $_ -in 'offline', 'failed' } { 0xE7BA } default { 0xE896 } })
+    $p.Glyph.SetResourceReference([Windows.Controls.TextBlock]::ForegroundProperty, $(if ($State -in 'offline', 'failed') { 'Warn' } else { 'AccentText' }))
+    $bobbing = New-Object Windows.Media.Animation.DoubleAnimation -6, 6, ([Windows.Duration][TimeSpan]::FromSeconds(0.55))
+    $bobbing.AutoReverse = $true; $bobbing.RepeatBehavior = [Windows.Media.Animation.RepeatBehavior]::Forever
+    $p.Bob.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $(if ($State -eq 'downloading') { $bobbing } else { $null }))
+    $ver = if ($u) { $u.Version } else { '' }
+    $p.Title.Text = switch ($State) {
+        'checking' { T 'upd2.checking' } 'none' { T 'upd2.none' } 'offline' { T 'upd2.offline' } 'available' { T 'upd2.available' }
+        'dry' { T 'upd2.available' } 'downloading' { T 'upd2.downloading' $ver } 'ready' { T 'upd2.ready' }
+        'installing' { T 'upd2.installing' } default { T 'upd2.failed' }
+    }
+    $p.Text.Text = switch ($State) {
+        'checking' { T 'upd2.checkingSub' } 'none' { T 'au.upToDate' $WN.GuiVersion } 'offline' { T 'upd2.offlineSub' }
+        'available' { T 'upd2.availableSub' $ver $WN.GuiVersion } 'dry' { T 'upd2.drySub' $ver }
+        'downloading' { T 'upd2.downloadingSub' } 'ready' { T 'upd2.readySub' $ver $WN.GuiVersion }
+        'installing' { T 'upd2.installingSub' $ver } default { T 'upd2.failedSub' $WN.GuiVersion }
+    }
+    $p.Notes.Visibility = if ($State -eq 'available' -and $u.Notes) { 'Visible' } else { 'Collapsed' }
+    if ($State -eq 'available') { $p.NotesText.Text = (@($u.Notes | Select-Object -First 40) -join "`n").Trim() }
+    $p.Bar.Visibility = if ($State -in 'downloading', 'installing') { 'Visible' } else { 'Collapsed' }
+    $p.Buttons.Children.Clear()
+    $btn = { param($key, $do, [switch]$Accent) $b = New-WNGuiButton (T $key) -Accent:$Accent -Always -OnClick $do; $b.Margin = '6,0'; [void]$p.Buttons.Children.Add($b) }
+    switch ($State) {
+        'available' {
+            & $btn 'upd2.update' { Start-WNGuiUpdateDownload } -Accent
+            & $btn 'upd2.notNow' { Hide-WNGuiUpdatePanel }
+            & $btn 'upd2.skip' { Save-WNSetting 'SkipVersion' $script:WNGui.Update.Version; Hide-WNGuiUpdatePanel }
+        }
+        'ready' {
+            & $btn 'upd2.restartNow' { Start-WNGuiUpdateInstall } -Accent
+            & $btn 'upd2.later' {
+                # Later: this version keeps running; the download is thrown away and offered again next time
+                $g = $script:WNGui
+                if ($g.UpdStaged) { Remove-Item -LiteralPath $g.UpdStaged.Path -Recurse -Force -ErrorAction SilentlyContinue; $g.UpdStaged = $null }
+                Hide-WNGuiUpdatePanel
+            }
+        }
+        { $_ -in 'none', 'offline', 'failed', 'dry' } { & $btn 'upd2.close' { Hide-WNGuiUpdatePanel } -Accent }
+    }
+}
+
+function Hide-WNGuiUpdatePanel { if ($script:WNGui.Upd) { $script:WNGui.Upd.Layer.Visibility = 'Collapsed' } }
+
+function Start-WNGuiUpdateDownload {
+    # Step 1: download and unpack in the worker; this copy is not touched until "Restart now"
     $g = $script:WNGui
     $u = $g.Update
-    $notes = @($u.Notes | Select-Object -First 22) -join "`n"
-    $r = [Windows.MessageBox]::Show($g.Window, (T 'au.gui' $u.Version $WN.GuiVersion $notes), 'Winnow', 'YesNoCancel', 'Information')
-    if ("$r" -eq 'Cancel') { Save-WNSetting 'SkipVersion' $u.Version; return }
-    if ("$r" -ne 'Yes') { return }
-    Start-WNGuiJob -Label (T 'au.downloading' $u.Version) -Arguments @($WN.DryRun, $u) -Script { param($dry, $u) $WN.DryRun = $dry; Install-WNUpdate $u }.ToString() -OnDone {
+    if ($WN.DryRun) { Show-WNGuiUpdatePanel 'dry'; return }
+    Show-WNGuiUpdatePanel 'downloading'
+    Start-WNGuiJob -Label (T 'au.downloading' $u.Version) -Arguments @(, $u) -Script { param($u) Save-WNUpdate $u }.ToString() -OnDone {
         param($o)
-        if ($o[0]) { Restart-WNApp -Gui; $script:WNGui.Window.Close() } else { Show-WNGuiInfo (T 'au.failedGui') }
+        $st = @($o | Where-Object { $_.Path -and $_.Hashes }) | Select-Object -Last 1
+        if ($st -and (Test-Path -LiteralPath $st.Path)) { $script:WNGui.UpdStaged = $st; Show-WNGuiUpdatePanel 'ready' } else { Show-WNGuiUpdatePanel 'failed' }
+    }
+}
+
+function Start-WNGuiUpdateInstall {
+    # Step 2 (Restart now): swap the files, then this window closes and the updated Winnow opens
+    $g = $script:WNGui
+    Show-WNGuiUpdatePanel 'installing'
+    Start-WNGuiJob -Label (T 'upd2.installing') -Arguments @($WN.DryRun, $g.Update, $g.UpdStaged) -Script {
+        param($dry, $u, $dir) $WN.DryRun = $dry; Install-WNUpdate -Update $u -Staged $dir
+    }.ToString() -OnDone {
+        param($o)
+        $g = $script:WNGui
+        $g.UpdStaged = $null
+        if (@($o)[-1] -eq $true) { $WN.Handoff = $true; Restart-WNApp -Gui; $g.Window.Close() } else { Show-WNGuiUpdatePanel 'failed' }
     }
 }
 #endregion
@@ -1761,9 +1899,7 @@ function Show-WNGui {
     # The name pill in the top bar opens About
     $window.FindName('IdentityPill').Add_MouseLeftButtonUp({ Show-WNGuiPage 'about' })
     $ctl.TerminalBtn.Add_Click({
-        $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Terminal', '-Lang', $WN.Lang)
-        if ($WN.DryRun) { $a += '-DryRun' }
-        Start-Process powershell.exe -ArgumentList $a
+        Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs Terminal -NoUpdateCheck)
     })
     # EN | ES: the current language is filled; picking the other one reopens the window in it
     $ctl["Lang$(if ($WN.Lang -eq 'es') { 'Es' } else { 'En' })"].IsChecked = $true
@@ -1779,7 +1915,7 @@ function Show-WNGui {
         if (New-WNShortcut) { Show-WNGuiInfo $(if ($WN.DryRun) { T 'sc.dryGui' } else { T 'sc.doneGui' }) } else { Show-WNGuiInfo (T 'sc.failedGui') }
     })
     Set-WNGuiUpdateState 'Idle'
-    $ctl.UpdateBtn.Add_Click({ if ($script:WNGui.UpdateState -eq 'Available') { Invoke-WNGuiUpdate } else { Start-WNGuiUpdateCheck } })
+    $ctl.UpdateBtn.Add_Click({ if ($script:WNGui.UpdateState -eq 'Available') { Show-WNGuiUpdatePanel 'available' } else { Start-WNGuiUpdateCheck -Show } })
     $ctl.LogToggle.Add_Click({ $script:WNGui.Log.Visibility = if ($script:WNGui.Ctl.LogToggle.IsChecked) { 'Visible' } else { 'Collapsed' } })
     $ctl.SearchBox.Add_TextChanged({ Update-WNGuiFilter })
     # A click in the search box selects what is there, so typing replaces it
@@ -1828,7 +1964,7 @@ function Show-WNGui {
     # ---- Start: worker, home page, then the update check in the background
     $g.Runspace = New-WNGuiWorker
     $window.Add_ContentRendered({
-        # Started from a minimized console (Launch-GUI.bat, restarts), Windows hands the window that state too
+        # Started from a minimized console (mode choice, restarts), Windows hands the window that state too
         if ($this.WindowState -eq 'Minimized') { $this.WindowState = 'Normal' }
         [void]$this.Activate()
         Show-WNGuiPage 'home'
@@ -1841,6 +1977,9 @@ function Show-WNGui {
             $e.Cancel = $true; $g.Relaunch = $null; return
         }
         if ($g.Job) { $g.Job.PS.Stop() }
+        if ($g.UpdStaged) { Remove-Item -LiteralPath $g.UpdStaged.Path -Recurse -Force -ErrorAction SilentlyContinue; $g.UpdStaged = $null }
+        # Not when the window only reopens (language) or hands over to the updated copy
+        if (-not $g.Relaunch -and -not $WN.Handoff -and -not $g.ExitAsked) { $g.ExitAsked = $true; Show-WNExitPrompt -Gui -Owner $this }
     })
 
     Write-WNLog 'GUI opened' -Component 'Gui'
