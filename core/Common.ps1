@@ -15,9 +15,9 @@ function Initialize-WNContext {
     $global:WN = [ordered]@{
         Name             = 'Winnow'
         Version          = '1.2.2'
-        Channel          = 'Secure Update'
+        Channel          = "Secure Update $([char]0x00B7) Security Compliance Hotfix"
         GuiVersion       = '1.2.2'
-        GuiChannel       = 'Secure Update'
+        GuiChannel       = "Secure Update $([char]0x00B7) Security Compliance Hotfix"
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Donate           = 'https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD'

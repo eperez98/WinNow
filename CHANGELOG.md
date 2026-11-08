@@ -13,6 +13,8 @@ All notable changes to Winnow are listed here. The format follows
 
 The terminal edition and the graphical interface are both **1.2.2 Secure Update**. It also ships everything
 from 1.2 Exit & Launcher Update, which was not published on its own.
+The window, the terminal and About show the full name **Secure Update · Security Compliance Hotfix**; a long
+version line in About now wraps instead of running under its buttons.
 
 ### Added
 - **Update panel in the window**: the update button opens a panel over the window with an animation for each

@@ -1279,7 +1279,7 @@ function Build-WNGuiAbout {
     if ($logo) { $logo.Margin = '0,0,18,0' }
     $info = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiText $WN.Name -Bold -Size 24),
-        (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim),
+        (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim -Wrap),
         (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'),
         (New-WNGuiText (T 'brand.madeIn') -Dim -Size 12 -Margin '0,2,0,0'))
     $info.VerticalAlignment = 'Center'
@@ -1295,7 +1295,11 @@ function Build-WNGuiAbout {
     $donate.Margin = '0,0,8,0'
     [Windows.Controls.DockPanel]::SetDock($donate, 'Right')
     [void]$head.Children.Add($donate)
-    [void]$head.Children.Add((New-WNGuiPanel -Children @($logo, $info)))
+    # A DockPanel (not a horizontal StackPanel) gives the text a width, so a long byline wraps instead of running under the buttons
+    $id = New-Object Windows.Controls.DockPanel
+    if ($logo) { [Windows.Controls.DockPanel]::SetDock($logo, 'Left'); [void]$id.Children.Add($logo) }
+    [void]$id.Children.Add($info)
+    [void]$head.Children.Add($id)
     $stack = New-WNGuiPanel -Orientation Vertical -Children @(
         (New-WNGuiGlass $head),
         (New-WNGuiCard -Title (T 'about.whatTitle') -Text (T 'about.what') -Icon 'E946'),
