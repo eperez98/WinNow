@@ -1,276 +1,228 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="LOGO/Winnow_logo.png"/>
-    <img src="LOGO/Winnow_logo_light.png" width="560" alt="WinNow - sift Windows down to what matters"/>
-  </picture>
-</p>
+<div align="center">
 
-<p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal or from the graphical interface.</b></p>
-<p align="center"><sub>Proudly made in Panama PTY507</sub></p>
+**English** · [Español](README.es.md)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/version-1.5%20QL%20Update%20Mid%20November-10B981?style=flat-square"/>
-  <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
-  <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
-  <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
-  <img src="https://img.shields.io/badge/license-GPL--3.0-FBBF24?style=flat-square"/>
-</p>
+<img src="docs/readme-hero-en.png" alt="WinNow: debloat and maintain Windows 10 and 11" width="100%" />
 
-<p align="center">
-  <a href="#quick-start">Quick start</a> &nbsp;&middot;&nbsp;
-  <a href="#graphical-interface">Graphical interface</a> &nbsp;&middot;&nbsp;
-  <a href="#screenshots">Screenshots</a> &nbsp;&middot;&nbsp;
-  <a href="#features">Features</a> &nbsp;&middot;&nbsp;
-  <a href="#roadmap">Roadmap</a> &nbsp;&middot;&nbsp;
-  <a href="CHANGELOG.md">Changelog</a>
-</p>
+<br />
 
-<p align="center"><code>irm eperez98.github.io/WinNow | iex</code></p>
+[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.5%20QL%20Update%20Mid%20November-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
 
----
+![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
+![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
+![Nothing to install](https://img.shields.io/badge/nothing-to%20install-123A5C)
+![English | Español](https://img.shields.io/badge/English%20%7C%20Espa%C3%B1ol-123A5C)
+![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-123A5C)
 
-**WinNow** separates the grain from the chaff: it strips telemetry, ads and bloat from Windows and keeps
-what you use. It is a keyboard-driven terminal app built around a declarative tweak catalog. Every tweak
-declares the value it applies **and** the value it restores, so WinNow can tell what is already applied,
-apply it, and undo it. A backup is saved before every change. The whole interface is available in
-**English and Spanish**. Tweaks come in two levels: **Recommended** (gentle changes that are safe for any PC)
-and **Advanced** (changes that need care). The **graphical interface** has every module of the terminal, grouped the
-same way. See the [CHANGELOG](CHANGELOG.md).
-
-| Edition | Version | Status |
-|---|---|---|
-| Terminal | **1.5** | QL Update Mid November |
-| Graphical interface | **1.5** | QL Update Mid November |
-
-> [!NOTE]
-> Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
-> programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
-> Both run on the same engine and both are at **1.5**. Every start asks which one you want; the window has a
-> button that opens the terminal, and `G` in the terminal opens the window.
-
-## Quick start
-
-Open **PowerShell** (or Windows Terminal) and run this one line:
+**Telemetry, ads and bloat out; what you use stays. From the terminal or from a window.**<br />
+Every change is backed up first and can be undone.
 
 ```powershell
 irm eperez98.github.io/WinNow | iex
 ```
 
-It downloads the latest release to `%TEMP%\Winnow-app` and starts it (asking for administrator rights).
-Nothing is installed. Then WinNow asks, every time:
+[Features](#features) · [Screenshots](#screenshots) · [Run it](#run-it) · [Security](#security) · [Roadmap](#roadmap) · [Changelog](CHANGELOG.md)
 
-1. **Language**: English / Español.
-2. **Mode**: **Terminal** (keyboard menus) or **Graphical interface (GUI)**. The last choice is highlighted.
+</div>
 
-To explore without changing anything, turn on **simulation mode** (`M` in the terminal, or the checkbox in the
-window). When you close WinNow it asks: **Yes**, create a desktop shortcut to open it again later (WinNow is
-copied to `%LOCALAPPDATA%\Programs\Winnow` and the files are kept), or **No**, delete WinNow's files from this PC
-like an uninstall (the download, that copy and the shortcut). Logs and backups are always kept.
+---
 
-**Offline / manual:** download `Winnow.zip` from [Releases](https://github.com/eperez98/Winnow/releases/latest),
-extract it and right-click `Launch.bat` -> *Run as administrator*. It is the only launcher: it asks for the mode
-(terminal or graphical interface).
-Or from a terminal in that folder:
+## Why WinNow
 
-```powershell
-.\Winnow.ps1            # asks for the language and the mode (asks for admin)
-.\Winnow.ps1 -DryRun    # simulation: nothing is changed
-.\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
-.\Winnow.ps1 -GUI      # graphical interface, without asking for the mode
-.\Winnow.ps1 -Terminal # terminal menus, without asking for the mode
-```
+<table>
+<tr>
+<td width="33%" valign="top">
 
-### Desktop shortcut and updates
+### ↩️ Everything can be undone
+Every tweak declares the value it sets **and** the value it restores. A JSON backup is saved before every change, a System Restore point is offered, and **simulation mode** shows each step without running it.
 
-- **Desktop shortcut:** when you close WinNow and there is no shortcut yet (always, for a copy started with the
-  one-line command), it asks: **Yes** creates a desktop shortcut with its logo that opens WinNow directly with no
-  download (a downloaded copy is first copied to `%LOCALAPPDATA%\Programs\Winnow`) and keeps the files; **No**
-  deletes WinNow's own files from this PC like an uninstall: the download in `%TEMP%`, the copy in
-  `%LOCALAPPDATA%\Programs\Winnow` and the shortcut, once every WinNow window has closed. A folder you extracted
-  yourself is never deleted. Logs and backups are kept. Create the shortcut any time with `K` in the main menu or
-  the link button in the window.
-- **Restore point:** before the first change of a session WinNow asks whether to create a System Restore point
-  (it can take a few minutes). In the window the confirmation reads **Yes** (with restore point), **No** (without
-  it) or **Cancel**. The JSON backup is taken either way; `-NoRestorePoint` never creates one.
-- **Updates:** every start asks GitHub for the latest release (a few seconds at most, silent when offline). When
-  there is a newer one, WinNow shows which version it is and its changelog, and lets you choose: **update now**
-  (download, replace this copy, restart), **keep using the current version** (asks again next time), or **skip
-  this version**. A failed update leaves the current copy as it was. Check by hand with `U` in the main menu or the
-  **Check for this tool updates** button in the window, which opens an update panel: a spinner while it checks,
-  **Update available** with what changed (Update / Not now / Skip this version), a download animation, and then
-  **Restart required** with **Restart now** (WinNow closes, updates its files and opens again) or **Later** (you keep
-  using the current version). `-NoUpdateCheck` turns the startup check off.
+</td>
+<td width="33%" valign="top">
 
-## Graphical interface
+### 🧭 Gentle by default
+**18 Recommended** tweaks that are safe for any PC (nothing removed, services and network untouched) and **33 Advanced** ones that ask for care. Presets Minimal, Standard and Heavy.
 
-A modern, translucent and flat window in the Windows 11 / iOS style: on Windows 11 22H2 or later the background is
-the blurred acrylic backdrop of Windows (a solid colour on older builds), with frosted cards, rounded corners and a
-blue accent. It has three themes in the theme button: **Light**, **Dark** and **Mes patrio** (November is Panama's patriotic
-month: the Panama icon, the flag on the home banner and an aero background in Panama navy and red). It starts in
-mes patrio in November, otherwise in the Windows setting, and remembers your choice, and an **EN | ES** switch for the language. A sidebar lists every tool, a search
-bar sits on top, and the home page has a banner, a **Start here** card that opens the recommended tweaks, and a tile
-for every tool. Choose it at start, or open it with `G` in the terminal main menu or `-GUI`.
+</td>
+<td width="33%" valign="top">
 
-The search bar works on every page: it filters the current list (tweaks, services, apps, programs, backups...).
-On the App Manager, pressing Enter in it searches all of winget.
+### 🔒 Nothing installed
+One line in PowerShell runs it from GitHub. Logs and backups live in an admin-only folder, and updates are checked file by file before they are installed.
 
-Every terminal module is in the window, grouped like the terminal main menu:
-
-| Group | Pages |
-|---|---|
-| **Optimize** | Tweaks (Recommended / Advanced / All tabs, presets, select applied, apply / undo), Preferences (ON / OFF switches), Services, Startup apps |
-| **Apps** | App Manager (catalog filter, search all of winget, install, uninstall, upgrade all, installed tags), Uninstall programs (desktop and Store) |
-| **Maintain** | Repair & maintenance, Windows Update (status, recommended, defaults, pause, resume), Backups & restore |
-| **Network** | DNS (current servers and every provider), Hosts file (telemetry / Adobe blocks, active entries) |
-| **System** | System information, Logs |
-
-It uses the same engine as the terminal, so every change still gets a restore point, a backup, real undo and
-simulation mode. Long tasks run in the background and stream their output into the log at the bottom.
-
-| | |
-|---|---|
-| ![Home, mes patrio](screenshots/29-gui-home-patria-es.png) | ![About, mes patrio](screenshots/30-gui-about-patria.png) |
-| Home in the mes patrio theme (Spanish) | About, mes patrio |
-| ![GUI home](screenshots/15-gui-home.png) | ![GUI home light](screenshots/18-gui-home-es.png) |
-| Home, dark | Home, light (Spanish) |
-| ![GUI tweaks](screenshots/16-gui-tweaks.png) | ![GUI advanced tweaks](screenshots/23-gui-tweaks-advanced-es.png) |
-| Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
-| ![GUI services](screenshots/21-gui-services.png) | ![GUI repair](screenshots/19-gui-repair.png) |
-| Services, light | Repair & maintenance, light |
-| ![GUI updates](screenshots/20-gui-updates-es.png) | ![GUI about](screenshots/27-gui-about.png) |
-| Windows Update, dark (Spanish) | About WinNow, dark |
+</td>
+</tr>
+</table>
 
 ## Screenshots
 
+<div align="center">
+<img src="screenshots/en/home.png" alt="WinNow home" width="100%" />
+<sub><b>Home</b> — every tool grouped like the terminal menu, with a <b>Start here</b> card for the recommended tweaks.</sub>
+</div>
+
+<br />
+
 | | |
-|---|---|
-| ![Language](screenshots/00-language.png) | ![Mode](screenshots/24-mode.png) |
-| Language selector at startup | Then the mode: terminal or graphical interface |
-| ![Main menu](screenshots/01-main-menu.png) | ![Menú principal](screenshots/13-main-menu-es.png) |
-| Main menu, grouped like the GUI sidebar | Main menu in Spanish |
-| ![Tweaks](screenshots/03-tweaks-essential.png) | ![Tweaks en español](screenshots/14-tweaks-es.png) |
-| Tweaks with live status, multi-select | Tweaks in Spanish |
-| ![Confirm](screenshots/04-confirm.png) | ![Simulation](screenshots/05-apply-simulation.png) |
-| Confirmation with risk levels | Simulation mode prints every step |
-| ![Preferences](screenshots/06-preferences.png) | ![Apps](screenshots/08-apps-browsers.png) |
-| Preferences as ON/OFF switches | App Manager (winget) with installed detection |
-| ![Repair](screenshots/09-repair.png) | ![Backups](screenshots/10-backups.png) |
-| Repair & maintenance | Backups and restore points |
-| ![Uninstall](screenshots/12-uninstall.png) | ![About](screenshots/25-about.png) |
-| Uninstall any program or Store app | About WinNow (`A`): the core, releases and future ideas |
-| ![Exit](screenshots/26-exit.png) | |
-| On exit: desktop shortcut, or remove WinNow's files | |
+|:---:|:---:|
+| <img src="screenshots/en/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b> — live status, apply and real undo, presets</sub> | <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> |
+| <img src="screenshots/en/preferences.png" alt="Preferences" /><br /><sub><b>Preferences</b> — 18 ON / OFF switches</sub> | <img src="screenshots/en/services.png" alt="Services" /><br /><sub><b>Services</b> — current vs. recommended vs. Windows default</sub> |
+| <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
+| <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> | <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark and Mes patrio, picked in the window</sub> |
 
-## Tweak levels
+<details>
+<summary><b>🎨 Light and Mes patrio themes</b></summary>
+<br />
 
-| Level | What it means | Examples |
-|---|---|---|
-| **Recommended** (18) | Gentle changes, safe for any PC. Nothing is removed, services and network are untouched, everything can be undone | Telemetry off, activity history, Start menu ads, Store search results, End Task on the taskbar, Edge and Brave debloat, temp files and disk cleanup |
-| **Advanced** (33) | Changes that need care: they remove apps, change services, network, power plans or the interface. Read each description first | Trim services, remove bloatware / Xbox / OneDrive / Edge, Copilot and Windows AI off, hosts blocks, IPv6 / Teredo, power plans, classic context menu |
+| | |
+|:---:|:---:|
+| <img src="screenshots/en/home-light.png" alt="Light theme" /><br /><sub>Light theme</sub> | <img src="screenshots/en/tweaks-light.png" alt="Tweaks, light" /><br /><sub>Tweaks in the light theme</sub> |
+| <img src="screenshots/en/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: November is Panama's patriotic month</sub> | <img src="screenshots/en/about-patria.png" alt="About, mes patrio" /><br /><sub>About in the mes patrio theme</sub> |
 
-In the terminal, **Tweaks** opens with **Recommended** (`R`) and **Advanced - CAUTION** (`A`) first, then the six
-categories and the tools (presets, all tweaks, undo applied). In the GUI they are the first tabs of the Tweaks page.
-The **Standard** preset is exactly the recommended set; **Heavy** adds a selection of advanced tweaks.
+</details>
 
-The main menu is grouped like the GUI sidebar: **Optimize** (1-4), **Apps** (5-6), **Maintain** (7-9),
-**Network** (`D` DNS, `H` hosts), **System** (`Y` information, `L` logs) and **WinNow** (`G` graphical interface,
-`U` check for updates, `K` desktop shortcut, `I` language, `M` simulation mode).
+<details>
+<summary><b>⌨️ Terminal edition</b></summary>
+<br />
 
-The full logo banner appears on the main menu when the terminal is at least 40 rows tall; smaller windows
-show the compact `\/\/. winnow` mark in the header.
+| | |
+|:---:|:---:|
+| <img src="screenshots/terminal/mode-en.png" alt="Mode choice" /><br /><sub>Every start: terminal or window</sub> | <img src="screenshots/terminal/main-menu-en.png" alt="Main menu" /><br /><sub>Main menu, grouped like the window's sidebar</sub> |
+| <img src="screenshots/terminal/tweaks-en.png" alt="Tweaks in the terminal" /><br /><sub>Tweaks with live status and multi-select</sub> | <img src="screenshots/terminal/preferences-en.png" alt="Preferences in the terminal" /><br /><sub>Preferences as ON / OFF switches</sub> |
+| <img src="screenshots/terminal/repair-en.png" alt="Repair in the terminal" /><br /><sub>Repair & maintenance</sub> | <img src="screenshots/terminal/exit-en.png" alt="Exit question" /><br /><sub>On exit: desktop shortcut, or remove WinNow's files</sub> |
 
-### Keys
+</details>
 
-| Key | Action |
-|---|---|
-| `Up` / `Down`, `PgUp` / `PgDn` | Move |
-| `Enter` | Select / apply |
-| `Space` | Tick an item in a list |
-| `A` | Tick all / none (visible items) |
-| `/` | Search inside a list |
-| `U` | Undo the ticked tweaks |
-| `1`-`9`, letters | Menu shortcuts |
-| `Esc` | Back |
+<sub>Screenshots are taken in simulation mode. Pages that would show your own programs, hosts file or hardware are left out.</sub>
 
 ## Features
 
-| Menu | What it does |
-|---|---|
-| **Tweaks** | 51 tweaks in two levels (18 **Recommended**, 33 **Advanced**) and 6 categories, live status (`APPLIED`, `PARTIAL`, `-`), apply + real undo, presets **Minimal / Standard / Heavy**, "Undo applied tweaks" scan |
-| **Preferences** | 18 ON/OFF switches: dark mode, file extensions, hidden files, taskbar, Bing search, mouse acceleration, GPU scheduling, NumLock... |
-| **App Manager** | 376-app catalog, install / uninstall via winget (Chocolatey fallback), installed detection, upgrade all, and **search all of winget by name** (`W`) |
-| **Uninstall programs** | Every installed desktop program (same list as Settings > Apps) and Microsoft Store app. MSI and programs with a quiet uninstaller are removed silently; the rest open their own uninstaller |
-| **Services** | 18 common services: current vs recommended vs Windows default |
-| **Startup Manager** | Enable / disable startup apps using Task Manager's own flags (nothing is deleted) |
-| **Repair** | SFC, DISM, chkdsk, temp + disk cleanup, DNS flush, network reset, Windows Update reset, Store reset |
-| **Windows Update** | Recommended (defer features 120 days / security 7 days, no drivers), defaults, pause 1-35 days, resume |
-| **DNS** | Cloudflare (standard, security, family), Google, Quad9, OpenDNS, AdGuard (standard, family) or back to DHCP |
-| **Hosts** | Tagged telemetry / Adobe blocks that can be removed exactly, automatic backups |
-| **Backups & restore** | Restore the backups taken before each change, delete old backups; create, list, roll back to or delete restore points (oldest or all) |
-| **System info / Logs** | Hardware summary, disk usage, log viewer with errors-only filter |
-| **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
-| **Updates** | Checks GitHub at every start; shows the new version and its changelog; update now, keep the current version, or skip that version |
-| **Desktop shortcut** | Asked on exit: Yes creates the shortcut and keeps the files, No removes WinNow's own files like an uninstall |
-| **Graphical interface** | Translucent light / dark window with every module above, EN / ES switch, page search bar, update status, step-by-step progress bar, list of available winget upgrades (chosen at start, `G` in the main menu, or `-GUI`) |
+<details open>
+<summary><b>Optimize</b></summary>
 
-### Safety
+- **Tweaks**: 51 tweaks in 6 categories with live status (`APPLIED`, `PARTIAL`, `-`), apply and real undo, presets **Minimal / Standard / Heavy**, and an "Undo applied tweaks" scan.
+- **Levels**: **Recommended** (18) — telemetry off, activity history, Start menu ads, Store search results, End Task on the taskbar, Edge and Brave debloat, temp files and disk cleanup. **Advanced** (33) — trim services, remove bloatware / Xbox / OneDrive / Edge, Copilot and Windows AI off, hosts blocks, IPv6 / Teredo, power plans, classic context menu.
+- **Preferences**: 18 ON / OFF switches — dark mode, file extensions, hidden files, taskbar, Bing search, mouse acceleration, GPU scheduling, NumLock…
+- **Services**: 18 common services, current vs. recommended vs. Windows default.
+- **Startup Manager**: enable or disable startup apps with Task Manager's own flags (nothing is deleted); active ones first.
+</details>
 
-- **Simulation mode** (`-DryRun`, or `M` in the main menu) prints every registry, service, app and command step without running it.
-- A **System Restore Point** is created automatically before the first change of each session.
-- A **WinNow backup** (JSON with the exact current registry values, service startup types, DNS servers and installed-app list) is saved **before every change**: tweaks, apps, services, startup, DNS, updates, repairs. Restore any of them from **Backups & restore**.
-- Undo only touches tweaks that are currently applied, and services are only restored if they are still where WinNow put them.
-- High-risk items are flagged in lists and in the confirmation screen.
-- Logs: `%ProgramData%\Winnow\logs`, backups: `%ProgramData%\Winnow\backup`.
+<details>
+<summary><b>Apps</b></summary>
 
-## Scripted use
+- **App Manager**: a 376-app catalog plus **every winget package** — type a name such as Steam and WinNow searches all of winget. Install, uninstall, installed tags, **upgrade all** and **list available upgrades** first. Chocolatey as a fallback.
+- **Uninstall programs**: every desktop program (the same list as Settings > Apps) and Microsoft Store app. MSI and quiet uninstallers run silently; the rest open their own wizard, and WinNow checks the result.
+</details>
+
+<details>
+<summary><b>Maintain, network and system</b></summary>
+
+- **Repair & maintenance**: SFC, DISM, chkdsk, temp and disk cleanup, DNS flush, network reset, Windows Update reset, Store reset.
+- **Windows Update**: recommended policy (features deferred 120 days, security 7 days, no drivers), Windows defaults, pause 1–35 days, resume.
+- **Backups & restore**: restore the backup taken before any change; create, list, roll back to or delete restore points.
+- **DNS**: Cloudflare (standard, security, family), Google, Quad9, OpenDNS, AdGuard (standard, family) or back to DHCP.
+- **Hosts file**: tagged telemetry and Adobe blocks that can be removed exactly.
+- **System information and logs**: hardware summary, disk usage, log viewer with an errors-only filter.
+</details>
+
+<details>
+<summary><b>Window and terminal</b></summary>
+
+- **Two editions, one engine**: every start asks for the language and then **Terminal** or **Graphical interface**. `G` in the terminal opens the window; the window has a button for the terminal.
+- **The window**: translucent Windows 11 style (acrylic on 22H2 or later), sidebar, a search bar for every page, step-by-step progress bar, **EN | ES** switch, and three themes — **Light**, **Dark** and **Mes patrio** (the default in November).
+- **The terminal**: arrow-key menus, `Space` to tick, `/` to search, `U` to undo, `Esc` to go back.
+- **Desktop shortcut**: asked on exit. **Yes** keeps WinNow with a shortcut; **No** removes WinNow's own files like an uninstall (logs and backups stay).
+- **Updates**: every start asks GitHub for the latest release and shows its changelog: update now, keep this version, or skip it.
+</details>
+
+## Run it
+
+Open **PowerShell** or Windows Terminal and run:
 
 ```powershell
-.\Winnow.ps1 -List                                   # tweak keys and presets
-.\Winnow.ps1 -Status                                 # detected state of every tweak
-.\Winnow.ps1 -Preset Standard -Yes                   # unattended preset
+irm eperez98.github.io/WinNow | iex
+```
+
+1. It downloads the latest release to `%TEMP%\Winnow-app` and asks for administrator rights. Nothing is installed.
+2. Pick **English** or **Español**, then **Terminal** or **Graphical interface**.
+3. To look around first, turn on **simulation mode** (`M` in the terminal, the checkbox in the window).
+
+**Offline:** download `Winnow.zip` from [Releases](https://github.com/eperez98/WinNow/releases/latest), extract it and run `Launch.bat` as administrator.
+
+**Requirements:** Windows 10 (19041+) or 11, Windows PowerShell 5.1 or PowerShell 7, administrator rights for real changes. winget for the App Manager. Internet only for updates and app installs.
+
+<details>
+<summary><b>Command line</b></summary>
+
+```powershell
+.\Winnow.ps1 -DryRun                                  # simulation: nothing is changed
+.\Winnow.ps1 -Lang es -GUI                            # Spanish, straight to the window
+.\Winnow.ps1 -Terminal                                # straight to the terminal menus
+.\Winnow.ps1 -List                                    # tweak keys and presets
+.\Winnow.ps1 -Status                                  # detected state of every tweak
+.\Winnow.ps1 -Preset Standard -Yes                    # unattended preset
 .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
 .\Winnow.ps1 -Undo ClassicContextMenu
 .\Winnow.ps1 -Install firefox,7zip,vscode -Yes
-.\Winnow.ps1 -Status -Lang es                         # tweak names in Spanish
-.\Winnow.ps1 -NoUpdateCheck                           # start without asking GitHub for updates
+.\Winnow.ps1 -NoUpdateCheck -NoRestorePoint
 ```
 
-Exit code is `1` if any step failed.
+The exit code is `1` if any step failed.
+</details>
 
-## Project structure
+## Security
+
+WinNow runs as administrator, so it treats what it reads back as untrusted until it knows who wrote it.
+
+| Area | What WinNow does |
+|---|---|
+| **Changes** | Simulation mode, a JSON backup before every change, an optional System Restore point, and undo that only touches what WinNow applied. High-risk items are flagged before you confirm. |
+| **Data folder** | `%ProgramData%\Winnow` (logs and backups) belongs to Administrators; Users can only read it. A folder another account created first is taken back, and planted links are removed. |
+| **Backups** | Restored only when an administrator, SYSTEM or you wrote them. |
+| **Updates** | Only from this repository's releases over HTTPS. Every file gets a SHA256 when it is downloaded, checked again right before the swap, and the swap is all or nothing. |
+| **Removal** | Answering **No** on exit deletes only WinNow's own copies, never a folder you extracted yourself. |
+
+## Roadmap
+
+<img src="docs/road-to-2.0.png" alt="Road to 2.0" width="100%" />
+
+| Version | Name | Goals |
+|---|---|---|
+| **1.6** | GUI Rethinked | Launcher window with a boot animation, flat and minimal icons, update check at start |
+| **1.7** | Profiles & Schedules | Save a PC as a profile and apply it on another; scheduled maintenance |
+| **1.8** | Trusted Updates | Signed releases, a history of every session with undo, the final GUI Rethinked |
+| **1.8.1** | Polish | A closing dialog in the window's own look |
+| **1.8.2** | Starting Point | A starting point tour; Office Helper with Thunderbird, LibreOffice and OpenOffice |
+| **1.8.3** | GUI Terminal Update | A task window with live output and a progress bar |
+| **2.0** | Store Edition | MSIX package in the Microsoft Store |
+
+Ideas, not promises: more changes may be added and others removed. Every past release is in the [CHANGELOG](CHANGELOG.md).
+
+## Under the hood
+
+| Layer | Technology |
+|---|---|
+| Engine | PowerShell 5.1 / 7, no extra modules; registry, services, appx and winget |
+| Catalog | Declarative JSON: `config/tweaks.json`, `apps.json`, `services.json`, `presets.json`, `dns.json` |
+| Window | WPF (in Windows), XAML parsed at runtime, a background worker so it never freezes |
+| Terminal | Own arrow-key menus, check lists with search, confirmations |
+| i18n | `config/i18n.json` and `config/catalog.es.json`, English and Spanish |
+| Updates | GitHub releases, staged download with SHA256 checks |
+
+<details>
+<summary><b>Project structure and adding a tweak</b></summary>
 
 ```
-Winnow.ps1               Entry point: parameters, elevation, main menu
-Launch.bat               Double-click launcher (self-elevates, asks: terminal or graphical interface)
-run.ps1                  One-line launcher used by irm | iex (downloads the latest release)
-CHANGELOG.md             Version history
-docs/                    Release notes
-screenshots/ LOGO/       Images: logo and mark in dark and *_light variants (LOGO/Winnow.ico is the shortcut icon)
-core/
-  Common.ps1             Context, logging, helpers
-  Engine.ps1             Registry / service / appx engine, tweak state, apply/undo batches, backups
-  Tui.ps1                Logo banner, arrow-key menus, check lists with search, confirmations
-  I18n.ps1               English / Spanish strings, language selector
-  Update.ps1             Update check (GitHub releases + changelog), updater, desktop shortcut
-modules/
-  Tweaks.ps1             Tweaks, presets, preference switches
-  TweakActions.ps1       Script parts of tweaks (Invoke / Undo / Check functions)
-  Uninstall.ps1          Uninstall programs (desktop + Store apps)
-  Apps.ps1 Services.ps1 Startup.ps1 Repair.ps1 Updates.ps1 Network.ps1 System.ps1
-gui/
-  Gui.ps1                Graphical interface (WPF): every page, background worker, search, light / dark theme
-  MainWindow.xaml        Window shell (sidebar, search bar, page hosts) and styles
-tests/                   Self-checks for the parsers (run with powershell -File)
-config/
-  tweaks.json            Declarative tweak catalog
-  presets.json apps.json services.json dns.json
-  i18n.json              Interface text in English and Spanish
-  catalog.es.json        Spanish names and descriptions for tweaks, services and presets
+Winnow.ps1          Entry point: parameters, elevation, main menu
+Launch.bat          Double-click launcher (self-elevates, asks for the mode)
+run.ps1             One-line launcher used by irm | iex
+core/               Common, Engine (registry / services / backups), Tui, I18n, Update
+modules/            Tweaks, TweakActions, Apps, Uninstall, Services, Startup, Repair, Updates, Network, System
+gui/                Gui.ps1 (every page) and MainWindow.xaml
+config/             Tweak, app, service, preset and DNS catalogs; interface text
+docs/ screenshots/  Release notes, image generators, pictures
+tests/              Self-checks for the parsers
 ```
 
-### Adding a tweak
-
-Add an entry to `config/tweaks.json`. Registry and service tweaks need no code:
+Registry and service tweaks need no code, only an entry in `config/tweaks.json`:
 
 ```json
 {
@@ -281,47 +233,15 @@ Add an entry to `config/tweaks.json`. Registry and service tweaks need no code:
 }
 ```
 
-`"<unset>"` means the value does not exist (undo deletes it). `Level` is `Recommended` (gentle, safe for any PC) or
-`Advanced` (needs care); toggles have no level. `Type` is `Tweak` (undoable), `Toggle` (shown as
-ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (function names in
-`TweakActions.ps1`), `Restart` (`Explorer` / `Reboot`), `Group` (mutually exclusive tweaks), `MinBuild`, and
-`IfMissing` on a registry entry (state to assume when the value does not exist).
+`"<unset>"` means the value does not exist (undo deletes it). `Type` is `Tweak` (undoable), `Toggle` (ON / OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke` / `Undo` / `Check` (functions in `TweakActions.ps1`), `Restart`, `Group`, `MinBuild`, and `IfMissing` on a registry entry.
+</details>
 
-## Roadmap
+## Support development
 
-![Road to 2.0](https://raw.githubusercontent.com/eperez98/WinNow/main/docs/road-to-2.0.png)
-
-- **1.6 GUI Rethinked** (on the way): Launcher window with a boot animation; flat, minimal icons; update check at
-  start.
-- **1.7 Profiles & Schedules** (idea): Save this PC as a profile, export it and apply it on another PC; scheduled
-  maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
-- **1.8 Trusted Updates** (idea): Signed releases (an update is installed only when its signature checks out); a
-  history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
-  preview.
-- **1.8.1 Polish** (idea): A closing dialog in the window's own look.
-- **1.8.2 Starting Point** (idea): A starting point tour of what WinNow offers and what is new; Office Helper: remove
-  Outlook (new or classic) and Office, install Thunderbird, LibreOffice or OpenOffice.
-- **1.8.3 GUI Terminal Update** (idea): A task window with the live output and a progress bar for updates, upgrades
-  and removals; it closes by itself when done.
-- **2.0 Store Edition** (idea): An MSIX package published in the Microsoft Store: a native launcher, updates through
-  the Store, and the same tools.
-- More changes may be added and others removed.
-
-The **About WinNow** page (`A` in the terminal) shows the same list with every past release.
-
-## Requirements
-
-- Windows 10 (19041+) or Windows 11
-- Windows PowerShell 5.1 (built in) or PowerShell 7
-- Administrator rights for real changes (not for `-DryRun`, `-List`, `-Status`)
-- The graphical interface uses WPF, included in Windows (.NET Framework 4.x)
-- winget for the App Manager (Chocolatey is offered as fallback)
-- Internet access to github.com for the update check (optional: WinNow works offline)
+If WinNow helps you, you can support it with a donation through [PayPal](https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD). It is also in the app: About > Support development.
 
 ## License
 
-GPL-3.0 © ErickP (Eperez98) — [github.com/eperez98](https://github.com/eperez98)
+**GPL-3.0** © ErickP ([eperez98](https://github.com/eperez98)).
 
----
-
-<p align="center"><sub>WinNow by ErickP (Eperez98) &middot; Proudly made in Panama PTY507</sub></p>
+<div align="center"><br /><sub>WinNow · Proudly made in Panama PTY507 🇵🇦</sub></div>
