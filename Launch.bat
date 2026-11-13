@@ -1,8 +1,8 @@
 @echo off
-:: Winnow launcher - by Eperez98
-:: Double-click to start Winnow as Administrator (it asks: terminal or graphical interface).
+:: WinNow launcher - by Eperez98
+:: Double-click to start WinNow as Administrator (it asks: terminal or graphical interface).
 :: Add  -DryRun  after the .ps1 path below to start in simulation mode.
-title Winnow
+title WinNow
 
 net session >nul 2>&1
 if %errorLevel% neq 0 (

@@ -1,12 +1,15 @@
 <p align="center">
-  <img src="LOGO/Winnow_logo.png" width="560" alt="Winnow - sift Windows down to what matters"/>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="LOGO/Winnow_logo.png"/>
+    <img src="LOGO/Winnow_logo_light.png" width="560" alt="WinNow - sift Windows down to what matters"/>
+  </picture>
 </p>
 
 <p align="center"><b>Debloat, harden and maintain Windows 10/11 from the terminal or from the graphical interface.</b></p>
 <p align="center"><sub>Proudly made in Panama PTY507</sub></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.2.2%20Secure%20Update%20%C2%B7%20Security%20Compliance%20Hotfix-10B981?style=flat-square"/>
+  <img src="https://img.shields.io/badge/version-1.5%20QL%20Update%20Mid%20November-10B981?style=flat-square"/>
   <img src="https://img.shields.io/badge/platform-Windows%2010%2F11-0078D4?style=flat-square"/>
   <img src="https://img.shields.io/badge/PowerShell-5.1%20%7C%207-22D3EE?style=flat-square"/>
   <img src="https://img.shields.io/badge/language-English%20%7C%20Espa%C3%B1ol-6EE7B7?style=flat-square"/>
@@ -14,13 +17,10 @@
 </p>
 
 <p align="center">
-  <a href="#whats-new-in-122">What's new</a> &nbsp;&middot;&nbsp;
   <a href="#quick-start">Quick start</a> &nbsp;&middot;&nbsp;
   <a href="#graphical-interface">Graphical interface</a> &nbsp;&middot;&nbsp;
   <a href="#screenshots">Screenshots</a> &nbsp;&middot;&nbsp;
   <a href="#features">Features</a> &nbsp;&middot;&nbsp;
-  <a href="#security-model">Security</a> &nbsp;&middot;&nbsp;
-  <a href="#release-history">Release history</a> &nbsp;&middot;&nbsp;
   <a href="#roadmap">Roadmap</a> &nbsp;&middot;&nbsp;
   <a href="CHANGELOG.md">Changelog</a>
 </p>
@@ -29,9 +29,9 @@
 
 ---
 
-**Winnow** separates the grain from the chaff: it strips telemetry, ads and bloat from Windows and keeps
+**WinNow** separates the grain from the chaff: it strips telemetry, ads and bloat from Windows and keeps
 what you use. It is a keyboard-driven terminal app built around a declarative tweak catalog. Every tweak
-declares the value it applies **and** the value it restores, so Winnow can tell what is already applied,
+declares the value it applies **and** the value it restores, so WinNow can tell what is already applied,
 apply it, and undo it. A backup is saved before every change. The whole interface is available in
 **English and Spanish**. Tweaks come in two levels: **Recommended** (gentle changes that are safe for any PC)
 and **Advanced** (changes that need care). The **graphical interface** has every module of the terminal, grouped the
@@ -39,48 +39,33 @@ same way. See the [CHANGELOG](CHANGELOG.md).
 
 | Edition | Version | Status |
 |---|---|---|
-| Terminal | **1.2.2** | Secure Update · Security Compliance Hotfix |
-| Graphical interface | **1.2.2** | Secure Update · Security Compliance Hotfix (full GUI release since **1.1**) |
+| Terminal | **1.5** | QL Update Mid November |
+| Graphical interface | **1.5** | QL Update Mid November |
 
 > [!NOTE]
 > Both editions now have the same modules: tweaks, preferences, services, startup apps, apps, uninstall
 > programs, repair, Windows Update, backups and restore, DNS, hosts, system information and logs.
-> The **terminal edition is the reference and the most tested one**; the graphical interface runs on the same
-> engine. Both are at 1.2.2. The window has a button that opens the terminal.
-
-## What's new in 1.2.2
-
-1.2.2 **Secure Update · Security Compliance Hotfix** closes two ways another account or a damaged download could
-change what Winnow runs as administrator, and makes updating a step you control. It also includes everything from
-1.2 Exit & Launcher Update, which was not published on its own.
-
-- **Admin-only data folder.** `C:\ProgramData\Winnow` (logs and backups) now belongs to Administrators: full
-  control for SYSTEM and Administrators, read-only for Users. Before, a standard account could drop a backup file
-  there, and restoring it as administrator would write its registry values. A folder someone else created first is
-  taken back, links planted in place of its subfolders are removed, and a backup is only used when an
-  administrator, SYSTEM or you wrote it.
-- **Updates checked before they are installed.** The SHA256 of every unpacked file is recorded when the update is
-  downloaded and compared again at **Restart now**. If one file changed, the update stops and this copy stays as it is.
-- **No half-installed updates.** Every file and folder the update replaces is set aside first and put back if
-  anything fails, so a failed update can no longer leave a new `Winnow.ps1` with old modules.
-- **Update panel.** The update button opens a panel over the window: checking, **Update available** with the
-  changelog (Update / Not now / Skip this version), downloading, and **Restart required** with **Restart now** or
-  **Later**. Nothing is replaced until you choose Restart now.
-- **From 1.2:** one launcher (`Launch.bat` asks for terminal or window; `Launch-GUI.bat` is gone), the desktop
-  shortcut question on exit, and restarts that always keep your language, simulation and update settings.
+> Both run on the same engine and both are at **1.5**. Every start asks which one you want; the window has a
+> button that opens the terminal, and `G` in the terminal opens the window.
 
 ## Quick start
 
-Open **PowerShell** (or Windows Terminal) and run:
+Open **PowerShell** (or Windows Terminal) and run this one line:
 
 ```powershell
 irm eperez98.github.io/WinNow | iex
 ```
 
 It downloads the latest release to `%TEMP%\Winnow-app` and starts it (asking for administrator rights).
-The first screen asks for the language (English / Español), the second one whether to use the **Terminal** or the
-**Graphical interface (GUI)**. Nothing is installed. To explore first without changing anything, turn on
-simulation mode with `M` in the main menu (or the simulation switch in the window).
+Nothing is installed. Then WinNow asks, every time:
+
+1. **Language**: English / Español.
+2. **Mode**: **Terminal** (keyboard menus) or **Graphical interface (GUI)**. The last choice is highlighted.
+
+To explore without changing anything, turn on **simulation mode** (`M` in the terminal, or the checkbox in the
+window). When you close WinNow it asks: **Yes**, create a desktop shortcut to open it again later (WinNow is
+copied to `%LOCALAPPDATA%\Programs\Winnow` and the files are kept), or **No**, delete WinNow's files from this PC
+like an uninstall (the download, that copy and the shortcut). Logs and backups are always kept.
 
 **Offline / manual:** download `Winnow.zip` from [Releases](https://github.com/eperez98/Winnow/releases/latest),
 extract it and right-click `Launch.bat` -> *Run as administrator*. It is the only launcher: it asks for the mode
@@ -88,28 +73,33 @@ extract it and right-click `Launch.bat` -> *Run as administrator*. It is the onl
 Or from a terminal in that folder:
 
 ```powershell
-.\Winnow.ps1            # interactive menu (asks for admin)
+.\Winnow.ps1            # asks for the language and the mode (asks for admin)
 .\Winnow.ps1 -DryRun    # simulation: nothing is changed
 .\Winnow.ps1 -Lang es   # skip the language screen and start in Spanish
-.\Winnow.ps1 -GUI      # graphical interface, without the Terminal / GUI screen
-.\Winnow.ps1 -Terminal # terminal menus, without the Terminal / GUI screen
+.\Winnow.ps1 -GUI      # graphical interface, without asking for the mode
+.\Winnow.ps1 -Terminal # terminal menus, without asking for the mode
 ```
 
 ### Desktop shortcut and updates
 
-- **Desktop shortcut:** when you close Winnow and there is no shortcut yet (always, for a copy started with the
-  one-line command), it asks: **Yes** creates a desktop shortcut with its logo that opens Winnow directly with no
+- **Desktop shortcut:** when you close WinNow and there is no shortcut yet (always, for a copy started with the
+  one-line command), it asks: **Yes** creates a desktop shortcut with its logo that opens WinNow directly with no
   download (a downloaded copy is first copied to `%LOCALAPPDATA%\Programs\Winnow`) and keeps the files; **No**
-  deletes Winnow's files from this PC like an uninstall (the download, that copy and the shortcut). A folder you
-  extracted yourself is never deleted. Logs and backups are always kept. Create a shortcut any time with `K` in
-  the main menu or the link button in the GUI.
+  deletes WinNow's own files from this PC like an uninstall: the download in `%TEMP%`, the copy in
+  `%LOCALAPPDATA%\Programs\Winnow` and the shortcut, once every WinNow window has closed. A folder you extracted
+  yourself is never deleted. Logs and backups are kept. Create the shortcut any time with `K` in the main menu or
+  the link button in the window.
+- **Restore point:** before the first change of a session WinNow asks whether to create a System Restore point
+  (it can take a few minutes). In the window the confirmation reads **Yes** (with restore point), **No** (without
+  it) or **Cancel**. The JSON backup is taken either way; `-NoRestorePoint` never creates one.
 - **Updates:** every start asks GitHub for the latest release (a few seconds at most, silent when offline). When
-  there is a newer one, Winnow shows which version it is and its changelog, and lets you choose: **update now**
+  there is a newer one, WinNow shows which version it is and its changelog, and lets you choose: **update now**
   (download, replace this copy, restart), **keep using the current version** (asks again next time), or **skip
   this version**. A failed update leaves the current copy as it was. Check by hand with `U` in the main menu or the
-  **Check for this tool updates** button in the GUI, which opens the update panel: checking, **Update available**
-  with the changelog, downloading, and **Restart required** with **Restart now** or **Later** (keep using this
-  version). The download is checked file by file before it is installed; `-NoUpdateCheck` turns the startup check off.
+  **Check for this tool updates** button in the window, which opens an update panel: a spinner while it checks,
+  **Update available** with what changed (Update / Not now / Skip this version), a download animation, and then
+  **Restart required** with **Restart now** (WinNow closes, updates its files and opens again) or **Later** (you keep
+  using the current version). `-NoUpdateCheck` turns the startup check off.
 
 ## Graphical interface
 
@@ -119,12 +109,10 @@ blue accent. It has three themes in the theme button: **Light**, **Dark** and **
 month: the Panama icon, the flag on the home banner and an aero background in Panama navy and red). It starts in
 mes patrio in November, otherwise in the Windows setting, and remembers your choice, and an **EN | ES** switch for the language. A sidebar lists every tool, a search
 bar sits on top, and the home page has a banner, a **Start here** card that opens the recommended tweaks, and a tile
-for every tool. Open it from the mode choice at start, with `-GUI`, or `G` in the terminal main menu.
+for every tool. Choose it at start, or open it with `G` in the terminal main menu or `-GUI`.
 
 The search bar works on every page: it filters the current list (tweaks, services, apps, programs, backups...).
-A click selects its text, so typing replaces it. On the App Manager, typing a name (for example Steam) searches
-all of winget after a short pause; Enter or **Search winget** search at once. The search runs on its own, so it
-never waits behind other tasks, and it tells you when winget does not answer within 60 seconds.
+On the App Manager, pressing Enter in it searches all of winget.
 
 Every terminal module is in the window, grouped like the terminal main menu:
 
@@ -135,7 +123,6 @@ Every terminal module is in the window, grouped like the terminal main menu:
 | **Maintain** | Repair & maintenance, Windows Update (status, recommended, defaults, pause, resume), Backups & restore |
 | **Network** | DNS (current servers and every provider), Hosts file (telemetry / Adobe blocks, active entries) |
 | **System** | System information, Logs |
-| **Winnow** | About Winnow (what it is, its core, every release, and 1.5 on the way) |
 
 It uses the same engine as the terminal, so every change still gets a restore point, a backup, real undo and
 simulation mode. Long tasks run in the background and stream their output into the log at the bottom.
@@ -150,25 +137,29 @@ simulation mode. Long tasks run in the background and stream their output into t
 | Recommended tweaks, dark | Advanced tweaks with their caution note, light (Spanish) |
 | ![GUI services](screenshots/21-gui-services.png) | ![GUI repair](screenshots/19-gui-repair.png) |
 | Services, light | Repair & maintenance, light |
-| ![GUI updates](screenshots/20-gui-updates-es.png) | ![Theme picker](screenshots/31-gui-theme-picker-es.png) |
-| Windows Update, dark (Spanish) | Theme picker, mes patrio (Spanish) |
+| ![GUI updates](screenshots/20-gui-updates-es.png) | ![GUI about](screenshots/27-gui-about.png) |
+| Windows Update, dark (Spanish) | About WinNow, dark |
 
 ## Screenshots
 
 | | |
 |---|---|
-| ![Language](screenshots/00-language.png) | ![Main menu](screenshots/01-main-menu.png) |
-| Language selector at startup | Main menu, grouped like the GUI sidebar |
-| ![Menú principal](screenshots/13-main-menu-es.png) | ![Tweaks en español](screenshots/14-tweaks-es.png) |
-| Main menu in Spanish | Tweaks in Spanish |
-| ![Tweaks](screenshots/03-tweaks-essential.png) | ![Uninstall](screenshots/12-uninstall.png) |
-| Tweaks with live status, multi-select | Uninstall any program or Store app |
+| ![Language](screenshots/00-language.png) | ![Mode](screenshots/24-mode.png) |
+| Language selector at startup | Then the mode: terminal or graphical interface |
+| ![Main menu](screenshots/01-main-menu.png) | ![Menú principal](screenshots/13-main-menu-es.png) |
+| Main menu, grouped like the GUI sidebar | Main menu in Spanish |
+| ![Tweaks](screenshots/03-tweaks-essential.png) | ![Tweaks en español](screenshots/14-tweaks-es.png) |
+| Tweaks with live status, multi-select | Tweaks in Spanish |
 | ![Confirm](screenshots/04-confirm.png) | ![Simulation](screenshots/05-apply-simulation.png) |
 | Confirmation with risk levels | Simulation mode prints every step |
 | ![Preferences](screenshots/06-preferences.png) | ![Apps](screenshots/08-apps-browsers.png) |
 | Preferences as ON/OFF switches | App Manager (winget) with installed detection |
 | ![Repair](screenshots/09-repair.png) | ![Backups](screenshots/10-backups.png) |
 | Repair & maintenance | Backups and restore points |
+| ![Uninstall](screenshots/12-uninstall.png) | ![About](screenshots/25-about.png) |
+| Uninstall any program or Store app | About WinNow (`A`): the core, releases and future ideas |
+| ![Exit](screenshots/26-exit.png) | |
+| On exit: desktop shortcut, or remove WinNow's files | |
 
 ## Tweak levels
 
@@ -182,8 +173,8 @@ categories and the tools (presets, all tweaks, undo applied). In the GUI they ar
 The **Standard** preset is exactly the recommended set; **Heavy** adds a selection of advanced tweaks.
 
 The main menu is grouped like the GUI sidebar: **Optimize** (1-4), **Apps** (5-6), **Maintain** (7-9),
-**Network** (`D` DNS, `H` hosts), **System** (`Y` information, `L` logs) and **Winnow** (`G` graphical interface,
-`A` about Winnow, `U` check for updates, `K` desktop shortcut, `I` language, `M` simulation mode).
+**Network** (`D` DNS, `H` hosts), **System** (`Y` information, `L` logs) and **WinNow** (`G` graphical interface,
+`U` check for updates, `K` desktop shortcut, `I` language, `M` simulation mode).
 
 The full logo banner appears on the main menu when the terminal is at least 40 rows tall; smaller windows
 show the compact `\/\/. winnow` mark in the header.
@@ -219,30 +210,17 @@ show the compact `\/\/. winnow` mark in the header.
 | **System info / Logs** | Hardware summary, disk usage, log viewer with errors-only filter |
 | **Language** | English / Español, chosen at startup (the last choice is highlighted) and switchable from the main menu |
 | **Updates** | Checks GitHub at every start; shows the new version and its changelog; update now, keep the current version, or skip that version |
-| **Desktop shortcut** | Asked on exit: Winnow logo on the desktop that opens the local copy directly, or remove the download |
-| **Graphical interface** | Translucent light / dark window with every module above, EN / ES switch, page search bar, update status (`G` in the main menu, or `-GUI`) |
+| **Desktop shortcut** | Asked on exit: Yes creates the shortcut and keeps the files, No removes WinNow's own files like an uninstall |
+| **Graphical interface** | Translucent light / dark window with every module above, EN / ES switch, page search bar, update status, step-by-step progress bar, list of available winget upgrades (chosen at start, `G` in the main menu, or `-GUI`) |
 
 ### Safety
 
 - **Simulation mode** (`-DryRun`, or `M` in the main menu) prints every registry, service, app and command step without running it.
-- A **System Restore Point** is offered before the first change of each session (you can skip it for that task; the JSON backup is always taken).
-- A **Winnow backup** (JSON with the exact current registry values, service startup types, DNS servers and installed-app list) is saved **before every change**: tweaks, apps, services, startup, DNS, updates, repairs. Restore any of them from **Backups & restore**.
-- Undo only touches tweaks that are currently applied, and services are only restored if they are still where Winnow put them.
+- A **System Restore Point** is created automatically before the first change of each session.
+- A **WinNow backup** (JSON with the exact current registry values, service startup types, DNS servers and installed-app list) is saved **before every change**: tweaks, apps, services, startup, DNS, updates, repairs. Restore any of them from **Backups & restore**.
+- Undo only touches tweaks that are currently applied, and services are only restored if they are still where WinNow put them.
 - High-risk items are flagged in lists and in the confirmation screen.
-- Logs: `%ProgramData%\Winnow\logs`, backups: `%ProgramData%\Winnow\backup`. The folder is admin-only (read-only for other users), and backups are only used when an administrator, SYSTEM or you wrote them.
-
-### Security model
-
-Winnow runs as administrator, so it treats everything it reads back as untrusted until it knows who wrote it.
-
-| Area | What Winnow does |
-|---|---|
-| **Data folder** | `%ProgramData%\Winnow` is owned by Administrators; SYSTEM and Administrators have full control, Users can only read. The permissions are checked at every start and fixed when they are not right, and a folder created first by another account is taken back. |
-| **Backups** | A backup is restored only when its owner is an administrator, SYSTEM or the current user. Links (junctions, symlinks) planted in place of `logs` or `backup` are removed. Backups imported from the old WinTooler folder go through the same check. |
-| **Updates** | Only from the GitHub releases of this repository, over HTTPS. The zip is unpacked to a staging folder, every file gets a SHA256, and the hashes are compared again right before the swap. |
-| **Install** | The swap is all or nothing: the old files are renamed aside first and restored if one step fails. |
-| **Changes** | Simulation mode, a JSON backup before every change, an optional System Restore point, and undo that only touches what Winnow applied. |
-| **Removal** | Answering **No** on exit deletes only Winnow's own copies (the `%TEMP%` download, `%LOCALAPPDATA%\Programs\Winnow`, the shortcut), never a folder you extracted yourself. Logs and backups stay. |
+- Logs: `%ProgramData%\Winnow\logs`, backups: `%ProgramData%\Winnow\backup`.
 
 ## Scripted use
 
@@ -263,11 +241,11 @@ Exit code is `1` if any step failed.
 
 ```
 Winnow.ps1               Entry point: parameters, elevation, main menu
-Launch.bat               Double-click launcher (self-elevates)
+Launch.bat               Double-click launcher (self-elevates, asks: terminal or graphical interface)
 run.ps1                  One-line launcher used by irm | iex (downloads the latest release)
 CHANGELOG.md             Version history
 docs/                    Release notes
-screenshots/ LOGO/       Images (LOGO/Winnow.ico is the shortcut icon)
+screenshots/ LOGO/       Images: logo and mark in dark and *_light variants (LOGO/Winnow.ico is the shortcut icon)
 core/
   Common.ps1             Context, logging, helpers
   Engine.ps1             Registry / service / appx engine, tweak state, apply/undo batches, backups
@@ -309,30 +287,27 @@ ON/OFF) or `Action` (one-shot). Optional: `Appx`, `Invoke`, `Undo`, `Check` (fun
 `TweakActions.ps1`), `Restart` (`Explorer` / `Reboot`), `Group` (mutually exclusive tweaks), `MinBuild`, and
 `IfMissing` on a registry entry (state to assume when the value does not exist).
 
-## Release history
-
-| Version | Name | Highlights |
-|---|---|---|
-| **1.2.2** | Secure Update · Security Compliance Hotfix | Admin-only data folder, backups trusted only from admins/SYSTEM/you, SHA256-checked updates, all-or-nothing install, update panel with Restart now / Later |
-| 1.2 | Exit & Launcher Update | Desktop shortcut or clean removal on exit, one launcher, settings kept on restart (shipped inside 1.2.2) |
-| 1.1.5 | Restore Point Choice | System Restore point is optional; the JSON backup is always taken |
-| 1.1 | Full GUI Release | The window leaves preview: same tools as the terminal, step-by-step progress bar, list of available upgrades, Light / Dark / Mes patrio themes, PayPal support link |
-| 1.0.9 | Selection Fix | Multi-select in the window works again; `[i/N]` in uninstalls |
-| 1.0.8 | Update Fixer | Updating from the window works again; Terminal or GUI at every start; `irm eperez98.github.io/WinNow \| iex`; About Winnow |
-| 1.0.7.3 | HotFix Update Fixer | Upgrade all apps without a restore point or a question |
-| 1.0.7.2 | GUI Release Candidate | Translucent window, light / dark switch, EN \| ES switch, update status button |
-| 1.0.7.1 | HotFix & Preview Update | Every module in the window, Recommended / Advanced tweak levels, update check at start, desktop shortcut |
-| 1.0.5 | Release Build | First graphical interface (preview), search all of winget, uninstall wizard fix |
-| 1.0.1 | Release Build | Language selector, full Spanish translation, Uninstall programs |
-| 1.0.0 | First release | Terminal UI, 51 tweaks with real undo, presets, backups, restore points, App Manager, services, DNS, hosts |
-
-Details for each one are in the [CHANGELOG](CHANGELOG.md) and on the [Releases](https://github.com/eperez98/WinNow/releases) page.
-
 ## Roadmap
 
-- **1.5 November Update**: the new name WinNow, a logo for light and dark mode, startup apps listed active first.
-- Later builds on the road to **2.0 Store Edition**: a reworked window, profiles and scheduled maintenance, signed
-  releases. More changes may be added and others removed.
+![Road to 2.0](https://raw.githubusercontent.com/eperez98/WinNow/main/docs/road-to-2.0.png)
+
+- **1.6 GUI Rethinked** (on the way): Launcher window with a boot animation; flat, minimal icons; update check at
+  start.
+- **1.7 Profiles & Schedules** (idea): Save this PC as a profile, export it and apply it on another PC; scheduled
+  maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
+- **1.8 Trusted Updates** (idea): Signed releases (an update is installed only when its signature checks out); a
+  history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
+  preview.
+- **1.8.1 Polish** (idea): A closing dialog in the window's own look.
+- **1.8.2 Starting Point** (idea): A starting point tour of what WinNow offers and what is new; Office Helper: remove
+  Outlook (new or classic) and Office, install Thunderbird, LibreOffice or OpenOffice.
+- **1.8.3 GUI Terminal Update** (idea): A task window with the live output and a progress bar for updates, upgrades
+  and removals; it closes by itself when done.
+- **2.0 Store Edition** (idea): An MSIX package published in the Microsoft Store: a native launcher, updates through
+  the Store, and the same tools.
+- More changes may be added and others removed.
+
+The **About WinNow** page (`A` in the terminal) shows the same list with every past release.
 
 ## Requirements
 
@@ -341,7 +316,7 @@ Details for each one are in the [CHANGELOG](CHANGELOG.md) and on the [Releases](
 - Administrator rights for real changes (not for `-DryRun`, `-List`, `-Status`)
 - The graphical interface uses WPF, included in Windows (.NET Framework 4.x)
 - winget for the App Manager (Chocolatey is offered as fallback)
-- Internet access to github.com for the update check (optional: Winnow works offline)
+- Internet access to github.com for the update check (optional: WinNow works offline)
 
 ## License
 
@@ -349,4 +324,4 @@ GPL-3.0 © ErickP (Eperez98) — [github.com/eperez98](https://github.com/eperez
 
 ---
 
-<p align="center"><sub>Winnow by ErickP (Eperez98) &middot; Proudly made in Panama PTY507</sub></p>
+<p align="center"><sub>WinNow by ErickP (Eperez98) &middot; Proudly made in Panama PTY507</sub></p>

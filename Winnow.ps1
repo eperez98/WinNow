@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Winnow - Windows 10/11 optimization, debloat and maintenance toolkit for the terminal.
+    WinNow - Windows 10/11 optimization, debloat and maintenance toolkit for the terminal.
 
 .DESCRIPTION
     Interactive keyboard-driven menus (arrow keys, Space, Enter) or fully scripted via parameters.
@@ -171,6 +171,11 @@ if ($GUI) {
     exit 0
 }
 
+function Start-WNGuiProcess {
+    # The window runs in its own STA process, with the same language and mode as this console
+    Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs GUI -NoUpdateCheck:$NoUpdateCheck) -WindowStyle Minimized
+}
+
 # ---- Interactive -------------------------------------------------------------------------------
 Initialize-WNConsole
 if (-not $WN.IsAdmin -and -not $WN.DryRun) { $WN.DryRun = $true }
@@ -179,10 +184,6 @@ if (-not $Lang) {
     if (-not $picked) { Set-WNCursor $true; exit 0 }
     Set-WNLanguage $picked
 }
-function Start-WNGuiProcess {
-    # The window runs in its own STA process, with the same language and mode as this console
-    Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs GUI -NoUpdateCheck:$NoUpdateCheck) -WindowStyle Minimized
-}
 # Every start asks for the mode, unless -Terminal (or -GUI, handled above) already says it
 if (-not $Terminal) {
     $mode = Show-WNModePicker
@@ -190,7 +191,7 @@ if (-not $Terminal) {
     if ($mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
 }
 # Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut;
-# a copy downloaded by the one-line launcher asks on exit instead (shortcut, or remove Winnow's files).
+# a copy downloaded by the one-line launcher asks on exit instead (shortcut, or remove WinNow's files).
 if (-not $NoUpdateCheck -and (Invoke-WNUpdateCheck)) { Restart-WNApp; exit 0 }
 if (-not (Get-WNSettings).ShortcutAsked -and -not (Test-WNTempCopy)) { Show-WNShortcutOffer }
 
@@ -245,15 +246,12 @@ try {
             'dns'      { Show-WNDnsMenu }
             'hosts'    { Show-WNHostsMenu }
             'backups'  { Show-WNBackupsMenu }
-            'gui' {
-                Start-WNGuiProcess
-                Write-WNStatus (T 'main.guiOpened') Ok
-            }
+            'gui'      { Start-WNGuiProcess; Write-WNStatus (T 'main.guiOpened') Ok }
             'update'   { if (Invoke-WNUpdateCheck -Manual) { Restart-WNApp; exit 0 } }
             'shortcut' { Write-WNHeader (T 'main.shortcut'); [void](New-WNShortcut); Save-WNSetting 'ShortcutAsked' $true; Wait-WNKey }
             'info'     { Show-WNSystemInfo }
-            'logs'     { Show-WNLogsMenu }
             'about'    { Show-WNAbout }
+            'logs'     { Show-WNLogsMenu }
             'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }
             'sim' {
                 if ($WN.DryRun -and -not $WN.IsAdmin) {

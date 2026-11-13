@@ -30,6 +30,13 @@ function Get-WNStartupEntries {
     }
 }
 
+function Get-WNStartupSorted {
+    # Active entries first, then disabled ones; alphabetical inside each group
+    Get-WNStartupEntries |
+        ForEach-Object { $_ | Add-Member -NotePropertyName Enabled -NotePropertyValue (Test-WNStartupEnabled $_) -PassThru } |
+        Sort-Object @{ Expression = 'Enabled'; Descending = $true }, Name
+}
+
 function Test-WNStartupEnabled {
     param($Entry)
     $v = Get-WNRegistryValue $Entry.ApprovedPath $Entry.Name
@@ -56,9 +63,9 @@ function Set-WNStartupEnabled {
 
 function Show-WNStartupMenu {
     while ($true) {
-        $entries = @(Get-WNStartupEntries)
+        $entries = @(Get-WNStartupSorted)
         $items = foreach ($e in $entries) {
-            $on = Test-WNStartupEnabled $e
+            $on = $e.Enabled
             [pscustomobject]@{
                 Label    = "$($e.Name)  [$(T $e.Scope)]"
                 Value    = $e

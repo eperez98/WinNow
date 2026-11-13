@@ -1,14 +1,13 @@
 <#
-    Winnow one-line launcher.
+    WinNow one-line launcher:
 
         irm eperez98.github.io/WinNow | iex
 
-    That page (the gh-pages branch) runs this file from the latest release. Options still work when it is run
-    directly: & ([scriptblock]::Create((irm https://github.com/eperez98/WinNow/releases/latest/download/run.ps1))) -DryRun
+    That page (the gh-pages branch) runs this file from the latest release.
 
     Downloads the latest release zip to %TEMP%\Winnow-app, then starts Winnow.ps1 (elevated when
     needed), which asks for the language and the mode (terminal or graphical interface). Nothing is
-    installed; on exit Winnow offers a desktop shortcut or deletes the download.
+    installed; on exit WinNow offers a desktop shortcut or deletes the download.
 #>
 param([Parameter(ValueFromRemainingArguments = $true)][string[]]$WNArgs)
 
@@ -22,7 +21,7 @@ param([Parameter(ValueFromRemainingArguments = $true)][string[]]$WNArgs)
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor 3072
     Write-Host ''
-    Write-Host '  Winnow - downloading latest release / descargando la ultima version...' -ForegroundColor Cyan
+    Write-Host '  WinNow - downloading latest release / descargando la ultima version...' -ForegroundColor Cyan
     try {
         $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -Uri $url -OutFile $zip -UseBasicParsing

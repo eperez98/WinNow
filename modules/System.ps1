@@ -205,7 +205,7 @@ function Show-WNBackupsMenu {
 
 function Show-WNAbout {
     # Same content as the About page of the window
-    $lines = @("$($WN.Name) $($WN.Version) $($WN.Channel) - $($WN.Author)", (T 'tagline'), $WN.Repo, (T 'about.donateLine' $WN.Donate), '')
+    $lines = @("WinNow $($WN.Version) $($WN.Channel) - $($WN.Author)", (T 'tagline'), $WN.Repo, (T 'about.donateLine' $WN.Donate), '')
     foreach ($s in 'what', 'core', 'releases', 'future') {
         $lines += (T "about.$($s)Title").ToUpper()
         if ($s -eq 'future') { $lines += "  $(T 'about.futureNote')" }

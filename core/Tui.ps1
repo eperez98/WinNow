@@ -44,17 +44,19 @@ $script:WNMark = @(
     @('  o   o   o ', 'Yellow'),
     @('      o     ', 'Yellow')
 )
-$script:WNGlyphs = @{
-    w = @('          ', '__      __', '\ \ /\ / /', ' \ V  V / ', '  \_/\_/  ')
-    i = @(' _ ', '(_)', '| |', '| |', '|_|')
-    n = @('       ', ' _ __  ', '| ''_ \ ', '| | | |', '|_| |_|')
-    o = @('       ', '  ___  ', ' / _ \ ', '| (_) |', ' \___/ ')
-}
+$script:WNWord = @(
+    @('__        __', '\ \      / /', ' \ \ /\ / / ', '  \ V  V /  ', '   \_/\_/   '),
+    @(' _ ', '(_)', '| |', '| |', '|_|'),
+    @('       ', ' _ __  ', '| ''_ \ ', '| | | |', '|_| |_|'),
+    @(' _   _ ', '| \ | |', '|  \| |', '| |\  |', '|_| \_|'),
+    @('       ', '  ___  ', ' / _ \ ', '| (_) |', ' \___/ '),
+    @('          ', '__      __', '\ \ /\ / /', ' \ V  V / ', '  \_/\_/  ')
+)
 
 function Write-WNBanner {
     $rowColors = 'Green', 'Green', 'Cyan', 'Cyan', 'DarkCyan'
     for ($r = 0; $r -lt 5; $r++) {
-        $name = -join ('winnow'.ToCharArray() | ForEach-Object { $script:WNGlyphs["$_"][$r] })
+        $name = -join ($script:WNWord | ForEach-Object { $_[$r] })
         Write-Host '  ' -NoNewline
         Write-Host $script:WNMark[$r][0] -ForegroundColor $script:WNMark[$r][1] -NoNewline
         Write-Host "   $name" -ForegroundColor $rowColors[$r]
@@ -73,7 +75,7 @@ function Write-WNHeader {
     if ($Banner -and (Get-WNConsoleSize).Height -ge 40) { Write-WNBanner; Write-Host '' }
     Write-Host "  $line" -ForegroundColor DarkCyan
     $seg = @(
-        @('   ', $null), @('\/\/', 'Green'), @('.', 'Yellow'), @(' winnow', 'Cyan'), @(" $($WN.Version)", 'White'), @(" $($WN.Channel)", 'DarkGray'),
+        @('   ', $null), @('\/\/', 'Green'), @('.', 'Yellow'), @(' WinNow', 'Cyan'), @(" $($WN.Version)", 'White'), @(" $($WN.Channel)", 'DarkGray'),
         @('  |  ', 'DarkGray'), @("$($WN.OSLabel) build $($WN.OSBuild)", 'Gray'),
         @('  |  ', 'DarkGray'), $admin
     )

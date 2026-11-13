@@ -224,18 +224,18 @@ function Confirm-WNGui {
         try { $due = -not $g.Runspace.SessionStateProxy.GetVariable('WN').RestorePointDone } catch { $due = $true }
     }
     if ($due) {
-        $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$(T 'gui.rpChoice')", 'Winnow', 'YesNoCancel', $icon, 'Cancel')
+        $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$(T 'gui.rpChoice')", 'WinNow', 'YesNoCancel', $icon, 'Cancel')
         $g.SkipRp = ("$r" -eq 'No')
         # A job started by this same click reads it first; if the click starts none, it must not reach a later job
         [void]$g.Window.Dispatcher.BeginInvoke([Action]{ $script:WNGui.SkipRp = $false }, [Windows.Threading.DispatcherPriority]::Background)
         return ("$r" -ne 'Cancel')
     }
     $note = if ($WN.DryRun) { T 'gui.noteSim' } elseif ($Plain) { T 'gui.noteReal' } else { T 'gui.noteBackup' }
-    $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$note", 'Winnow', 'YesNo', $icon, 'No')
+    $r = [Windows.MessageBox]::Show($g.Window, "$Message`n`n$note", 'WinNow', 'YesNo', $icon, 'No')
     return ($r -eq 'Yes')
 }
 
-function Show-WNGuiInfo { param([string]$Message) [void][Windows.MessageBox]::Show($script:WNGui.Window, $Message, 'Winnow') }
+function Show-WNGuiInfo { param([string]$Message) [void][Windows.MessageBox]::Show($script:WNGui.Window, $Message, 'WinNow') }
 
 function Get-WNGuiSelected {
     param($Rows)
@@ -670,7 +670,7 @@ function Build-WNGuiServices {
 # ---- Startup apps
 function Update-WNGuiStartup {
     Start-WNGuiJob -Label (T 'gui.readingStartup') -Script {
-        foreach ($e in Get-WNStartupEntries) { $e | Add-Member -NotePropertyName Enabled -NotePropertyValue (Test-WNStartupEnabled $e) -PassThru }
+        Get-WNStartupSorted
     }.ToString() -OnDone {
         param($out)
         $l = $script:WNGui.StartupList
@@ -996,6 +996,58 @@ function Build-WNGuiUpdates {
     $p.OnShow = { Update-WNGuiUpdateStatus }
 }
 
+# ---- About
+function New-WNGuiAboutLines {
+    # One text line per entry of a multi-line string; "version - text" lines get the version in bold
+    param([string]$Key)
+    $rows = foreach ($line in (T $Key) -split "`n") {
+        $t = New-WNGuiText '' -Wrap -Size 12.5 -Margin '0,4,0,0'
+        $head, $rest = $line -split ' - ', 2
+        if ($rest) {
+            $b = New-Object Windows.Documents.Run $head
+            $b.FontWeight = 'SemiBold'
+            $t.Inlines.Add($b)
+            $t.Inlines.Add((New-Object Windows.Documents.Run "  $rest"))
+        } else { $t.Text = $line }
+        $t
+    }
+    return (New-WNGuiPanel -Orientation Vertical -Children @($rows))
+}
+
+function Build-WNGuiAbout {
+    param($p)
+    $logo = New-WNGuiImage (Get-WNGuiLogoFile) 64
+    if ($logo) { $logo.Margin = '0,0,18,0' }
+    $script:WNGui.AboutLogo = $logo
+    $info = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiText 'WinNow' -Bold -Size 24),
+        (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim),
+        (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'),
+        (New-WNGuiText (T 'brand.madeIn') -Dim -Size 12 -Margin '0,2,0,0'))
+    $info.VerticalAlignment = 'Center'
+    $repo = New-WNGuiButton (T 'about.repo') -Icon 'E71B' -Always -OnClick { Start-Process $WN.Repo }
+    $repo.VerticalAlignment = 'Center'
+    [Windows.Controls.DockPanel]::SetDock($repo, 'Right')
+    $head = New-Object Windows.Controls.DockPanel
+    [void]$head.Children.Add($repo)
+    # Support development: PayPal donation page
+    $donate = New-WNGuiButton (T 'about.donate') -Icon 'EB51' -Always -OnClick { Start-Process $WN.Donate }
+    $donate.ToolTip = T 'about.donateTip'
+    $donate.VerticalAlignment = 'Center'
+    $donate.Margin = '0,0,8,0'
+    [Windows.Controls.DockPanel]::SetDock($donate, 'Right')
+    [void]$head.Children.Add($donate)
+    [void]$head.Children.Add((New-WNGuiPanel -Children @($logo, $info)))
+    $stack = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiGlass $head),
+        (New-WNGuiCard -Title (T 'about.whatTitle') -Text (T 'about.what') -Icon 'E946'),
+        (New-WNGuiCard -Title (T 'about.coreTitle') -Icon 'E950' -Extra (New-WNGuiAboutLines 'about.core')),
+        (New-WNGuiCard -Title (T 'about.releasesTitle') -Icon 'E81C' -Extra (New-WNGuiAboutLines 'about.releases')),
+        (New-WNGuiCard -Title (T 'about.futureTitle') -Text (T 'about.futureNote') -Icon 'E82F' -Extra (New-WNGuiAboutLines 'about.future'))
+    )
+    $p.Body = New-WNGuiScroll $stack
+}
+
 # ---- Backups & restore
 function Update-WNGuiBackups {
     $g = $script:WNGui
@@ -1254,62 +1306,6 @@ function Build-WNGuiLogs {
     $p.OnShow = { & $script:WNGui.LogShow }
 }
 
-# ---- About
-function New-WNGuiAboutLines {
-    # One text line per entry of a multi-line string; "version - text" lines get the version in bold
-    param([string]$Key)
-    $rows = foreach ($line in (T $Key) -split "`n") {
-        $t = New-WNGuiText '' -Wrap -Size 12.5 -Margin '0,4,0,0'
-        $head, $rest = $line -split ' - ', 2
-        if ($rest) {
-            $b = New-Object Windows.Documents.Run $head
-            $b.FontWeight = 'SemiBold'
-            $t.Inlines.Add($b)
-            $t.Inlines.Add((New-Object Windows.Documents.Run "  $rest"))
-        } else { $t.Text = $line }
-        $t
-    }
-    return (New-WNGuiPanel -Orientation Vertical -Children @($rows))
-}
-
-function Build-WNGuiAbout {
-    param($p)
-    $logo = New-WNGuiImage (Get-WNGuiLogoFile) 64
-    $script:WNGui.AboutLogo = $logo
-    if ($logo) { $logo.Margin = '0,0,18,0' }
-    $info = New-WNGuiPanel -Orientation Vertical -Children @(
-        (New-WNGuiText $WN.Name -Bold -Size 24),
-        (New-WNGuiText (T 'about.byline' $WN.Version $WN.Channel $WN.Author) -Dim -Wrap),
-        (New-WNGuiText (T 'tagline') -Dim -Wrap -Margin '0,2,0,0'),
-        (New-WNGuiText (T 'brand.madeIn') -Dim -Size 12 -Margin '0,2,0,0'))
-    $info.VerticalAlignment = 'Center'
-    $repo = New-WNGuiButton (T 'about.repo') -Icon 'E71B' -Always -OnClick { Start-Process $WN.Repo }
-    $repo.VerticalAlignment = 'Center'
-    [Windows.Controls.DockPanel]::SetDock($repo, 'Right')
-    $head = New-Object Windows.Controls.DockPanel
-    [void]$head.Children.Add($repo)
-    # Support development: PayPal donation page
-    $donate = New-WNGuiButton (T 'about.donate') -Icon 'EB51' -Always -OnClick { Start-Process $WN.Donate }
-    $donate.ToolTip = T 'about.donateTip'
-    $donate.VerticalAlignment = 'Center'
-    $donate.Margin = '0,0,8,0'
-    [Windows.Controls.DockPanel]::SetDock($donate, 'Right')
-    [void]$head.Children.Add($donate)
-    # A DockPanel (not a horizontal StackPanel) gives the text a width, so a long byline wraps instead of running under the buttons
-    $id = New-Object Windows.Controls.DockPanel
-    if ($logo) { [Windows.Controls.DockPanel]::SetDock($logo, 'Left'); [void]$id.Children.Add($logo) }
-    [void]$id.Children.Add($info)
-    [void]$head.Children.Add($id)
-    $stack = New-WNGuiPanel -Orientation Vertical -Children @(
-        (New-WNGuiGlass $head),
-        (New-WNGuiCard -Title (T 'about.whatTitle') -Text (T 'about.what') -Icon 'E946'),
-        (New-WNGuiCard -Title (T 'about.coreTitle') -Icon 'E950' -Extra (New-WNGuiAboutLines 'about.core')),
-        (New-WNGuiCard -Title (T 'about.releasesTitle') -Icon 'E81C' -Extra (New-WNGuiAboutLines 'about.releases')),
-        (New-WNGuiCard -Title (T 'about.futureTitle') -Text (T 'about.futureNote') -Icon 'E82F' -Extra (New-WNGuiAboutLines 'about.future'))
-    )
-    $p.Body = New-WNGuiScroll $stack
-}
-
 # ---- Home: banner, start-here card, tool tiles, this PC
 function New-WNGuiChip {
     param([string]$Text)
@@ -1412,7 +1408,7 @@ function Build-WNGuiHome {
     $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
     $chips.VerticalAlignment = 'Top'
     $chips.Margin = '28,24,0,0'
-    $title = New-WNGuiText 'Winnow' -Size 56
+    $title = New-WNGuiText 'WinNow' -Size 56
     $title.FontFamily = 'Segoe UI Variable Display, Segoe UI'
     $title.FontWeight = 'Bold'
     $title.Foreground = 'White'
@@ -1639,7 +1635,7 @@ function Set-WNGuiTheme {
     if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
 
-function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Patria' { 'Winnow_128_patria.png' } 'Light' { 'Winnow_128.png' } default { 'Winnow_128.png' } } }
+function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Patria' { 'Winnow_128_patria.png' } 'Light' { 'Winnow_128_light.png' } default { 'Winnow_128.png' } } }
 
 function Set-WNGuiUpdateState {
     # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
@@ -1822,7 +1818,7 @@ function Start-WNGuiUpdateDownload {
 }
 
 function Start-WNGuiUpdateInstall {
-    # Step 2 (Restart now): swap the files, then this window closes and the updated Winnow opens
+    # Step 2 (Restart now): swap the files, then this window closes and the updated WinNow opens
     $g = $script:WNGui
     Show-WNGuiUpdatePanel 'installing'
     Start-WNGuiJob -Label (T 'upd2.installing') -Arguments @($WN.DryRun, $g.Update, $g.UpdStaged) -Script {
@@ -1871,7 +1867,7 @@ function Show-WNGui {
     Set-WNGuiTheme $theme
 
     # ---- Window chrome and identity
-    $window.Title = "Winnow $($WN.GuiVersion) $($WN.GuiChannel)"
+    $window.Title = "WinNow $($WN.GuiVersion) $($WN.GuiChannel)"
     $window.Height = [Math]::Min(860, [Windows.SystemParameters]::WorkArea.Height - 20)
     $window.Width = [Math]::Min(1320, [Windows.SystemParameters]::WorkArea.Width - 20)
     $g.WantGlass = $WN.OSBuild -ge 22621
@@ -1887,7 +1883,7 @@ function Show-WNGui {
         Set-WNGuiTheme $g.ThemeName
         Write-WNLog "GUI backdrop: acrylic=$([bool]$g.Glass) theme=$($g.ThemeName)" -Component 'Gui'
     })
-    $ctl.VersionText.Text = "Winnow $($WN.GuiVersion)"
+    $ctl.VersionText.Text = "WinNow $($WN.GuiVersion)"
     $ctl.AdminText.Text = $WN.GuiChannel
     $ctl.ModeText.Text = if ($WN.IsAdmin) { T 'gui.modeAdmin' } else { T 'gui.modeUser' }
     $ctl.SimToggle.IsChecked = $WN.DryRun
@@ -1977,7 +1973,7 @@ function Show-WNGui {
     $window.Add_Closing({
         param($s, $e)
         $g = $script:WNGui
-        if ($g.Job -and [Windows.MessageBox]::Show($g.Window, (T 'gui.busyClose'), 'Winnow', 'YesNo', 'Warning') -ne 'Yes') {
+        if ($g.Job -and [Windows.MessageBox]::Show($g.Window, (T 'gui.busyClose'), 'WinNow', 'YesNo', 'Warning') -ne 'Yes') {
             $e.Cancel = $true; $g.Relaunch = $null; return
         }
         if ($g.Job) { $g.Job.PS.Stop() }

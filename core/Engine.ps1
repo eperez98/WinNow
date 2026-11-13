@@ -174,7 +174,7 @@ function Remove-WNAppx {
 
 #region Restore point
 function New-WNRestorePoint {
-    param([string]$Description = "Winnow $(Get-Date -Format 'yyyy-MM-dd HH:mm')", [switch]$Force)
+    param([string]$Description = "WinNow $(Get-Date -Format 'yyyy-MM-dd HH:mm')", [switch]$Force)
     if ($WN.DryRun) { Write-WNStatus (T 'rp.dry' $Description) Dry 'Restore'; return $true }
     if ($WN.RestorePointDone -and -not $Force) { return $true }
 
@@ -218,7 +218,7 @@ function Confirm-WNRestorePoint {
 #endregion
 
 #region Backups
-# Before every change Winnow saves a JSON snapshot with the exact current values of everything
+# Before every change WinNow saves a JSON snapshot with the exact current values of everything
 # it is about to touch (registry values, service startup types, DNS servers, installed apps).
 # Unlike the catalog's "Original" values, restoring a snapshot puts back what *this* PC had.
 

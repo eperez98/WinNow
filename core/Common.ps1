@@ -13,11 +13,11 @@ function Initialize-WNContext {
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
 
     $global:WN = [ordered]@{
-        Name             = 'Winnow'
-        Version          = '1.2.2'
-        Channel          = "Secure Update $([char]0x00B7) Security Compliance Hotfix"
-        GuiVersion       = '1.2.2'
-        GuiChannel       = "Secure Update $([char]0x00B7) Security Compliance Hotfix"
+        Name             = 'WinNow'
+        Version          = '1.5'
+        Channel          = 'QL Update Mid November'
+        GuiVersion       = '1.5'
+        GuiChannel       = 'QL Update Mid November'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'
         Donate           = 'https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD'
@@ -70,7 +70,7 @@ function Initialize-WNContext {
 }
 
 function Test-WNTrustedOwner {
-    # Owned by Administrators, SYSTEM or the account running Winnow (never another standard user)
+    # Owned by Administrators, SYSTEM or the account running WinNow (never another standard user)
     param([Parameter(Mandatory)][string]$Path)
     try { $sid = (Get-Acl -LiteralPath $Path).GetOwner([Security.Principal.SecurityIdentifier]).Value } catch { return $false }
     return ($sid -in 'S-1-5-32-544', 'S-1-5-18', [Security.Principal.WindowsIdentity]::GetCurrent().User.Value)

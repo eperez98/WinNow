@@ -1,6 +1,6 @@
 {
   "tweaks": {
-    "RestorePoint": { "Name": "Crear punto de restauración", "Description": "Crea ahora un punto de restauración del sistema. Winnow también crea uno automáticamente antes del primer cambio de cada sesión." },
+    "RestorePoint": { "Name": "Crear punto de restauración", "Description": "Crea ahora un punto de restauración del sistema. WinNow también crea uno automáticamente antes del primer cambio de cada sesión." },
     "Telemetry": { "Name": "Desactivar telemetría", "Description": "Reduce los datos de diagnóstico al mínimo y desactiva el ID de publicidad, las experiencias personalizadas, la recopilación de escritura a mano y tecleo, las solicitudes de opinión, el envío automático de muestras de Defender y la telemetría de PowerShell 7. Desactiva DiagTrack, dmwappushservice y WerSvc." },
     "ActivityHistory": { "Name": "Desactivar historial de actividad", "Description": "Impide que Windows publique o suba tus actividades. El historial del portapapeles sigue funcionando." },
     "ConsumerFeatures": { "Name": "Desactivar funciones de consumidor", "Description": "Impide que Windows instale en silencio apps promocionadas de la Store (Candy Crush, etc.)." },

@@ -167,13 +167,13 @@ function Show-WNAppsMenu {
     while ($true) {
         $apps = @($WN.Config.apps)
         $wg = Find-WNWinget
-        $items = @()
+        # Any app, not only the catalog: the winget search comes first
+        $items = @(@{ Label = (T 'apps.search'); Value = 'search'; Hotkey = 'w'; Hint = (T 'apps.searchHint') }, @{ Separator = $true; Label = (T 'apps.catalogSep' $apps.Count) })
         foreach ($cat in ($apps | Group-Object Category | Sort-Object Name)) {
             $items += @{ Label = "$($cat.Name)  ($($cat.Count))"; Value = "cat:$($cat.Name)"; Hint = (T 'apps.catHint') }
         }
         $items += @{ Separator = $true; Label = '' }
         $items += @{ Label = (T 'apps.all' $apps.Count); Value = 'all'; Hotkey = 's'; Hint = (T 'apps.allHint') }
-        $items += @{ Label = (T 'apps.search'); Value = 'search'; Hotkey = 'w'; Hint = (T 'apps.searchHint') }
         $items += @{ Label = (T 'apps.installedMenu'); Value = 'installed'; Hotkey = 'i'; Hint = (T 'apps.installedHint') }
         $items += @{ Label = (T 'apps.upgradeAll'); Value = 'upgrade'; Hotkey = 'g'; Hint = (T 'apps.upgradeAllHint') }
         $items += @{ Label = (T 'apps.listUpgrades'); Value = 'list'; Hotkey = 'l'; Hint = 'winget upgrade' }

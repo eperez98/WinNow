@@ -159,7 +159,7 @@ function Restart-WNApp {
 }
 
 function Show-WNUpdatePrompt {
-    # Terminal: release notes and the three choices. Returns $true when Winnow was updated (caller restarts).
+    # Terminal: release notes and the three choices. Returns $true when WinNow was updated (caller restarts).
     param([Parameter(Mandatory)]$Update)
     Write-WNHeader (T 'au.title' $Update.Version)
     Write-Host ('  ' + (T 'au.versions' $WN.Version $Update.Version)) -ForegroundColor White
@@ -198,7 +198,7 @@ function Show-WNUpdatePrompt {
 
 function Invoke-WNUpdateCheck {
     # Startup (quiet unless there is something new) or manual (-Manual reports every outcome).
-    # Returns $true when Winnow was updated and must restart.
+    # Returns $true when WinNow was updated and must restart.
     param([switch]$Manual)
     if ($Manual) { Write-WNHeader (T 'main.update') }
     Write-WNStatus (T 'au.checking') Info 'Update'
@@ -217,11 +217,11 @@ function Test-WNTempCopy {
 }
 
 function New-WNShortcut {
-    # Desktop shortcut with the Winnow logo that opens this copy directly. A copy started by the one-line
+    # Desktop shortcut with the WinNow logo that opens this copy directly. A copy started by the one-line
     # launcher lives in %TEMP% (replaced on every run), so it is first copied to a permanent folder.
     param(
         [string]$InstallDir = (Join-Path $env:LOCALAPPDATA 'Programs\Winnow'),
-        [string]$Path = (Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk')
+        [string]$Path = (Join-Path ([Environment]::GetFolderPath('Desktop')) 'WinNow.lnk')
     )
     $target = if (Test-WNTempCopy) { $InstallDir } else { $WN.Root }
     if ($WN.DryRun) { Write-WNStatus (T 'sc.dry' $Path (Join-Path $target 'Winnow.ps1')) Dry 'Shortcut'; return $true }
@@ -242,7 +242,7 @@ function New-WNShortcut {
         $patria = $saved -eq 'Patria' -or (-not $saved -and (Get-Date).Month -eq 11)
         $ico = Join-Path $target "LOGO\$(if ($patria) { 'Winnow_patria.ico' } else { 'Winnow.ico' })"
         if (Test-Path $ico) { $s.IconLocation = "$ico,0" }
-        $s.Description = 'Winnow'
+        $s.Description = 'WinNow'
         $s.Save()
         Write-WNStatus (T 'sc.done' $Path) Ok 'Shortcut'
         return $true
@@ -264,14 +264,14 @@ function Show-WNShortcutOffer {
 function Get-WNInstallDir { Join-Path $env:LOCALAPPDATA 'Programs\Winnow' }
 
 function Test-WNManagedCopy {
-    # Copies Winnow itself put on this PC (the download in %TEMP% or the shortcut copy); only these are ever deleted
+    # Copies WinNow itself put on this PC (the download in %TEMP% or the shortcut copy); only these are ever deleted
     if (Test-WNTempCopy) { return $true }
     $install = [IO.Path]::GetFullPath((Get-WNInstallDir)).TrimEnd('\')
     return ([IO.Path]::GetFullPath($WN.Root).TrimEnd('\') -eq $install)
 }
 
 function Register-WNInstance {
-    # Copies Winnow may delete on exit note every Winnow process running from them (one empty file per PID),
+    # Copies WinNow may delete on exit note every WinNow process running from them (one empty file per PID),
     # so the delete waits for all of them however they were started
     if (-not (Test-WNManagedCopy)) { return }
     $dir = Join-Path $WN.Root '.instances'
@@ -279,7 +279,7 @@ function Register-WNInstance {
 }
 
 function Remove-WNPathsOnExit {
-    # A hidden helper waits until no Winnow process registered in these folders is alive (30 minutes at most),
+    # A hidden helper waits until no WinNow process registered in these folders is alive (30 minutes at most),
     # then deletes the folders.
     param([Parameter(Mandatory)][string[]]$Paths)
     $list = ($Paths | ForEach-Object { "'" + ($_ -replace "'", "''") + "'" }) -join ', '
@@ -301,13 +301,13 @@ foreach (`$d in `$dirs) { Remove-Item -LiteralPath `$d -Recurse -Force -ErrorAct
 }
 
 function Uninstall-WNLocalCopy {
-    # "No" on exit: remove what Winnow put on this PC, like an uninstall: the download in %TEMP%, the shortcut
+    # "No" on exit: remove what WinNow put on this PC, like an uninstall: the download in %TEMP%, the shortcut
     # copy in %LOCALAPPDATA%\Programs\Winnow and its desktop shortcut. Logs and backups in ProgramData are kept.
     $install = [IO.Path]::GetFullPath((Get-WNInstallDir)).TrimEnd('\')
     $dirs = @()
     if (Test-WNTempCopy) { $dirs += [IO.Path]::GetFullPath($WN.Root).TrimEnd('\') }
     if (Test-Path -LiteralPath (Join-Path $install 'Winnow.ps1')) { $dirs += $install }
-    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk'
+    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'WinNow.lnk'
     $ourLnk = $false
     if (Test-Path -LiteralPath $lnk) {
         try { $ourLnk = (New-Object -ComObject WScript.Shell).CreateShortcut($lnk).Arguments.IndexOf($install, [StringComparison]::OrdinalIgnoreCase) -ge 0 } catch { }
@@ -324,12 +324,12 @@ function Uninstall-WNLocalCopy {
 
 function Show-WNExitPrompt {
     # On exit, while there is no desktop shortcut yet (or from the download in %TEMP%): Yes = create it and keep
-    # the files, No = remove Winnow's own copies. A folder you extracted yourself is never deleted, and No is
-    # remembered for it. Skipped when another Winnow process takes over from these files (update restart).
+    # the files, No = remove WinNow's own copies. A folder you extracted yourself is never deleted, and No is
+    # remembered for it. Skipped when another WinNow process takes over from these files (update restart).
     # -Owner: the window the dialogs belong to (the GUI asks while it is closing).
     param([switch]$Gui, $Owner)
     if ($WN.Handoff) { return }
-    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'Winnow.lnk'
+    $lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) 'WinNow.lnk'
     if (-not (Test-WNTempCopy) -and (Test-Path -LiteralPath $lnk)) { return }
     $managed = Test-WNManagedCopy
     $dir = [IO.Path]::GetFullPath($WN.Root).TrimEnd('\')
@@ -337,7 +337,7 @@ function Show-WNExitPrompt {
     $target = if (Test-WNTempCopy) { Get-WNInstallDir } else { $dir }
     $box = {
         param($text, $buttons = 'OK', $icon = 'Information')
-        if ($Owner) { [Windows.MessageBox]::Show($Owner, $text, 'Winnow', $buttons, $icon) } else { [Windows.MessageBox]::Show($text, 'Winnow', $buttons, $icon) }
+        if ($Owner) { [Windows.MessageBox]::Show($Owner, $text, 'WinNow', $buttons, $icon) } else { [Windows.MessageBox]::Show($text, 'WinNow', $buttons, $icon) }
     }
     if ($Gui) {
         $msg = if ($managed) { T 'dl.gui' $dir (Get-WNInstallDir) } else { T 'dl.guiOwn' $dir }

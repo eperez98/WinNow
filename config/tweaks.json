@@ -6,7 +6,7 @@
     "Type": "Action",
     "Risk": "Low",
     "Level": "Recommended",
-    "Description": "Creates a System Restore Point now. Winnow also creates one automatically before the first change of each session.",
+    "Description": "Creates a System Restore Point now. WinNow also creates one automatically before the first change of each session.",
     "Invoke": "Invoke-WNRestorePointAction"
   },
   {

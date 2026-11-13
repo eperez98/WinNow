@@ -1,20 +1,64 @@
 # Changelog
 
-All notable changes to Winnow are listed here. The format follows
+All notable changes to WinNow are listed here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
 ### Planned
-- **1.5 November Update**: new name WinNow and a logo for light and dark mode; startup apps listed active first.
+- **1.6 GUI Rethinked** (on the way): Launcher window with a boot animation; flat, minimal icons; update check at
+  start.
+- **1.7 Profiles & Schedules** (idea): Save this PC as a profile, export it and apply it on another PC; scheduled
+  maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
+- **1.8 Trusted Updates** (idea): Signed releases (an update is installed only when its signature checks out); a
+  history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
+  preview.
+- **1.8.1 Polish** (idea): A closing dialog in the window's own look.
+- **1.8.2 Starting Point** (idea): A starting point tour of what WinNow offers and what is new; Office Helper: remove
+  Outlook (new or classic) and Office, install Thunderbird, LibreOffice or OpenOffice.
+- **1.8.3 GUI Terminal Update** (idea): A task window with the live output and a progress bar for updates, upgrades
+  and removals; it closes by itself when done.
+- **2.0 Store Edition** (idea): An MSIX package published in the Microsoft Store: a native launcher, updates through
+  the Store, and the same tools.
 - More changes may be added and others removed.
+
+## [1.5] - 2026-11-13 - QL Update Mid November
+
+The terminal and the graphical interface are both **1.5 QL Update Mid November**.
+
+### Changed
+- **App search reaches all of winget**: on the App Manager page, typing searches every winget package by itself
+  after a short pause (Enter and the button still work), keeps the catalog apps that match and adds every winget
+  result, even those that match by tag; the text stays in the box. In the terminal, "Search all of winget" is the
+  first option of the App Manager. Apps outside the catalog, such as Steam, now show up.
+  The search runs on its own instead of queuing behind the window's tasks, says "Searching all of winget..." at
+  once, reports a winget that does not answer within 60 seconds, and asks for a name when the box is empty.
+- **Theme picker**: the theme button unfolds a panel inside the window that grows out of the button, and the
+  themes slide in one after the other, each with a swatch of its colours. A click outside it, Esc or a choice folds
+  it back.
+- **Minimal icons**: home tool icons are line glyphs on a quiet tile, white or black, and Panama blue on white
+  in mes patrio.
+- The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
+  About.
+- **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
+- **The name is now WinNow** (was Winnow) in the terminal, the window, the docs and the desktop shortcut. File names,
+  folders and links keep their old spelling, so existing copies, backups and updates keep working.
+- **New logo for light and dark mode**: the mark and the banner are redrawn in a dark and a light version. The README
+  shows the one that matches GitHub's theme, and the window switches its logo with the light / dark button.
+- **Mes patrio icon**: November is Panama's patriotic month, so the 1.5 app icon (window, taskbar, desktop
+  shortcut) wears the flag of Panama: a white tile, the W in Panama blue and red, and the flag's two stars in place
+  of the grains. "Proudly made in Panama PTY507" sits next to the logo on Home, About, the terminal banner and the
+  README.
+- **Startup Manager** lists the active entries first, then the disabled ones (alphabetical inside each group), in
+  the terminal and the window.
+- **About WinNow** lists every release and the road to 2.0 (1.6 to 1.8.3, then 2.0 Store Edition).
+- README screenshots retaken for 1.5, terminal and window, plus new ones for the mode choice, About WinNow and the
+  exit question.
 
 ## [1.2.2] - 2026-11-07 - Secure Update · Security Compliance Hotfix
 
-The terminal edition and the graphical interface are both **1.2.2 Secure Update**. It also ships everything
-from 1.2 Exit & Launcher Update, which was not published on its own.
-The window, the terminal and About show the full name **Secure Update · Security Compliance Hotfix**; a long
-version line in About now wraps instead of running under its buttons.
+The terminal edition and the graphical interface are both **1.2.2 Secure Update · Security Compliance Hotfix**.
+It also ships everything from 1.2 Exit & Launcher Update, which was not published on its own.
 
 ### Added
 - **Update panel in the window**: the update button opens a panel over the window with an animation for each
@@ -37,19 +81,6 @@ version line in About now wraps instead of running under its buttons.
   Winnow would no longer start. Every file and folder the update brings is now set aside first and put back if
   anything fails.
 
-### Changed
-- **Search winget never waits**: the winget search runs on its own instead of queuing behind the window's tasks
-  (opening the App Manager reads the installed apps, which can take a while on some PCs), says "Searching all of
-  winget..." at once, and reports a winget that does not answer within 60 seconds. With an empty box, Search winget
-  asks for an app name. In the window, typing also searches all of winget after a short pause.
-- **Theme picker**: the theme button unfolds a panel inside the window that grows out of the button, and the
-  themes slide in one after the other, each with a swatch of its colours. A click outside it, Esc or a choice folds
-  it back.
-- **Minimal icons**: home tool icons are line glyphs on a quiet tile, white or black, and Panama blue on white
-  in mes patrio.
-- The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
-  About.
-- **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
 ## [1.2] - 2026-11-02 - Exit & Launcher Update
 
 The terminal edition and the graphical interface are both **1.2 Exit & Launcher Update**.
@@ -69,7 +100,7 @@ The terminal edition and the graphical interface are both **1.2 Exit & Launcher 
 ### Removed
 - `Launch-GUI.bat`. `Launch.bat` is the only launcher and asks for the mode (terminal or graphical interface).
 
-## [1.1.5] - 2026-11-02 - Restore Point Choice
+## [1.1.5] - 2026-11-07 - Restore Point Choice
 
 The terminal edition and the graphical interface are both **1.1.5 Restore Point Choice**.
 
@@ -271,7 +302,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.2.2...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.5...HEAD
+[1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.5
 [1.2.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2
 [1.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2
 [1.1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.1.5
