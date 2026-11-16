@@ -6,10 +6,8 @@ All notable changes to WinNow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.6 GUI Rethinked** (on the way): Launcher window with a boot animation; flat, minimal icons; update check at
-  start.
-- **1.7 Profiles & Schedules** (idea): Save this PC as a profile, export it and apply it on another PC; scheduled
-  maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
+- **1.7 Profiles & Schedules** (on the way): Save this PC as a profile, export it and apply it on another PC;
+  scheduled maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
 - **1.8 Trusted Updates** (idea): Signed releases (an update is installed only when its signature checks out); a
   history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
   preview.
@@ -22,11 +20,25 @@ All notable changes to WinNow are listed here. The format follows
   the Store, and the same tools.
 - More changes may be added and others removed.
 
-## [1.5] - 2026-11-13 - QL Update Mid November
+## [1.6] - 2026-11-16 - GUI Rethinked
 
-The terminal and the graphical interface are both **1.5 QL Update Mid November**.
+The terminal and the graphical interface are both **1.6 GUI Rethinked**.
+
+### Added
+- **Launcher window** on every start (`Launch.bat`, the one-line command, the desktop shortcut): a short boot
+  animation (the logo grows in, three dots pulse), then **Graphical interface** or **Terminal** as two flat cards,
+  with the **EN | ES** switch on top and a **GUI RETHINKED** tag. Click, `1` / `2`, the arrow keys and Enter, or `Esc` to exit; any key or
+  click skips the animation. The last mode used is focused. It replaces the console language and mode screens,
+  which stay as the fallback where the window cannot open (and with `-Terminal`).
+- **Update check in the launcher**: while the boot animation runs, the launcher asks GitHub for a newer release in
+  the background ("Checking for updates..."). When there is one, a bar shows the new version with **Update now**
+  (WinNow downloads it, replaces this copy and opens the launcher again) or **Later** (keep using this version;
+  asked again on the next start). The window and the terminal then skip their own check; `-NoUpdateCheck` turns
+  it off, and a skipped version is not offered.
 
 ### Changed
+- **README** in a new layout: hero image, why WinNow, screenshots in English and Spanish (README.es.md), features,
+  security and roadmap.
 - **App search reaches all of winget**: on the App Manager page, typing searches every winget package by itself
   after a short pause (Enter and the button still work), keeps the catalog apps that match and adds every winget
   result, even those that match by tag; the text stays in the box. In the terminal, "Search all of winget" is the
@@ -36,19 +48,35 @@ The terminal and the graphical interface are both **1.5 QL Update Mid November**
 - **Theme picker**: the theme button unfolds a panel inside the window that grows out of the button, and the
   themes slide in one after the other, each with a swatch of its colours. A click outside it, Esc or a choice folds
   it back.
-- **Minimal icons**: home tool icons are line glyphs on a quiet tile, white or black, and Panama blue on white
-  in mes patrio.
+- **Linux World** theme: a terminal-dark backdrop that turns aubergine at the bottom, orange accent and
+  terminal-green text, an icon with a penguin, and a terminal and a penguin on the Home hero.
+- **Minimal icons**: tool icons are line glyphs on a quiet tile, white or black, in the theme's colour (gold for
+  Navidad, terminal green for Linux World).
+- **Navidad boot animation**: snow falls across the launcher, the logo drops in and swings like an ornament, and
+  the dots turn red, green and gold.
 - The search box selects its text on a click, so typing replaces it. The name in the top bar is smaller and opens
   About.
-- **Support development**: About (window and terminal) links to WinNow's PayPal donation page.
+- **Support development**: About and the rail open WinNow's PayPal donation page.
+- The window and the launcher say **GUI RETHINKED** instead of GUI PREVIEW.
+- **WinUI 3 look**: a navigation rail like the Microsoft Store (icon over label) with Home, one item per group of
+  tools, What's new and About; each group opens a page of its tools as cards. Home follows WinUI 3 Gallery: a hero
+  with the version and the name, start cards over its edge (recommended tweaks, what's new, updates, GitHub) and
+  every tool as a card with a colour icon. Pages sit on a layer with a rounded corner, and Registro is a WinUI card
+  with the lines on a code surface.
+- **Theme menu with Navidad and Linux World**: the theme button opens **Light**, **Dark** (the default logo),
+  **Linux World** and **Navidad**: a
+  Christmas icon (window, taskbar, desktop shortcut, launcher), ornaments and snowflakes on the Home hero, and an
+  aero background in pine green and Christmas red. It is the starting theme in December.
+
+## [1.5] - 2026-11-13 - QL Update Mid November
+
+The terminal and the graphical interface are both **1.5 QL Update Mid November**.
+
+### Changed
 - **The name is now WinNow** (was Winnow) in the terminal, the window, the docs and the desktop shortcut. File names,
   folders and links keep their old spelling, so existing copies, backups and updates keep working.
 - **New logo for light and dark mode**: the mark and the banner are redrawn in a dark and a light version. The README
   shows the one that matches GitHub's theme, and the window switches its logo with the light / dark button.
-- **Mes patrio icon**: November is Panama's patriotic month, so the 1.5 app icon (window, taskbar, desktop
-  shortcut) wears the flag of Panama: a white tile, the W in Panama blue and red, and the flag's two stars in place
-  of the grains. "Proudly made in Panama PTY507" sits next to the logo on Home, About, the terminal banner and the
-  README.
 - **Startup Manager** lists the active entries first, then the disabled ones (alphabetical inside each group), in
   the terminal and the window.
 - **About WinNow** lists every release and the road to 2.0 (1.6 to 1.8.3, then 2.0 Store Edition).
@@ -302,7 +330,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.5...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.6...HEAD
+[1.6]: https://github.com/eperez98/Winnow/releases/tag/v1.6
 [1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.5
 [1.2.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2
 [1.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2

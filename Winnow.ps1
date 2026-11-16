@@ -42,7 +42,7 @@
     Open the graphical interface without asking for the mode.
 
 .PARAMETER Terminal
-    Use the terminal menus without asking for the mode.
+    Use the terminal menus without the launcher window (the console asks for the language).
 
 .PARAMETER NoUpdateCheck
     Do not ask GitHub for a newer release at startup.
@@ -179,16 +179,40 @@ function Start-WNGuiProcess {
 # ---- Interactive -------------------------------------------------------------------------------
 Initialize-WNConsole
 if (-not $WN.IsAdmin -and -not $WN.DryRun) { $WN.DryRun = $true }
-if (-not $Lang) {
-    $picked = Show-WNLanguagePicker
-    if (-not $picked) { Set-WNCursor $true; exit 0 }
-    Set-WNLanguage $picked
-}
-# Every start asks for the mode, unless -Terminal (or -GUI, handled above) already says it
+# Every start opens the launcher window (boot animation, language, Graphical interface or Terminal) unless
+# -Terminal (or -GUI, handled above) already says it. Without WPF the console screens ask instead.
+$launch = $null
 if (-not $Terminal) {
-    $mode = Show-WNModePicker
-    if (-not $mode) { Set-WNCursor $true; exit 0 }
-    if ($mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
+    . "$root\gui\Launcher.ps1"
+    $launch = Show-WNLauncher -Lang $Lang -NoUpdateCheck:$NoUpdateCheck
+    if ($launch -eq 'exit') { Set-WNCursor $true; exit 0 }
+}
+if ($launch) {
+    Set-WNLanguage $launch.Lang
+    # The launcher already asked GitHub: the window and the terminal do not ask again this time
+    if ($launch.Checked) { $NoUpdateCheck = $true }
+    if ($launch.Mode -eq 'update') {
+        if (Install-WNUpdate $launch.Update) {
+            # The updated copy opens the launcher again, without checking a second time
+            $a = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$(Join-Path $WN.Root 'Winnow.ps1')`"", '-Lang', $WN.Lang, '-NoUpdateCheck')
+            if ($WN.DryRun) { $a += '-DryRun' }
+            Start-Process powershell.exe -ArgumentList $a
+            Set-WNCursor $true; exit 0
+        }
+        Wait-WNKey
+    }
+    if ($launch.Mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
+} else {
+    if (-not $Lang) {
+        $picked = Show-WNLanguagePicker
+        if (-not $picked) { Set-WNCursor $true; exit 0 }
+        Set-WNLanguage $picked
+    }
+    if (-not $Terminal) {
+        $mode = Show-WNModePicker
+        if (-not $mode) { Set-WNCursor $true; exit 0 }
+        if ($mode -eq 'gui') { Start-WNGuiProcess; Set-WNCursor $true; exit 0 }
+    }
 }
 # Every start: newer release on GitHub? (quiet when offline or up to date). First start: offer the shortcut;
 # a copy downloaded by the one-line launcher asks on exit instead (shortcut, or remove WinNow's files).

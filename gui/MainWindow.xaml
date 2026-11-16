@@ -24,6 +24,9 @@
     <SolidColorBrush x:Key="WarnBg" Color="#33FF9F0A"/>
     <SolidColorBrush x:Key="IconBg" Color="#1AFFFFFF"/>
     <SolidColorBrush x:Key="IconFg" Color="#FFFFFFFF"/>
+    <SolidColorBrush x:Key="Layer" Color="#0FFFFFFF"/>
+    <SolidColorBrush x:Key="LayerBorder" Color="#1AFFFFFF"/>
+    <SolidColorBrush x:Key="Code" Color="#59000000"/>
     <FontFamily x:Key="Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <!-- Card: translucent, flat, rounded -->
@@ -417,6 +420,64 @@
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Margin" Value="2,14,0,10"/>
     </Style>
+    <!-- Navigation rail item (Microsoft Store style): icon over a short label; accent pill and tint when selected -->
+    <Style x:Key="Rail" TargetType="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+      <Setter Property="Width" Value="82"/>
+      <Setter Property="Height" Value="58"/>
+      <Setter Property="Margin" Value="0,2"/>
+      <Setter Property="GroupName" Value="nav"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Grid>
+              <Border x:Name="bd" CornerRadius="6" Background="Transparent"/>
+              <Border x:Name="hv" CornerRadius="6" Background="{DynamicResource Hover}" Opacity="0"/>
+              <Border x:Name="pill" Width="3" Height="18" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource AccentSolid}" Visibility="Collapsed"/>
+              <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="ic" Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" FontFamily="{StaticResource Icons}" FontSize="20" HorizontalAlignment="Center"/>
+                <ContentPresenter HorizontalAlignment="Center" Margin="0,5,0,0"/>
+              </StackPanel>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="hv" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
+                <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="hv" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Selected}"/>
+                <Setter TargetName="pill" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="ic" Property="Foreground" Value="{DynamicResource AccentText}"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <!-- WinUI 3 card: a quiet surface with a thin edge; hover lightens it -->
+    <Style x:Key="WinCard" TargetType="Button">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" CornerRadius="8" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="16,14">
+              <ContentPresenter/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AccentSolid}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
     <Style x:Key="NavHeader" TargetType="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource FgDim}"/>
       <Setter Property="FontSize" Value="11"/>
@@ -426,29 +487,22 @@
   </Window.Resources>
 
   <Grid x:Name="Root" Background="{DynamicResource Bg}">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="256"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
 
-    <!-- Sidebar -->
-    <Border Background="{DynamicResource Pane}">
-      <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="28,20,0,10">
-          <Image x:Name="Logo" Width="30" Height="30" RenderOptions.BitmapScalingMode="HighQuality"/>
-          <TextBlock Text="WinNow" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="19" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center"/>
-        </StackPanel>
-        <Border DockPanel.Dock="Bottom" Margin="18,6,16,16" CornerRadius="14" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="12,10">
-          <StackPanel>
-            <CheckBox x:Name="SimToggle" Foreground="{DynamicResource Fg}" Content="@@gui.sim@@" FontSize="13"/>
-            <TextBlock x:Name="ModeText" Foreground="{DynamicResource FgDim}" FontSize="11.5" TextWrapping="Wrap" Margin="0,4,0,0"/>
-          </StackPanel>
-        </Border>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel x:Name="NavPanel" Margin="0,0,0,8"/>
-        </ScrollViewer>
-      </DockPanel>
-    </Border>
+    <!-- Navigation rail (Microsoft Store style): the logo, Home and one item per group of tools; What's new and About
+         at the foot -->
+    <DockPanel>
+      <Image x:Name="Logo" DockPanel.Dock="Top" Width="28" Height="28" Margin="0,18,0,12" HorizontalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+      <StackPanel x:Name="NavFooter" DockPanel.Dock="Bottom" Margin="0,0,0,12" HorizontalAlignment="Center"/>
+      <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel x:Name="NavPanel" HorizontalAlignment="Center"/>
+      </ScrollViewer>
+    </DockPanel>
 
     <Grid Grid.Column="1">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+      <!-- WinUI 3: the page sits on a layer with a rounded top-left corner, over the backdrop -->
+      <Border Grid.Row="1" Grid.RowSpan="2" CornerRadius="8,0,0,0" Background="{DynamicResource Layer}" BorderBrush="{DynamicResource LayerBorder}" BorderThickness="1,1,0,0"/>
 
       <!-- Top bar: search fills the left; update status, theme, language, shortcut, terminal and identity on the right -->
       <DockPanel Margin="30,16,30,4" LastChildFill="True">
@@ -509,13 +563,15 @@
                 </ControlTemplate>
               </ToggleButton.Template>
             </ToggleButton>
+            <TextBlock x:Name="ModeText" DockPanel.Dock="Right" Foreground="{DynamicResource FgDim}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,14,0"/>
+            <CheckBox x:Name="SimToggle" DockPanel.Dock="Right" Foreground="{DynamicResource Fg}" Content="@@gui.sim@@" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,10,0"/>
             <ProgressBar x:Name="Busy" Width="160" Height="4" Margin="0,0,12,0" IsIndeterminate="True" Visibility="Collapsed"
                          Foreground="{DynamicResource AccentSolid}" Background="{DynamicResource Card}" BorderThickness="0"/>
             <TextBlock x:Name="StatusText" Foreground="{DynamicResource FgDim}" FontSize="12.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
           </DockPanel>
           <TextBox x:Name="LogBox" Visibility="Collapsed" Height="170" Margin="0,8,0,0" IsReadOnly="True" TextWrapping="NoWrap"
                    FontFamily="Cascadia Mono, Consolas" FontSize="12" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
-                   Background="{DynamicResource Card}" Foreground="{DynamicResource Fg}" BorderBrush="{DynamicResource CardBorder}" Padding="8"/>
+                   Background="{DynamicResource Code}" Foreground="{DynamicResource Fg}" BorderBrush="{DynamicResource CardBorder}" Padding="8"/>
         </StackPanel>
       </Border>
     </Grid>

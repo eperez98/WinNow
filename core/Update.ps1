@@ -239,8 +239,8 @@ function New-WNShortcut {
         $s.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $target 'Winnow.ps1')`""
         $s.WorkingDirectory = $target
         $saved = (Get-WNSettings).GuiTheme
-        $patria = $saved -eq 'Patria' -or (-not $saved -and (Get-Date).Month -eq 11)
-        $ico = Join-Path $target "LOGO\$(if ($patria) { 'Winnow_patria.ico' } else { 'Winnow.ico' })"
+        $xmas = $saved -eq 'Navidad' -or (-not $saved -and (Get-Date).Month -eq 12)
+        $ico = Join-Path $target "LOGO\$(if ($saved -eq 'Linux') { 'Winnow_linux.ico' } elseif ($xmas) { 'Winnow_navidad.ico' } else { 'Winnow.ico' })"
         if (Test-Path $ico) { $s.IconLocation = "$ico,0" }
         $s.Description = 'WinNow'
         $s.Save()

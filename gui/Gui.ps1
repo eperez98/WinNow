@@ -52,25 +52,33 @@ $script:WNGuiThemes = @{
     Dark  = @{
         Bg = '#FF1C1C1E'; GlassBg = '#80141416'; Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
         Selected = '#330A84FF'; Fg = '#FFFFFFFF'; FgDim = '#FFC7C7CC'; Accent = '#FF0A84FF'; AccentSolid = '#FF0A84FF'; AccentFg = '#FFFFFFFF'; AccentText = '#FF64B5FF'
-        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#1AFFFFFF'; IconFg = '#FFFFFFFF'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#1AFFFFFF'; IconFg = '#FFFFFFFF'; Layer = '#0FFFFFFF'; LayerBorder = '#1AFFFFFF'; Code = '#59000000'
         Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
     }
     Light = @{
         Bg = '#FFF2F2F7'; GlassBg = '#99F2F2F7'; Pane = '#59FFFFFF'; Card = '#B3FFFFFF'; CardBorder = '#1A000000'; Hover = '#E6FFFFFF'
         Selected = '#1F007AFF'; Fg = '#FF1C1C1E'; FgDim = '#FF5C5C61'; Accent = '#FF0071E3'; AccentSolid = '#FF0071E3'; AccentFg = '#FFFFFFFF'; AccentText = '#FF0060C7'
-        Warn = '#FF8F5300'; WarnBg = '#26FF9500'; IconBg = '#0D000000'; IconFg = '#FF1C1C1E'
+        Warn = '#FF8F5300'; WarnBg = '#26FF9500'; IconBg = '#0D000000'; IconFg = '#FF1C1C1E'; Layer = '#80FFFFFF'; LayerBorder = '#14000000'; Code = '#0D000000'
         Badges = @{ Applied = '#2634C759|#FF1B7A36'; Partial = '#26FF9500|#FF8F5300'; Action = '#1F007AFF|#FF0058B8'; None = '#14000000|#FF3A3A3C'; Danger = '#26FF3B30|#FFB3261E' }
     }
-    # Mes patrio (November, Panama): the acrylic tinted Panama navy, fading to deep red at the bottom
-    Patria = @{
-        Bg = @('#FF0B2A52@0', '#FF0B2A52@0.6', '#FF4A1222@1'); GlassBg = @('#A60B2A52@0', '#A60B2A52@0.55', '#A64A1222@1')
-        Pane = '#33000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'
-        Selected = '#40D21034'; Fg = '#FFFFFFFF'; FgDim = '#FFD3DAE6'; Accent = '#FFD21034'; AccentSolid = '#FFD21034'; AccentFg = '#FFFFFFFF'; AccentText = '#FFFF8C99'
-        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#FFFFFFFF'; IconFg = '#FF005293'
+    # Navidad (December): the acrylic tinted pine green, fading to Christmas red at the bottom; gold for accent text
+    Navidad = @{
+        Bg = @('#FF10301F@0', '#FF10301F@0.62', '#FF4A1218@1'); GlassBg = @('#A610301F@0', '#A610301F@0.55', '#A64A1218@1')
+        Pane = '#00000000'; Card = '#1AFFFFFF'; CardBorder = '#24FFFFFF'; Hover = '#24FFFFFF'; Selected = '#24FFFFFF'
+        Fg = '#FFFFFFFF'; FgDim = '#FFD6E2DA'; Accent = '#FFC8102E'; AccentSolid = '#FFC8102E'; AccentFg = '#FFFFFFFF'; AccentText = '#FFF2C14E'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#33C8102E'; IconFg = '#FFF2C14E'; Layer = '#12FFFFFF'; LayerBorder = '#1FFFFFFF'; Code = '#66000000'
+        Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
+    }
+    # Linux World: a terminal-dark backdrop that turns aubergine at the bottom, orange accent, terminal-green text
+    Linux = @{
+        Bg = @('#FF2B2B2B@0', '#FF2B2B2B@0.55', '#FF3B1230@1'); GlassBg = @('#B32B2B2B@0', '#B32B2B2B@0.55', '#B33B1230@1')
+        Pane = '#00000000'; Card = '#17FFFFFF'; CardBorder = '#22FFFFFF'; Hover = '#22FFFFFF'; Selected = '#22FFFFFF'
+        Fg = '#FFF2F2F2'; FgDim = '#FFBDBDBD'; Accent = '#FFE95420'; AccentSolid = '#FFE95420'; AccentFg = '#FFFFFFFF'; AccentText = '#FF8AE234'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; Layer = '#10FFFFFF'; LayerBorder = '#1FFFFFFF'; Code = '#80000000'; IconBg = '#1A8AE234'; IconFg = '#FF8AE234'
         Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
     }
 }
-$script:WNGuiThemeNames = @('Light', 'Dark', 'Patria')
+$script:WNGuiThemeNames = @('Light', 'Dark', 'Navidad', 'Linux')
 # Tool icon colours per sidebar group (diagonal gradients, like app icons)
 $script:WNGuiArt = @{
     'main.secOptimize' = @('#FFFF9F0A', '#FFFF6B00')
@@ -1283,7 +1291,23 @@ function Build-WNGuiLogs {
     $g.LogView.Background = 'Transparent'
     $g.LogView.BorderThickness = 0
     $g.LogView.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'Fg')
-    $glass = New-WNGuiGlass $g.LogView
+    # WinUI card: the log's title and file on top, the lines on a code surface
+    $code = New-Object Windows.Controls.Border
+    $code.CornerRadius = 6
+    $code.Padding = '12,10'
+    $code.Margin = '0,14,0,0'
+    $code.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Code')
+    $code.Child = $g.LogView
+    $head = New-Object Windows.Controls.DockPanel
+    $tile = New-WNGuiIconTile 'E8A5' 'main.secSystem' 36
+    $tile.Margin = '0,0,12,0'
+    [void]$head.Children.Add($tile)
+    [void]$head.Children.Add((New-WNGuiPanel -Orientation Vertical -Children @((New-WNGuiText (T 'gui.logTitle') -Bold -Size 14), (New-WNGuiText $WN.LogFile -Dim -Size 12))))
+    $card = New-Object Windows.Controls.DockPanel
+    [Windows.Controls.DockPanel]::SetDock($head, 'Top')
+    [void]$card.Children.Add($head)
+    [void]$card.Children.Add($code)
+    $glass = New-WNGuiGlass $card
     $glass.Margin = '0'
     $p.Body = $glass
     $g.LogMode = 'tail'
@@ -1320,19 +1344,19 @@ function New-WNGuiChip {
 }
 
 function New-WNGuiTile {
-    # Translucent card with an app-icon style square in the colour of the tool's group
+    # Translucent card with a flat icon: the glyph in the colour of the tool's group on a light tint of it
     param($Page)
     $b = New-Object Windows.Controls.Button
     $b.Style = $script:WNGui.Window.Resources['Tile']
     $b.Tag = $Page.Id
+    $color = $script:WNGuiArt[$Page.Section][0]
     $squircle = New-Object Windows.Controls.Border
     $squircle.Width = 44; $squircle.Height = 44
-    $squircle.CornerRadius = 12
+    $squircle.CornerRadius = 22
     $squircle.HorizontalAlignment = 'Left'
-    # Minimal line icon on a quiet tile, in the theme's icon colours (Panama blue on white for mes patrio)
-    $squircle.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'IconBg')
-    $icon = New-WNGuiIcon $Page.Icon 21
-    $icon.SetResourceReference([Windows.Controls.TextBlock]::ForegroundProperty, 'IconFg')
+    $squircle.Background = [Windows.Media.Brush](ConvertTo-WNBrush ('#26' + $color.Substring(3)))
+    $icon = New-WNGuiIcon $Page.Icon 20
+    $icon.Foreground = [Windows.Media.Brush](ConvertTo-WNBrush $color)
     $icon.HorizontalAlignment = 'Center'
     $squircle.Child = $icon
     $b.Content = New-WNGuiPanel -Orientation Vertical -Children @(
@@ -1345,42 +1369,147 @@ function New-WNGuiTile {
     return $b
 }
 
-function New-WNGuiPanamaFlag {
-    # The flag of Panama for the Home banner in November (mes patrio): white, red, blue and white quarters,
-    # a blue star and a red star
-    $star = {
-        param([double]$cx, [double]$cy, [double]$r)
-        (0..9 | ForEach-Object {
-            $rad = if ($_ % 2) { $r * 0.382 } else { $r }
-            $a = [Math]::PI * (-90 + 36 * $_) / 180
-            '{0:0.#},{1:0.#}' -f ($cx + $rad * [Math]::Cos($a)), ($cy + $rad * [Math]::Sin($a))
-        }) -join ' '
+function New-WNGuiIconTile {
+    # Minimal line icon on a quiet tile, in the theme's icon colours (white or black; gold for Navidad, terminal
+    # green for Linux World)
+    param([string]$Glyph, [string]$Section, [double]$Size = 40)
+    $t = New-Object Windows.Controls.Border
+    $t.Width = $Size; $t.Height = $Size
+    $t.CornerRadius = [Math]::Round($Size * 0.24)
+    $t.HorizontalAlignment = 'Left'
+    $t.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'IconBg')
+    $i = New-WNGuiIcon $Glyph ([Math]::Round($Size * 0.46))
+    $i.SetResourceReference([Windows.Controls.TextBlock]::ForegroundProperty, 'IconFg')
+    $i.HorizontalAlignment = 'Center'
+    $t.Child = $i
+    return $t
+}
+
+function New-WNGuiToolCard {
+    # One tool as a WinUI card: colour icon, name and what it does
+    param($Page)
+    $b = New-Object Windows.Controls.Button
+    $b.Style = $script:WNGui.Window.Resources['WinCard']
+    $b.Width = 316; $b.Height = 82; $b.Margin = '0,0,10,10'
+    $b.Tag = $Page.Id
+    $tile = New-WNGuiIconTile $Page.Icon $Page.Section 40
+    $tile.VerticalAlignment = 'Top'
+    $tile.Margin = '0,0,14,0'
+    $hint = New-WNGuiText $Page.Hint -Dim -Size 12 -Wrap
+    $hint.MaxHeight = 32
+    $hint.TextTrimming = 'CharacterEllipsis'
+    $text = New-WNGuiPanel -Orientation Vertical -Children @((New-WNGuiText $Page.Title -Bold -Size 13.5), $hint)
+    $text.VerticalAlignment = 'Top'
+    $dock = New-Object Windows.Controls.DockPanel
+    [void]$dock.Children.Add($tile)
+    [void]$dock.Children.Add($text)
+    $b.Content = $dock
+    $b.ToolTip = $Page.Hint
+    [Windows.Automation.AutomationProperties]::SetName($b, $Page.Title)
+    $b.Add_Click({ Show-WNGuiPage $this.Tag })
+    return $b
+}
+
+function New-WNGuiStartCard {
+    # Home start card (WinUI 3 Gallery style): colour icon, title and one line; links that leave WinNow show an arrow
+    param([string]$Glyph, [string]$Section, [string]$Title, [string]$Text, [scriptblock]$OnClick, [switch]$External)
+    $b = New-Object Windows.Controls.Button
+    $b.Style = $script:WNGui.Window.Resources['WinCard']
+    $b.Width = 200; $b.Height = 180; $b.Margin = '0,0,12,12'
+    $grid = New-Object Windows.Controls.Grid
+    $stack = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiIconTile $Glyph $Section 44),
+        (New-WNGuiText $Title -Bold -Size 15 -Wrap -Margin '0,14,0,0'),
+        (New-WNGuiText $Text -Dim -Size 12 -Wrap -Margin '0,4,0,0'))
+    $stack.VerticalAlignment = 'Top'
+    [void]$grid.Children.Add($stack)
+    if ($External) {
+        $i = New-WNGuiIcon 'E8A7' 12
+        $i.HorizontalAlignment = 'Right'; $i.VerticalAlignment = 'Bottom'; $i.Opacity = 0.75
+        [void]$grid.Children.Add($i)
+    }
+    $b.Content = $grid
+    [Windows.Automation.AutomationProperties]::SetName($b, $Title)
+    $b.Add_Click($OnClick)
+    return $b
+}
+
+function New-WNGuiXmasArt {
+    # Navidad art for the Home hero: three hanging ornaments and a few snowflakes, still (nothing loops)
+    $orn = {
+        param([double]$x, [double]$len, [double]$r, [string]$fill)
+        "<Line X1='$x' Y1='0' X2='$x' Y2='$len' Stroke='#99FFFFFF' StrokeThickness='1.5'/>" +
+        "<Rectangle Canvas.Left='$($x - $r * 0.3)' Canvas.Top='$($len - 2)' Width='$($r * 0.6)' Height='$($r * 0.42)' RadiusX='2' RadiusY='2' Fill='#FFD9DDE3'/>" +
+        "<Ellipse Canvas.Left='$($x - $r)' Canvas.Top='$($len + $r * 0.32)' Width='$(2 * $r)' Height='$(2 * $r)' Fill='$fill'/>" +
+        "<Ellipse Canvas.Left='$($x - $r * 0.55)' Canvas.Top='$($len + $r * 0.62)' Width='$($r * 0.5)' Height='$($r * 0.36)' Fill='#59FFFFFF'/>"
+    }
+    $flakes = foreach ($f in @(@(30, 150, 22, 0.55), @(110, 40, 16, 0.4), @(250, 170, 26, 0.5), @(330, 60, 14, 0.35), @(190, 120, 12, 0.45))) {
+        "<TextBlock Canvas.Left='$($f[0])' Canvas.Top='$($f[1])' Text='&#x2744;' FontFamily='Segoe UI Symbol' FontSize='$($f[2])' Foreground='White' Opacity='$($f[3])'/>"
     }
     [Windows.Markup.XamlReader]::Parse(@"
-<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='246' Height='164' CornerRadius='12'
-        BorderBrush='#66FFFFFF' BorderThickness='3'>
-  <Grid>
-    <Grid.Clip><RectangleGeometry Rect='0,0,240,158' RadiusX='9' RadiusY='9'/></Grid.Clip>
-    <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
-    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
-    <Canvas Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FF005293'/></Canvas>
-    <Border Grid.Column='1' Background='#FFD21034'/>
-    <Border Grid.Row='1' Background='#FF005293'/>
-    <Canvas Grid.Row='1' Grid.Column='1' Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FFD21034'/></Canvas>
-  </Grid>
-</Border>
+<Canvas xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='380' Height='230'>
+  $(& $orn 80 70 24 '#FFE53935')
+  $(& $orn 170 110 30 '#FFF2C14E')
+  $(& $orn 270 54 22 '#FFE53935')
+  $($flakes -join '')
+</Canvas>
 "@)
 }
 
+function New-WNGuiLinuxArt {
+    # Linux World art for the Home hero: a terminal with WinNow's line, and a penguin drawn from simple shapes
+    [Windows.Markup.XamlReader]::Parse(@'
+<Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Width="380" Height="230">
+  <Border Canvas.Left="0" Canvas.Top="70" Width="236" CornerRadius="6" Background="#D9161616" BorderBrush="#33FFFFFF" BorderThickness="1" Padding="12,9">
+    <StackPanel>
+      <TextBlock Text="$ sudo winnow --clean" FontFamily="Cascadia Mono, Consolas" FontSize="13" Foreground="#FF8AE234"/>
+      <TextBlock Text="[  OK  ] 51 tweaks ready" FontFamily="Cascadia Mono, Consolas" FontSize="13" Foreground="#FFE6E6E6" Margin="0,4,0,0"/>
+      <TextBlock Text="$ _" FontFamily="Cascadia Mono, Consolas" FontSize="13" Foreground="#FF8AE234" Margin="0,4,0,0"/>
+    </StackPanel>
+  </Border>
+  <Canvas Canvas.Left="262" Canvas.Top="40">
+    <Canvas.RenderTransform><ScaleTransform ScaleX="1.3" ScaleY="1.3"/></Canvas.RenderTransform>
+    <Ellipse Canvas.Left="0" Canvas.Top="14" Width="100" Height="104" Fill="#FF0D0D0D"/>
+    <Ellipse Canvas.Left="18" Canvas.Top="0" Width="64" Height="60" Fill="#FF0D0D0D"/>
+    <Ellipse Canvas.Left="20" Canvas.Top="40" Width="60" Height="76" Fill="#FFF4F4F4"/>
+    <Ellipse Canvas.Left="31" Canvas.Top="15" Width="15" Height="19" Fill="#FFF4F4F4"/>
+    <Ellipse Canvas.Left="54" Canvas.Top="15" Width="15" Height="19" Fill="#FFF4F4F4"/>
+    <Ellipse Canvas.Left="37" Canvas.Top="21" Width="7" Height="9" Fill="#FF0D0D0D"/>
+    <Ellipse Canvas.Left="56" Canvas.Top="21" Width="7" Height="9" Fill="#FF0D0D0D"/>
+    <Polygon Points="38,34 62,34 50,48" Fill="#FFF5A623"/>
+    <Ellipse Canvas.Left="16" Canvas.Top="112" Width="30" Height="12" Fill="#FFF5A623"/>
+    <Ellipse Canvas.Left="54" Canvas.Top="112" Width="30" Height="12" Fill="#FFF5A623"/>
+  </Canvas>
+</Canvas>
+'@)
+}
+
 function Update-WNGuiHero {
-    # Home banner per theme: the blue gradient with the faded mark, or Panama blue with the flag (mes patrio)
+    # Home hero per theme: a soft wash with the faded logo, the Christmas art (Navidad) or the terminal and penguin
+    # (Linux World)
     $h = $script:WNGui.Hero
     if (-not $h) { return }
-    $patria = $script:WNGui.ThemeName -eq 'Patria'
-    $h.Box.Background = [Windows.Media.Brush]$(if ($patria) { ConvertTo-WNBrush '#FF003A70' } else { ConvertTo-WNBrush @('#FF0A84FF', '#FF5E5CE6', '#FFBF5AF2') -Diagonal })
-    if ($h.Mark) { $h.Mark.Visibility = if ($patria) { 'Collapsed' } else { 'Visible' } }
-    # On a narrow window the flag would sit under the name: it steps aside
-    $h.Flag.Visibility = if ($patria -and $h.Box.ActualWidth -ge 640) { 'Visible' } else { 'Collapsed' }
+    $name = $script:WNGui.ThemeName
+    $spec = switch ($name) { 'Light' { @('#FFDCE8F7', '#FFF5F8FC') } 'Navidad' { @('#FF1E5B3E', '#FF0E3324') } 'Linux' { @('#FF3B1230', '#FF1E1E1E') } default { @('#FF233B5E', '#FF131D30') } }
+    $h.Box.Background = [Windows.Media.Brush](ConvertTo-WNBrush $spec -Diagonal)
+    $h.Art.Visibility = if ($name -eq 'Navidad') { 'Visible' } else { 'Collapsed' }
+    $h.Tux.Visibility = if ($name -eq 'Linux') { 'Visible' } else { 'Collapsed' }
+    if ($h.Mark) {
+        $h.Mark.Visibility = if ($name -in 'Navidad', 'Linux') { 'Collapsed' } else { 'Visible' }
+        $src = Get-WNGuiBitmap $(if ($name -eq 'Light') { 'Winnow_512_light.png' } else { 'Winnow_512.png' })
+        if ($src) { $h.Mark.Source = $src }
+    }
+}
+
+function Build-WNGuiGroup {
+    # A group of the rail: its tools as cards
+    param($p)
+    $g = $script:WNGui
+    $wrap = New-WNGuiPanel -Wrap
+    foreach ($pg in @($g.Pages.Values | Where-Object { $_.Section -eq $p.Section -and -not $_.Group -and $_.Id -ne 'about' })) {
+        [void]$wrap.Children.Add((New-WNGuiToolCard $pg))
+    }
+    $p.Body = New-WNGuiScroll $wrap
 }
 
 function Build-WNGuiHome {
@@ -1389,83 +1518,56 @@ function Build-WNGuiHome {
     $p.NoHeader = $true
     $tweaks = @($WN.Config.tweaks | Where-Object Type -ne 'Toggle')
     $rec = @($tweaks | Where-Object Level -eq 'Recommended')
+    $tools = @($g.Pages.Values | Where-Object { -not $_.Group -and $_.Id -notin 'home', 'about' })
 
-    # Banner: same colours in light and dark, white text
+    # Hero (WinUI 3 Gallery style): the version line and the name over the theme's art
     $hero = New-Object Windows.Controls.Border
-    $hero.CornerRadius = 22
-    $hero.Height = 300
-    # Background and art follow the theme (Update-WNGuiHero): the faded mark, or the flag for mes patrio
+    $hero.CornerRadius = 8
+    $hero.Height = 270
     $heroGrid = New-Object Windows.Controls.Grid
-    $mark = New-WNGuiImage 'Winnow_512.png' 230 0.28
-    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Center'; $mark.Margin = '0,0,40,0'; [void]$heroGrid.Children.Add($mark) }
-    $flag = New-WNGuiPanamaFlag
-    $flag.HorizontalAlignment = 'Right'
-    $flag.VerticalAlignment = 'Center'
-    $flag.Margin = '0,0,44,0'
-    [void]$heroGrid.Children.Add($flag)
-    $g.Hero = @{ Box = $hero; Mark = $mark; Flag = $flag }
-    $hero.Add_SizeChanged({ Update-WNGuiHero })
-    $chips = New-WNGuiPanel -Children @('main.secOptimize', 'main.secApps', 'main.secMaintain', 'main.secNetwork' | ForEach-Object { New-WNGuiChip (T $_) })
-    $chips.VerticalAlignment = 'Top'
-    $chips.Margin = '28,24,0,0'
-    $title = New-WNGuiText 'WinNow' -Size 56
-    $title.FontFamily = 'Segoe UI Variable Display, Segoe UI'
-    $title.FontWeight = 'Bold'
-    $title.Foreground = 'White'
-    $tag = New-WNGuiText (T 'tagline') -Size 16
-    $tag.Foreground = 'White'
-    $stats = New-WNGuiText "$(T 'gui.heroStats' $tweaks.Count @($WN.Config.apps).Count ($g.Pages.Count - 1))  -  $(T 'brand.madeIn')" -Size 12.5 -Margin '0,10,0,0'
-    $stats.Foreground = 'White'
-    $stats.Opacity = 0.85
-    $heroText = New-WNGuiPanel -Orientation Vertical -Children @($title, $tag, $stats)
-    $heroText.VerticalAlignment = 'Bottom'
-    $heroText.Margin = '28,0,0,26'
-    [void]$heroGrid.Children.Add($chips)
-    [void]$heroGrid.Children.Add($heroText)
+    $heroGrid.ClipToBounds = $true
+    $mark = New-WNGuiImage 'Winnow_512.png' 300 0.2
+    if ($mark) { $mark.HorizontalAlignment = 'Right'; $mark.VerticalAlignment = 'Top'; $mark.Margin = '0,-30,36,0'; [void]$heroGrid.Children.Add($mark) }
+    $art = New-WNGuiXmasArt
+    $art.HorizontalAlignment = 'Right'; $art.VerticalAlignment = 'Top'; $art.Margin = '0,0,28,0'
+    [void]$heroGrid.Children.Add($art)
+    $tux = New-WNGuiLinuxArt
+    $tux.HorizontalAlignment = 'Right'; $tux.VerticalAlignment = 'Top'; $tux.Margin = '0,0,28,0'
+    [void]$heroGrid.Children.Add($tux)
+    $name = New-WNGuiText 'WinNow' -Size 40
+    $name.FontFamily = 'Segoe UI Variable Display, Segoe UI'
+    $name.FontWeight = 'SemiBold'
+    $intro = New-WNGuiPanel -Orientation Vertical -Children @(
+        (New-WNGuiText "WinNow $($WN.GuiVersion) - $($WN.GuiChannel)" -Size 13),
+        $name,
+        (New-WNGuiText (T 'tagline') -Size 14),
+        (New-WNGuiText "$(T 'gui.heroStats' $tweaks.Count @($WN.Config.apps).Count $tools.Count)  -  $(T 'brand.madeIn')" -Dim -Size 12 -Margin '0,6,0,0'))
+    $intro.VerticalAlignment = 'Top'
+    $intro.Margin = '36,30,0,0'
+    [void]$heroGrid.Children.Add($intro)
     $hero.Child = $heroGrid
+    $g.Hero = @{ Box = $hero; Mark = $mark; Art = $art; Tux = $tux }
+    Update-WNGuiHero
 
-    # Start-here card next to the banner
-    $card = New-Object Windows.Controls.Border
-    $card.CornerRadius = 22
-    $card.Padding = '22,20'
-    $card.Margin = '16,0,0,0'
-    $card.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Card')
-    $card.SetResourceReference([Windows.Controls.Border]::BorderBrushProperty, 'CardBorder')
-    $card.BorderThickness = 1
-    $go = New-WNGuiButton (T 'gui.recBtn') -Icon 'E73E' -Accent -Always -OnClick {
-        Show-WNGuiPage 'tweaks'
-        $script:WNGui.TweakSegs.Children[0].IsChecked = $true
-        $keys = @($WN.Config.presets.Standard.Tweaks)
-        foreach ($r in $script:WNGui.TweakList.Rows) { $r.Selected = $keys -contains $r.Key }
+    # Start cards over the bottom edge of the hero
+    $news = if (Get-Command Show-WNGuiTour -ErrorAction SilentlyContinue) {
+        New-WNGuiStartCard 'E789' 'main.secTool' (T 'tour.button') (T 'home.cardTourText') { Show-WNGuiTour }
+    } else {
+        New-WNGuiStartCard 'E789' 'main.secTool' (T 'home.cardNews') (T 'home.cardNewsText') { Show-WNGuiPage 'about' }
     }
-    $go.Margin = '0'
-    $go.HorizontalAlignment = 'Stretch'
-    $cardBody = New-Object Windows.Controls.DockPanel
-    [Windows.Controls.DockPanel]::SetDock($go, 'Bottom')
-    [void]$cardBody.Children.Add($go)
-    $note = New-WNGuiText (T 'gui.previewShort') -Dim -Size 11.5 -Wrap -Margin '0,0,0,12'
-    [Windows.Controls.DockPanel]::SetDock($note, 'Bottom')
-    [void]$cardBody.Children.Add($note)
-    $info = New-WNGuiPanel -Orientation Vertical -Children @(
-        (New-WNGuiText (T 'gui.recKicker') -Accent -Bold -Size 12),
-        (New-WNGuiText (T 'gui.recTitle') -Bold -Size 21 -Margin '0,6,0,0'),
-        (New-WNGuiText (T 'gui.recText') -Dim -Size 12.5 -Wrap -Margin '0,8,0,0'),
-        (New-WNGuiText (T 'gui.recStat' $rec.Count) -Accent -Bold -Size 13 -Wrap -Margin '0,12,0,0'))
-    $info.VerticalAlignment = 'Top'
-    [void]$cardBody.Children.Add($info)
-    $card.Child = $cardBody
+    $cards = New-WNGuiPanel -Wrap -Children @(
+        (New-WNGuiStartCard 'E73E' 'main.secOptimize' (T 'home.cardRec') (T 'home.cardRecText' $rec.Count) {
+            Show-WNGuiPage 'tweaks'
+            $script:WNGui.TweakSegs.Children[0].IsChecked = $true
+            $keys = @($WN.Config.presets.Standard.Tweaks)
+            foreach ($r in $script:WNGui.TweakList.Rows) { $r.Selected = $keys -contains $r.Key }
+        }),
+        $news,
+        (New-WNGuiStartCard 'E895' 'main.secMaintain' (T 'home.cardUpdate') (T 'home.cardUpdateText') { Start-WNGuiUpdateCheck -Show }),
+        (New-WNGuiStartCard 'E71B' 'main.secSystem' (T 'home.cardRepo') (T 'home.cardRepoText') { Start-Process $WN.Repo } -External))
+    $cards.Margin = '24,-92,0,0'
 
-    $top = New-Object Windows.Controls.Grid
-    $top.ColumnDefinitions.Add((New-Object Windows.Controls.ColumnDefinition))
-    $c2 = New-Object Windows.Controls.ColumnDefinition
-    $c2.Width = 316
-    $top.ColumnDefinitions.Add($c2)
-    [Windows.Controls.Grid]::SetColumn($card, 1)
-    [void]$top.Children.Add($hero)
-    [void]$top.Children.Add($card)
-
-    $tiles = New-WNGuiPanel -Wrap
-    foreach ($id in @($g.Pages.Keys | Where-Object { $_ -ne 'home' })) { [void]$tiles.Children.Add((New-WNGuiTile $g.Pages[$id])) }
+    $toolWrap = New-WNGuiPanel -Wrap -Children @($tools | ForEach-Object { New-WNGuiToolCard $_ })
 
     $g.HomeInfo = New-WNGuiPanel -Wrap
     $g.SysInfoListeners += {
@@ -1478,8 +1580,8 @@ function Build-WNGuiHome {
         if ($sys) { [void]$g.HomeInfo.Children.Add((New-WNGuiDiskTile $sys)) }
     }
     $p.Body = New-WNGuiScroll (New-WNGuiPanel -Orientation Vertical -Children @(
-        $top,
-        (New-WNGuiText (T 'gui.allTools') -Style Section), $tiles,
+        $hero, $cards,
+        (New-WNGuiText (T 'gui.allTools') -Style Section), $toolWrap,
         (New-WNGuiText (T 'gui.thisPc') -Style Section), $g.HomeInfo))
     $p.OnShow = { param($p) if ($p.Shown -eq 1) { Update-WNGuiSysInfo } }
 }
@@ -1605,9 +1707,10 @@ function Hide-WNGuiThemeFlyout {
     $f.Scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $s)
 }
 
+
 function Set-WNGuiTheme {
-    # Light / Dark at any time: brushes, title bar and backdrop tint, every badge, and the switch icon
-    param([ValidateSet('Light', 'Dark', 'Patria')][string]$Name, [switch]$Save)
+    # Light / Dark / Navidad at any time: brushes, title bar and backdrop tint, badges, logo, window icon, Home art
+    param([ValidateSet('Light', 'Dark', 'Navidad', 'Linux')][string]$Name, [switch]$Save)
     $g = $script:WNGui
     $t = $script:WNGuiThemes[$Name]
     $g.Theme = $t
@@ -1619,12 +1722,11 @@ function Set-WNGuiTheme {
     $g.Window.Resources['Bg'] = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.Glass) { $t.GlassBg } else { $t.Bg }))
     if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, $Name -ne 'Light') } catch { } }
     foreach ($l in $g.Lists) { foreach ($r in $l.Rows) { if ($r.Badge -and $r.Kind) { Set-WNGuiBadge $r $r.Badge $r.Kind } } }
-    # The button shows the current theme and opens the theme menu
-    $g.Ctl.ThemeBtn.Content = [string][char]$(switch ($Name) { 'Light' { 0xE706 } 'Dark' { 0xE708 } default { 0xE7C1 } })
+    # The button is a palette; its menu lists the themes
+    $g.Ctl.ThemeBtn.Content = [string][char]0xE790
     $tip = T 'gui.themeTip' (T "gui.themeOpt$Name")
     $g.Ctl.ThemeBtn.ToolTip = $tip
     [Windows.Automation.AutomationProperties]::SetName($g.Ctl.ThemeBtn, $tip)
-    # Logo for this theme (the Panama one for mes patrio), also as the window icon
     $file = Get-WNGuiLogoFile
     if (-not $g.LogoCache) { $g.LogoCache = @{} }
     if (-not $g.LogoCache[$file]) { $g.LogoCache[$file] = Get-WNGuiBitmap $file }
@@ -1635,7 +1737,7 @@ function Set-WNGuiTheme {
     if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
 
-function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Patria' { 'Winnow_128_patria.png' } 'Light' { 'Winnow_128_light.png' } default { 'Winnow_128.png' } } }
+function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Light' { 'Winnow_128_light.png' } 'Navidad' { 'Winnow_128_navidad.png' } 'Linux' { 'Winnow_128_linux.png' } default { 'Winnow_128.png' } } }
 
 function Set-WNGuiUpdateState {
     # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
@@ -1844,7 +1946,7 @@ function Show-WNGui {
 
     $ctl = @{}
     foreach ($n in 'UpdateBtn', 'UpdateIcon', 'UpdateText', 'ThemeBtn', 'LangEn', 'LangEs', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText',
-                   'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
+                   'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'NavFooter', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
                    'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
 
     $script:WNGui = @{
@@ -1860,16 +1962,19 @@ function Show-WNGui {
     $g.Timer.Interval = [TimeSpan]::FromMilliseconds(150)
     $g.Timer.Add_Tick({ Receive-WNGuiJob })
 
-    # ---- Theme: the saved choice; in November (Panama's patriotic month) mes patrio; else the Windows apps setting
+    # ---- Theme: the saved choice; Navidad in December; else the Windows apps setting
     $saved = (Get-WNSettings).GuiTheme
     $light = (Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -ne 0
-    $theme = if ($saved -in 'Light', 'Dark', 'Patria') { $saved } elseif ((Get-Date).Month -eq 11) { 'Patria' } elseif ($light) { 'Light' } else { 'Dark' }
+    $theme = if ($saved -in 'Light', 'Dark', 'Navidad', 'Linux') { $saved } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ($light) { 'Light' } else { 'Dark' }
     Set-WNGuiTheme $theme
 
     # ---- Window chrome and identity
     $window.Title = "WinNow $($WN.GuiVersion) $($WN.GuiChannel)"
     $window.Height = [Math]::Min(860, [Windows.SystemParameters]::WorkArea.Height - 20)
     $window.Width = [Math]::Min(1320, [Windows.SystemParameters]::WorkArea.Width - 20)
+    # 1.0.7.x windows keep Winnow_icon_128/512.png open: new names let their updater finish
+    $bmp = Get-WNGuiBitmap 'Winnow_128.png'
+    if ($bmp) { $window.Icon = $bmp }
     $g.WantGlass = $WN.OSBuild -ge 22621
     $window.Add_SourceInitialized({
         $g = $script:WNGui
@@ -1945,21 +2050,51 @@ function Show-WNGui {
     Register-WNGuiPage 'logs' 'E8A5' 'main.secSystem' (T 'main.logs') $WN.LogFile ${function:Build-WNGuiLogs} -Hint (T 'logs.errorsHint')
     Register-WNGuiPage 'about' 'E946' 'main.secTool' (T 'about.title') (T 'about.subtitle') ${function:Build-WNGuiAbout} -Hint (T 'about.subtitle')
 
-    $section = $null
-    foreach ($pg in $g.Pages.Values) {
-        if ($pg.Section -and $pg.Section -ne $section) {
-            $section = $pg.Section
-            [void]$ctl.NavPanel.Children.Add((New-WNGuiText (T $section).ToUpper() -Style NavHeader))
-        }
+    # ---- Navigation rail: Home, one item per group of tools (each opens a page of its tools), What's new and About
+    $g.RailTargets = @{}
+    $addRail = {
+        param([string]$Key, [string]$Glyph, [string]$Label, [string]$Page, $Panel, [scriptblock]$Action)
         $r = New-Object Windows.Controls.RadioButton
-        $r.Style = $window.Resources['Nav']
-        $r.Tag = [string][char][Convert]::ToInt32($pg.Icon, 16)
-        $r.Content = $pg.Title
-        $r.Name = "Nav_$($pg.Id)"
-        $r.Add_Checked({ $id = $this.Name.Substring(4); if ($script:WNGui.Current -ne $id) { Show-WNGuiPage $id } })
-        $g.NavButtons[$pg.Id] = $r
-        [void]$ctl.NavPanel.Children.Add($r)
+        $r.Style = $window.Resources['Rail']
+        $r.Tag = [string][char][Convert]::ToInt32($Glyph, 16)
+        $tb = New-Object Windows.Controls.TextBlock
+        $tb.Text = $Label
+        $tb.FontSize = 11
+        $tb.TextAlignment = 'Center'
+        $tb.TextTrimming = 'CharacterEllipsis'
+        $tb.MaxWidth = 78
+        $r.Content = $tb
+        $r.Name = "Rail_$Key"
+        $r.ToolTip = $Label
+        [Windows.Automation.AutomationProperties]::SetName($r, $Label)
+        $g.RailTargets[$r.Name] = @{ Page = $Page; Action = $Action }
+        $r.Add_Click({
+            $t = $script:WNGui.RailTargets[$this.Name]
+            if ($t.Action) { $this.IsChecked = $false; & $t.Action; return }
+            if ($script:WNGui.Current -ne $t.Page) { Show-WNGuiPage $t.Page }
+        })
+        [void]$Panel.Children.Add($r)
+        $r
     }
+    $g.NavButtons['home'] = & $addRail 'home' 'E80F' (T 'gui.navHome') 'home' $ctl.NavPanel
+    $groupIcons = @{ 'main.secOptimize' = 'E713'; 'main.secApps' = 'E71D'; 'main.secMaintain' = 'E90F'; 'main.secNetwork' = 'E774'; 'main.secSystem' = 'E7F4'; 'main.secTool' = 'E8F1' }
+    $sections = @($g.Pages.Values | Where-Object { $_.Section -and $_.Id -ne 'about' } | ForEach-Object { $_.Section } | Select-Object -Unique)
+    foreach ($sec in $sections) {
+        $members = @($g.Pages.Values | Where-Object { $_.Section -eq $sec -and $_.Id -ne 'about' })
+        Register-WNGuiPage "grp:$sec" $groupIcons[$sec] $sec (T $sec) (T 'gui.groupSub' $members.Count) ${function:Build-WNGuiGroup}
+        $g.Pages["grp:$sec"].Group = $true
+        $btn = & $addRail ($sec -replace '\W', '') $groupIcons[$sec] (T $sec) "grp:$sec" $ctl.NavPanel
+        foreach ($pg in $members) { $g.NavButtons[$pg.Id] = $btn }
+        $g.NavButtons["grp:$sec"] = $btn
+    }
+    # What's new: the starting point tour where there is one, else the releases on the About page
+    $news = if (Get-Command Show-WNGuiTour -ErrorAction SilentlyContinue) { { Show-WNGuiTour } } else { { Show-WNGuiPage 'about' } }
+    $nb = & $addRail 'news' 'E789' (T 'gui.railNews') '' $ctl.NavFooter $news
+    $nb.GroupName = 'news'
+    $db = & $addRail 'donate' 'EB51' (T 'gui.railDonate') '' $ctl.NavFooter { Start-Process $WN.Donate }
+    $db.GroupName = 'donate'
+    $db.ToolTip = T 'about.donateTip'
+    $g.NavButtons['about'] = & $addRail 'about' 'E946' (T 'gui.railAbout') 'about' $ctl.NavFooter
 
     # ---- Start: worker, home page, then the update check in the background
     $g.Runspace = New-WNGuiWorker
