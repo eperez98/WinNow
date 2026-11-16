@@ -77,8 +77,16 @@ $script:WNGuiThemes = @{
         Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; Layer = '#10FFFFFF'; LayerBorder = '#1FFFFFFF'; Code = '#80000000'; IconBg = '#1A8AE234'; IconFg = '#FF8AE234'
         Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
     }
+    # Mes patrio (November, Panama): the acrylic tinted Panama navy, fading to deep red; white tiles with blue icons
+    Patria = @{
+        Bg = @('#FF0B2A52@0', '#FF0B2A52@0.6', '#FF4A1222@1'); GlassBg = @('#A60B2A52@0', '#A60B2A52@0.55', '#A64A1222@1')
+        Pane = '#00000000'; Card = '#1FFFFFFF'; CardBorder = '#26FFFFFF'; Hover = '#30FFFFFF'; Selected = '#40D21034'
+        Fg = '#FFFFFFFF'; FgDim = '#FFD3DAE6'; Accent = '#FFD21034'; AccentSolid = '#FFD21034'; AccentFg = '#FFFFFFFF'; AccentText = '#FFFF8C99'
+        Warn = '#FFFFB340'; WarnBg = '#33FF9F0A'; IconBg = '#FFFFFFFF'; IconFg = '#FF005293'; Layer = '#12FFFFFF'; LayerBorder = '#1FFFFFFF'; Code = '#66000000'
+        Badges = @{ Applied = '#3330D158|#FF7EE2A0'; Partial = '#33FF9F0A|#FFFFD285'; Action = '#330A84FF|#FF9CCBFF'; None = '#26FFFFFF|#FFE5E5EA'; Danger = '#33FF453A|#FFFF9F98' }
+    }
 }
-$script:WNGuiThemeNames = @('Light', 'Dark', 'Navidad', 'Linux')
+$script:WNGuiThemeNames = @('Light', 'Dark', 'Patria', 'Navidad', 'Linux')
 # Tool icon colours per sidebar group (diagonal gradients, like app icons)
 $script:WNGuiArt = @{
     'main.secOptimize' = @('#FFFF9F0A', '#FFFF6B00')
@@ -1484,18 +1492,46 @@ function New-WNGuiLinuxArt {
 '@)
 }
 
+function New-WNGuiPanamaFlag {
+    # The flag of Panama for the Home banner in November (mes patrio): white, red, blue and white quarters,
+    # a blue star and a red star
+    $star = {
+        param([double]$cx, [double]$cy, [double]$r)
+        (0..9 | ForEach-Object {
+            $rad = if ($_ % 2) { $r * 0.382 } else { $r }
+            $a = [Math]::PI * (-90 + 36 * $_) / 180
+            '{0:0.#},{1:0.#}' -f ($cx + $rad * [Math]::Cos($a)), ($cy + $rad * [Math]::Sin($a))
+        }) -join ' '
+    }
+    [Windows.Markup.XamlReader]::Parse(@"
+<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Width='246' Height='164' CornerRadius='12'
+        BorderBrush='#66FFFFFF' BorderThickness='3'>
+  <Grid>
+    <Grid.Clip><RectangleGeometry Rect='0,0,240,158' RadiusX='9' RadiusY='9'/></Grid.Clip>
+    <Grid.RowDefinitions><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+    <Canvas Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FF005293'/></Canvas>
+    <Border Grid.Column='1' Background='#FFD21034'/>
+    <Border Grid.Row='1' Background='#FF005293'/>
+    <Canvas Grid.Row='1' Grid.Column='1' Background='White'><Polygon Points='$(& $star 60 39.5 25)' Fill='#FFD21034'/></Canvas>
+  </Grid>
+</Border>
+"@)
+}
+
 function Update-WNGuiHero {
     # Home hero per theme: a soft wash with the faded logo, the Christmas art (Navidad) or the terminal and penguin
     # (Linux World)
     $h = $script:WNGui.Hero
     if (-not $h) { return }
     $name = $script:WNGui.ThemeName
-    $spec = switch ($name) { 'Light' { @('#FFDCE8F7', '#FFF5F8FC') } 'Navidad' { @('#FF1E5B3E', '#FF0E3324') } 'Linux' { @('#FF3B1230', '#FF1E1E1E') } default { @('#FF233B5E', '#FF131D30') } }
+    $spec = switch ($name) { 'Light' { @('#FFDCE8F7', '#FFF5F8FC') } 'Navidad' { @('#FF1E5B3E', '#FF0E3324') } 'Patria' { @('#FF0B3A75', '#FF0B2A52') } 'Linux' { @('#FF3B1230', '#FF1E1E1E') } default { @('#FF233B5E', '#FF131D30') } }
     $h.Box.Background = [Windows.Media.Brush](ConvertTo-WNBrush $spec -Diagonal)
     $h.Art.Visibility = if ($name -eq 'Navidad') { 'Visible' } else { 'Collapsed' }
     $h.Tux.Visibility = if ($name -eq 'Linux') { 'Visible' } else { 'Collapsed' }
+    if ($h.Flag) { $h.Flag.Visibility = if ($name -eq 'Patria') { 'Visible' } else { 'Collapsed' } }
     if ($h.Mark) {
-        $h.Mark.Visibility = if ($name -in 'Navidad', 'Linux') { 'Collapsed' } else { 'Visible' }
+        $h.Mark.Visibility = if ($name -in 'Navidad', 'Linux', 'Patria') { 'Collapsed' } else { 'Visible' }
         $src = Get-WNGuiBitmap $(if ($name -eq 'Light') { 'Winnow_512_light.png' } else { 'Winnow_512.png' })
         if ($src) { $h.Mark.Source = $src }
     }
@@ -1534,6 +1570,10 @@ function Build-WNGuiHome {
     $tux = New-WNGuiLinuxArt
     $tux.HorizontalAlignment = 'Right'; $tux.VerticalAlignment = 'Top'; $tux.Margin = '0,0,28,0'
     [void]$heroGrid.Children.Add($tux)
+    # Mes patrio: the flag of Panama, above the start cards
+    $flag = New-WNGuiPanamaFlag
+    $flag.HorizontalAlignment = 'Right'; $flag.VerticalAlignment = 'Top'; $flag.Margin = '0,12,40,0'
+    [void]$heroGrid.Children.Add($flag)
     $name = New-WNGuiText 'WinNow' -Size 40
     $name.FontFamily = 'Segoe UI Variable Display, Segoe UI'
     $name.FontWeight = 'SemiBold'
@@ -1546,7 +1586,7 @@ function Build-WNGuiHome {
     $intro.Margin = '36,30,0,0'
     [void]$heroGrid.Children.Add($intro)
     $hero.Child = $heroGrid
-    $g.Hero = @{ Box = $hero; Mark = $mark; Art = $art; Tux = $tux }
+    $g.Hero = @{ Box = $hero; Mark = $mark; Art = $art; Tux = $tux; Flag = $flag }
     Update-WNGuiHero
 
     # Start cards over the bottom edge of the hero
@@ -1710,7 +1750,7 @@ function Hide-WNGuiThemeFlyout {
 
 function Set-WNGuiTheme {
     # Light / Dark / Navidad at any time: brushes, title bar and backdrop tint, badges, logo, window icon, Home art
-    param([ValidateSet('Light', 'Dark', 'Navidad', 'Linux')][string]$Name, [switch]$Save)
+    param([ValidateSet('Light', 'Dark', 'Patria', 'Navidad', 'Linux')][string]$Name, [switch]$Save)
     $g = $script:WNGui
     $t = $script:WNGuiThemes[$Name]
     $g.Theme = $t
@@ -1737,7 +1777,7 @@ function Set-WNGuiTheme {
     if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
 
-function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Light' { 'Winnow_128_light.png' } 'Navidad' { 'Winnow_128_navidad.png' } 'Linux' { 'Winnow_128_linux.png' } default { 'Winnow_128.png' } } }
+function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Light' { 'Winnow_128_light.png' } 'Navidad' { 'Winnow_128_navidad.png' } 'Patria' { 'Winnow_128_patria.png' } 'Linux' { 'Winnow_128_linux.png' } default { 'Winnow_128.png' } } }
 
 function Set-WNGuiUpdateState {
     # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
@@ -1962,10 +2002,10 @@ function Show-WNGui {
     $g.Timer.Interval = [TimeSpan]::FromMilliseconds(150)
     $g.Timer.Add_Tick({ Receive-WNGuiJob })
 
-    # ---- Theme: the saved choice; Navidad in December; else the Windows apps setting
+    # ---- Theme: the saved choice; Navidad in December, Mes patrio in November; else the Windows apps setting
     $saved = (Get-WNSettings).GuiTheme
     $light = (Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -ne 0
-    $theme = if ($saved -in 'Light', 'Dark', 'Navidad', 'Linux') { $saved } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ($light) { 'Light' } else { 'Dark' }
+    $theme = if ($saved -in 'Light', 'Dark', 'Patria', 'Navidad', 'Linux') { $saved } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } elseif ($light) { 'Light' } else { 'Dark' }
     Set-WNGuiTheme $theme
 
     # ---- Window chrome and identity

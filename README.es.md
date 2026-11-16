@@ -74,15 +74,16 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 | <img src="screenshots/es/tweaks-advanced.png" alt="Tweaks avanzados" /><br /><sub><b>Tweaks avanzados</b>: con una advertencia antes de aplicarlos</sub> | <img src="screenshots/es/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b>: política recomendada, valores de Windows, pausar, reanudar</sub> |
 | <img src="screenshots/es/preferences.png" alt="Preferencias" /><br /><sub><b>Preferencias</b>: 18 interruptores ON / OFF</sub> | <img src="screenshots/es/services.png" alt="Servicios" /><br /><sub><b>Servicios</b>: actual, recomendado y el de Windows</sub> |
 | <img src="screenshots/es/repair.png" alt="Reparación" /><br /><sub><b>Reparación y mantenimiento</b>: SFC, DISM, limpieza, reinicios</sub> | <img src="screenshots/es/about.png" alt="Acerca de" /><br /><sub><b>Acerca de WinNow</b>: el núcleo, cada versión y lo que viene</sub> |
-| <img src="screenshots/es/theme-picker.png" alt="Temas" /><br /><sub><b>Temas</b>: Claro, Oscuro, Navidad y Linux World</sub> | <img src="screenshots/es/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: verde de terminal, berenjena y un pingüino</sub> |
+| <img src="screenshots/es/theme-picker.png" alt="Temas" /><br /><sub><b>Temas</b>: Claro, Oscuro, Mes patrio, Navidad y Linux World</sub> | <img src="screenshots/es/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: verde de terminal, berenjena y un pingüino</sub> |
 
 <details>
-<summary><b>🎨 Temas Claro y Navidad</b></summary>
+<summary><b>🎨 Temas Claro, Mes patrio y Navidad</b></summary>
 <br />
 
 | | |
 |:---:|:---:|
 | <img src="screenshots/es/home-light.png" alt="Tema claro" /><br /><sub>Tema claro</sub> | <img src="screenshots/es/tweaks-light.png" alt="Tweaks, claro" /><br /><sub>Tweaks en el tema claro</sub> |
+| <img src="screenshots/es/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: la bandera de Panamá, azul marino y rojo; el tema de noviembre</sub> | <img src="screenshots/es/launcher-patria.png" alt="Inicio en Mes patrio" /><br /><sub>La ventana de inicio en Mes patrio</sub> |
 | <img src="screenshots/es/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: adornos, copos de nieve, verde pino y rojo; el tema de diciembre</sub> | <img src="screenshots/es/launcher-navidad.png" alt="Inicio en Navidad" /><br /><sub>La ventana de inicio en Navidad: cae nieve y el logo se mece como un adorno</sub> |
 
 </details>
@@ -135,7 +136,7 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 
 - **Dos ediciones, un motor**: cada inicio pregunta el idioma y luego **Terminal** o **Interfaz gráfica**. `G` en la terminal abre la ventana; la ventana tiene un botón para la terminal.
 - **Ventana de inicio**: cada inicio abre una ventana pequeña con una animación, el botón **EN | ES** y dos tarjetas: **Interfaz gráfica** o **Terminal**. Mientras corre la animación busca una versión nueva en GitHub.
-- **La ventana**: estilo WinUI 3 con acrílico desde Windows 11 22H2: una barra lateral como la de la Store (Inicio, un botón por grupo, Novedades, Apoyar, Acerca de), una portada con tarjetas de inicio, cada herramienta como tarjeta, buscador en cada página, barra de progreso paso a paso y cuatro temas en un selector dentro de la ventana: **Claro**, **Oscuro**, **Navidad** (el de diciembre) y **Linux World**.
+- **La ventana**: estilo WinUI 3 con acrílico desde Windows 11 22H2: una barra lateral como la de la Store (Inicio, un botón por grupo, Novedades, Apoyar, Acerca de), una portada con tarjetas de inicio, cada herramienta como tarjeta, buscador en cada página, barra de progreso paso a paso y cinco temas en un selector dentro de la ventana: **Claro**, **Oscuro**, **Mes patrio** (el de noviembre), **Navidad** (el de diciembre) y **Linux World**.
 - **La terminal**: menús con flechas, `Espacio` para marcar, `/` para buscar, `U` para deshacer, `Esc` para volver.
 - **Iconos**: trazos simples sobre fichas discretas que siguen el tema (dorado en Navidad, verde de terminal en Linux World).
 - **Acceso directo**: se pregunta al salir. **Sí** deja WinNow con un acceso directo; **No** quita los archivos de WinNow como una desinstalación (registros y backups se quedan).

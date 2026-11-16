@@ -240,7 +240,8 @@ function New-WNShortcut {
         $s.WorkingDirectory = $target
         $saved = (Get-WNSettings).GuiTheme
         $xmas = $saved -eq 'Navidad' -or (-not $saved -and (Get-Date).Month -eq 12)
-        $ico = Join-Path $target "LOGO\$(if ($saved -eq 'Linux') { 'Winnow_linux.ico' } elseif ($xmas) { 'Winnow_navidad.ico' } else { 'Winnow.ico' })"
+        $patria = $saved -eq 'Patria' -or (-not $saved -and (Get-Date).Month -eq 11)
+        $ico = Join-Path $target "LOGO\$(if ($saved -eq 'Linux') { 'Winnow_linux.ico' } elseif ($xmas) { 'Winnow_navidad.ico' } elseif ($patria) { 'Winnow_patria.ico' } else { 'Winnow.ico' })"
         if (Test-Path $ico) { $s.IconLocation = "$ico,0" }
         $s.Description = 'WinNow'
         $s.Save()

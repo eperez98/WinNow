@@ -139,6 +139,7 @@ $script:WNLauncherXaml = @'
 $script:WNLauncherThemes = @{
     Dark  = @{ BG = '#FF1C1C1E'; CARD = '#FF2C2C2E'; LINE = '#FF3A3A3C'; FG = '#FFF5F5F7'; DIM = '#FF98989D'; ACCENT = '#FF0A84FF'; TINT = '#260A84FF' }
     Navidad = @{ BG = '#FF10301F'; CARD = '#FF1A4330'; LINE = '#FF2A5A43'; FG = '#FFF5F5F7'; DIM = '#FFB8CBBF'; ACCENT = '#FFC8102E'; TINT = '#F2FFFFFF' }
+    Patria = @{ BG = '#FF0B2A52'; CARD = '#FF143A6B'; LINE = '#FF24497A'; FG = '#FFF5F5F7'; DIM = '#FFC3CEDD'; ACCENT = '#FFD21034'; TINT = '#F2FFFFFF' }
     Linux = @{ BG = '#FF2B2B2B'; CARD = '#FF353535'; LINE = '#FF454545'; FG = '#FFF2F2F2'; DIM = '#FFBDBDBD'; ACCENT = '#FFE95420'; TINT = '#268AE234' }
     Light = @{ BG = '#FFF5F5F7'; CARD = '#FFFFFFFF'; LINE = '#FFE0E0E5'; FG = '#FF1C1C1E'; DIM = '#FF6E6E73'; ACCENT = '#FF007AFF'; TINT = '#1F007AFF' }
 }
@@ -284,8 +285,8 @@ function Show-WNLauncher {
     $saved = Get-WNSettings
     if (-not $Lang) { $Lang = if ($saved.Lang -in 'en', 'es') { $saved.Lang } else { 'en' } }
     Set-WNLanguage $Lang
-    # The window's theme: the saved one, Navidad in December, else the Windows apps setting
-    $themeName = if ($saved.GuiTheme -in 'Light', 'Dark', 'Navidad', 'Linux') { $saved.GuiTheme } elseif ((Get-Date).Month -eq 12) { 'Navidad' } else {
+    # The window's theme: the saved one, Navidad in December, Mes patrio in November, else the Windows apps setting
+    $themeName = if ($saved.GuiTheme -in 'Light', 'Dark', 'Patria', 'Navidad', 'Linux') { $saved.GuiTheme } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } else {
         try { if ((Get-ItemPropertyValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme' -ErrorAction Stop) -eq 1) { 'Light' } else { 'Dark' } } catch { 'Dark' }
     }
     $light = $themeName -eq 'Light'
@@ -322,7 +323,7 @@ function Show-WNLauncher {
     }
 
     # Logo made for this background, read into memory so the updater can always replace the file
-    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } 'Linux' { 'LOGO\Winnow_128_linux.png' } default { 'LOGO\Winnow_128.png' } })
+    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } 'Patria' { 'LOGO\Winnow_128_patria.png' } 'Linux' { 'LOGO\Winnow_128_linux.png' } default { 'LOGO\Winnow_128.png' } })
     if (Test-Path -LiteralPath $file) {
         $bmp = New-Object Windows.Media.Imaging.BitmapImage
         $bmp.BeginInit(); $bmp.CacheOption = 'OnLoad'; $bmp.UriSource = New-Object Uri $file; $bmp.EndInit(); $bmp.Freeze()

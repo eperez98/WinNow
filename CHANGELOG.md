@@ -63,8 +63,11 @@ The terminal and the graphical interface are both **1.6 GUI Rethinked**.
   with the version and the name, start cards over its edge (recommended tweaks, what's new, updates, GitHub) and
   every tool as a card with a colour icon. Pages sit on a layer with a rounded corner, and Registro is a WinUI card
   with the lines on a code surface.
+- **Mes patrio** stays in GUI Rethinked: the Panama icon (window, taskbar, desktop shortcut, launcher), the flag
+  of Panama on the Home hero, white tiles with Panama-blue icons and an aero background in Panama navy and red. It
+  is the starting theme in November.
 - **Theme menu with Navidad and Linux World**: the theme button opens **Light**, **Dark** (the default logo),
-  **Linux World** and **Navidad**: a
+  **Mes patrio**, **Linux World** and **Navidad**: a
   Christmas icon (window, taskbar, desktop shortcut, launcher), ornaments and snowflakes on the Home hero, and an
   aero background in pine green and Christmas red. It is the starting theme in December.
 

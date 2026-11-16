@@ -74,15 +74,16 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 | <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
 | <img src="screenshots/en/preferences.png" alt="Preferences" /><br /><sub><b>Preferences</b> — 18 ON / OFF switches</sub> | <img src="screenshots/en/services.png" alt="Services" /><br /><sub><b>Services</b> — current vs. recommended vs. Windows default</sub> |
 | <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> |
-| <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark, Navidad and Linux World</sub> | <img src="screenshots/en/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b> — terminal green, aubergine and a penguin</sub> |
+| <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark, Mes patrio, Navidad and Linux World</sub> | <img src="screenshots/en/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b> — terminal green, aubergine and a penguin</sub> |
 
 <details>
-<summary><b>🎨 Light and Navidad themes</b></summary>
+<summary><b>🎨 Light, Mes patrio and Navidad themes</b></summary>
 <br />
 
 | | |
 |:---:|:---:|
 | <img src="screenshots/en/home-light.png" alt="Light theme" /><br /><sub>Light theme</sub> | <img src="screenshots/en/tweaks-light.png" alt="Tweaks, light" /><br /><sub>Tweaks in the light theme</sub> |
+| <img src="screenshots/en/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: the flag of Panama, navy and red — the default in November</sub> | <img src="screenshots/en/launcher-patria.png" alt="Launcher, Mes patrio" /><br /><sub>The launcher in Mes patrio</sub> |
 | <img src="screenshots/en/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: ornaments, snowflakes, pine green and red — the default in December</sub> | <img src="screenshots/en/launcher-navidad.png" alt="Launcher, Navidad" /><br /><sub>The launcher in Navidad: snow falls and the logo swings like an ornament</sub> |
 
 </details>
@@ -136,7 +137,7 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 - **Two editions, one engine**: every start asks for the language and then **Terminal** or **Graphical interface**. `G` in the terminal opens the window; the window has a button for the terminal.
 - **Launcher**: every start opens a small window with a boot animation, the **EN | ES** switch and two cards — **Graphical interface** or **Terminal**. It checks GitHub for a newer release while the animation runs.
-- **The window**: WinUI 3 look with acrylic on Windows 11 22H2 or later — a Store-style rail (Home, one item per group, What's new, Support, About), a hero with start cards, every tool as a card, a search bar for every page, step-by-step progress bar, and four themes in an in-window picker — **Light**, **Dark**, **Navidad** (the default in December) and **Linux World**.
+- **The window**: WinUI 3 look with acrylic on Windows 11 22H2 or later — a Store-style rail (Home, one item per group, What's new, Support, About), a hero with start cards, every tool as a card, a search bar for every page, step-by-step progress bar, and five themes in an in-window picker — **Light**, **Dark**, **Mes patrio** (the default in November), **Navidad** (the default in December) and **Linux World**.
 - **The terminal**: arrow-key menus, `Space` to tick, `/` to search, `U` to undo, `Esc` to go back.
 - **Icons**: line glyphs on quiet tiles that follow the theme (gold in Navidad, terminal green in Linux World).
 - **Desktop shortcut**: asked on exit. **Yes** keeps WinNow with a shortcut; **No** removes WinNow's own files like an uninstall (logs and backups stay).
