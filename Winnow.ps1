@@ -47,6 +47,10 @@
 .PARAMETER NoUpdateCheck
     Do not ask GitHub for a newer release at startup.
 
+.PARAMETER Maintain
+    Run maintenance without questions and exit: Temp (clean temporary files) and / or Upgrade (winget upgrade
+    --all). The scheduled maintenance task uses it.
+
 .EXAMPLE
     .\Winnow.ps1
     .\Winnow.ps1 -DryRun
@@ -71,6 +75,7 @@ param(
     [switch]$GUI,
     [switch]$Terminal,
     [switch]$NoUpdateCheck,
+    [string[]]$Maintain,
     [switch]$NoElevate
 )
 
@@ -128,6 +133,12 @@ if ($Status) {
     $WN.Config.tweaks | ForEach-Object { [pscustomobject]@{ Key = $_.Key; Category = $_.Category; State = (Get-WNTweakState $_); Name = $_.Name } } |
         Sort-Object Category, Key | Format-Table -AutoSize | Out-Host
     exit 0
+}
+
+if ($Maintain) {
+    $WN.Interactive = $false
+    Invoke-WNMaintenance -Tasks @($Maintain | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    exit ([int]($WN.ErrorCount -gt 0))
 }
 
 if ($Preset -or $Apply -or $Undo -or $Install) {
@@ -244,6 +255,7 @@ try {
             @{ Label = (T 'main.logs'); Value = 'logs'; Hint = $WN.LogFile; Hotkey = 'l' }
             @{ Separator = $true; Label = (T 'main.secTool') }
             @{ Label = (T 'main.gui'); Value = 'gui'; Hint = (T 'main.guiHint'); Hotkey = 'g' }
+            @{ Label = (T 'pf.menuTitle'); Value = 'profiles'; Hint = (T 'pf.sub'); Hotkey = 'p' }
             @{ Label = (T 'about.title'); Value = 'about'; Hint = (T 'about.subtitle'); Hotkey = 'a' }
             @{ Label = (T 'main.update'); Value = 'update'; Hint = (T 'main.updateHint'); Hotkey = 'u' }
             @{ Label = (T 'main.shortcut'); Value = 'shortcut'; Hint = (T 'main.shortcutHint'); Hotkey = 'k' }
@@ -274,6 +286,7 @@ try {
             'update'   { if (Invoke-WNUpdateCheck -Manual) { Restart-WNApp; exit 0 } }
             'shortcut' { Write-WNHeader (T 'main.shortcut'); [void](New-WNShortcut); Save-WNSetting 'ShortcutAsked' $true; Wait-WNKey }
             'info'     { Show-WNSystemInfo }
+            'profiles' { Show-WNProfilesMenu }
             'about'    { Show-WNAbout }
             'logs'     { Show-WNLogsMenu }
             'lang'     { $l = if ($WN.Lang -eq 'es') { 'en' } else { 'es' }; Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Initialize-WNConsole }

@@ -480,7 +480,7 @@ function Show-WNGuiPage {
     $box.Text = ''
     $box.Tag = if ($p.SearchHint) { $p.SearchHint } elseif ($p.List) { T 'gui.search' } else { T 'gui.searchOff' }
     $box.IsEnabled = [bool]($p.List -or $p.OnSearch)
-    if ($g.NavButtons[$Id].IsChecked -ne $true) { $g.NavButtons[$Id].IsChecked = $true }
+    if ($g.NavAll) { Set-WNGuiNavSelection $Id } elseif ($g.NavButtons[$Id].IsChecked -ne $true) { $g.NavButtons[$Id].IsChecked = $true }
     $p.Shown++
     if ($p.OnShow) { & $p.OnShow $p }
 }
@@ -1012,6 +1012,97 @@ function Build-WNGuiUpdates {
     $p.OnShow = { Update-WNGuiUpdateStatus }
 }
 
+# ---- Profiles & schedules
+function Update-WNGuiProfiles {
+    $g = $script:WNGui
+    Set-WNGuiRows $g.ProfileList @(@(Get-WNProfiles) | ForEach-Object {
+        @{ Key = $_.File; Name = $_.Name; Description = (T 'pf.rowHint' $_.Tweaks.Count $_.Apps.Count $_.Computer $_.Created); Item = $_ } })
+    $g.SchedText.Text = Get-WNScheduleText
+    Update-WNGuiFilter
+}
+
+function Build-WNGuiProfiles {
+    param($p)
+    $g = $script:WNGui
+    $g.ProfileList = New-WNGuiList
+    $p.List = $g.ProfileList
+    $g.SchedText = New-WNGuiText '' -Dim -Size 12.5 -Wrap -Margin '0,2,0,0'
+    $sch = {
+        $weeks = $this.Tag
+        $msg = if ($weeks -eq 'off') { T 'sch.turnOff' } else { "$(T $(if ($weeks -eq '4') { 'sch.monthly' } else { 'sch.weekly' }))`n`n$(T 'sch.tasksHint')" }
+        if (-not (Confirm-WNGui $msg -Plain)) { return }
+        Start-WNGuiJob -Label (T 'sch.title') -Arguments @($WN.DryRun, $weeks) -Script {
+            param($dry, $weeks)
+            $WN.DryRun = $dry
+            if ($weeks -eq 'off') { Remove-WNSchedule } else { [void](Set-WNSchedule -Weeks ([int]$weeks)) }
+        }.ToString() -OnDone { Update-WNGuiProfiles }
+    }
+    $card = New-WNGuiCard -Title (T 'sch.title') -Icon 'E823' -Extra (New-WNGuiPanel -Orientation Vertical -Children @(
+            (New-WNGuiText (T 'sch.tasksHint') -Dim -Size 12.5 -Wrap -Margin '0,2,0,0'), $g.SchedText)) -Buttons @(
+        (New-WNGuiButton (T 'sch.weeklyShort') -Icon 'E787' -Tag '1' -OnClick $sch),
+        (New-WNGuiButton (T 'sch.monthlyShort') -Tag '4' -OnClick $sch),
+        (New-WNGuiButton (T 'sch.offShort') -Tag 'off' -OnClick $sch))
+    $card.Margin = '0,0,0,12'
+    $dock = New-Object Windows.Controls.DockPanel
+    [Windows.Controls.DockPanel]::SetDock($card, 'Top')
+    [void]$dock.Children.Add($card)
+    [void]$dock.Children.Add($g.ProfileList.List)
+    $p.Body = $dock
+    $pf = {
+        $mode = $this.Tag
+        $g = $script:WNGui
+        $filter = (T 'pf.fileType') + ' (*.json)|*.json'
+        switch ($mode) {
+            'folder' { Start-Process explorer.exe (Get-WNProfileDir); return }
+            'save' {
+                Start-WNGuiJob -Label (T 'pf.save') -Arguments @($WN.DryRun) -Script { param($dry) $WN.DryRun = $dry; [void](New-WNProfile) }.ToString() -OnDone { Update-WNGuiProfiles }
+                return
+            }
+            'import' {
+                $d = New-Object Microsoft.Win32.OpenFileDialog
+                $d.Filter = $filter
+                if (-not $d.ShowDialog($g.Window)) { return }
+                [void](Import-WNProfile $d.FileName)
+                Update-WNGuiProfiles
+                return
+            }
+        }
+        $sel = Get-WNGuiSelected $g.ProfileList.Rows
+        if (-not $sel.Count) { return }
+        if ($mode -ne 'delete' -and $sel.Count -ne 1) { Show-WNGuiInfo (T 'gui.selectOne'); return }
+        $one = $sel[0].Item
+        switch ($mode) {
+            'export' {
+                $d = New-Object Microsoft.Win32.SaveFileDialog
+                $d.Filter = $filter
+                $d.FileName = Split-Path $one.File -Leaf
+                if ($d.ShowDialog($g.Window)) { if (Export-WNProfile $one $d.FileName) { Show-WNGuiInfo (T 'pf.exported' $d.FileName) } }
+            }
+            'delete' {
+                if (Confirm-WNGui (T 'pf.delAskN' $sel.Count) -Danger -Plain) { foreach ($r in $sel) { Remove-WNProfile $r.Item }; Update-WNGuiProfiles }
+            }
+            'apply' {
+                if (-not (Confirm-WNGui (T 'pf.applyAsk' $one.Name $one.Tweaks.Count $one.Apps.Count))) { return }
+                Start-WNGuiJob -Label (T 'pf.apply') -Arguments @($WN.DryRun, $one.File) -Script {
+                    param($dry, $file)
+                    $WN.DryRun = $dry
+                    $p = Get-WNProfiles | Where-Object File -eq $file | Select-Object -First 1
+                    if ($p) { Invoke-WNProfile $p -NoConfirm }
+                }.ToString() -OnDone { Update-WNGuiProfiles }
+            }
+        }
+    }
+    Add-WNGuiTools $p @(
+        (New-WNGuiButton (T 'pf.saveShort') -Icon 'E74E' -Tag 'save' -OnClick $pf),
+        (New-WNGuiButton (T 'pf.importShort') -Icon 'E8B5' -Tag 'import' -OnClick $pf),
+        (New-WNGuiButton (T 'pf.exportShort') -Icon 'EDE1' -Tag 'export' -OnClick $pf),
+        (New-WNGuiButton (T 'gui.delete') -Icon 'E74D' -Tag 'delete' -OnClick $pf),
+        (New-WNGuiButton (T 'gui.folder') -Icon 'E8B7' -Tag 'folder' -Always -OnClick $pf),
+        (New-WNGuiButton (T 'gui.refresh') -Icon 'E72C' -OnClick { Update-WNGuiProfiles }))
+    Add-WNGuiActions $p @(New-WNGuiButton (T 'pf.applyShort') -Icon 'E73E' -Accent -Tag 'apply' -OnClick $pf)
+    $p.OnShow = { param($p) if ($p.Shown -eq 1) { Update-WNGuiProfiles } }
+}
+
 # ---- About
 function New-WNGuiAboutLines {
     # One text line per entry of a multi-line string; "version - text" lines get the version in bold
@@ -1525,14 +1616,14 @@ function Update-WNGuiHero {
     $h = $script:WNGui.Hero
     if (-not $h) { return }
     $name = $script:WNGui.ThemeName
-    $spec = switch ($name) { 'Light' { @('#FFDCE8F7', '#FFF5F8FC') } 'Navidad' { @('#FF1E5B3E', '#FF0E3324') } 'Patria' { @('#FF0B3A75', '#FF0B2A52') } 'Linux' { @('#FF3B1230', '#FF1E1E1E') } default { @('#FF233B5E', '#FF131D30') } }
+    $spec = switch ($name) { 'Light' { @('#CCDCE8F7', '#99F5F8FC') } 'Skeuo' { @('#FFFFF9EC', '#FFE6D7BA') } 'Navidad' { @('#FF1E5B3E', '#FF0E3324') } 'Patria' { @('#FF0B3A75', '#FF0B2A52') } 'Linux' { @('#FF3B1230', '#FF1E1E1E') } default { @('#FF233B5E', '#FF131D30') } }
     $h.Box.Background = [Windows.Media.Brush](ConvertTo-WNBrush $spec -Diagonal)
     $h.Art.Visibility = if ($name -eq 'Navidad') { 'Visible' } else { 'Collapsed' }
     $h.Tux.Visibility = if ($name -eq 'Linux') { 'Visible' } else { 'Collapsed' }
     if ($h.Flag) { $h.Flag.Visibility = if ($name -eq 'Patria') { 'Visible' } else { 'Collapsed' } }
     if ($h.Mark) {
         $h.Mark.Visibility = if ($name -in 'Navidad', 'Linux', 'Patria') { 'Collapsed' } else { 'Visible' }
-        $src = Get-WNGuiBitmap $(if ($name -eq 'Light') { 'Winnow_512_light.png' } else { 'Winnow_512.png' })
+        $src = Get-WNGuiBitmap $(if ($name -in 'Light', 'Skeuo') { 'Winnow_512_light.png' } else { 'Winnow_512.png' })
         if ($src) { $h.Mark.Source = $src }
     }
 }
@@ -1593,7 +1684,7 @@ function Build-WNGuiHome {
     $news = if (Get-Command Show-WNGuiTour -ErrorAction SilentlyContinue) {
         New-WNGuiStartCard 'E789' 'main.secTool' (T 'tour.button') (T 'home.cardTourText') { Show-WNGuiTour }
     } else {
-        New-WNGuiStartCard 'E789' 'main.secTool' (T 'home.cardNews') (T 'home.cardNewsText') { Show-WNGuiPage 'about' }
+        New-WNGuiStartCard 'E789' 'main.secTool' (T 'home.cardNews') (T 'home.cardNewsText') { Show-WNGuiNews -All }
     }
     $cards = New-WNGuiPanel -Wrap -Children @(
         (New-WNGuiStartCard 'E73E' 'main.secOptimize' (T 'home.cardRec') (T 'home.cardRecText' $rec.Count) {
@@ -1682,7 +1773,7 @@ function Show-WNGuiThemeFlyout {
     $f = $g.ThemeFly
     if ($f.Layer.Visibility -eq 'Visible') { Hide-WNGuiThemeFlyout; return }
     # Opaque in the current theme, its top-right corner under the button
-    $f.Panel.Background = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.ThemeName -eq 'Light') { '#FFF9F9FB' } else { '#FA26282C' }))
+    $f.Panel.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Popup')
     $btn = $g.Ctl.ThemeBtn
     $pt = $btn.TranslatePoint((New-Object Windows.Point $btn.ActualWidth, ($btn.ActualHeight + 6)), $root)
     $f.Panel.Margin = "$([Math]::Max(8, $pt.X - 250)),$($pt.Y),0,0"
@@ -1750,7 +1841,7 @@ function Hide-WNGuiThemeFlyout {
 
 function Set-WNGuiTheme {
     # Light / Dark / Navidad at any time: brushes, title bar and backdrop tint, badges, logo, window icon, Home art
-    param([ValidateSet('Light', 'Dark', 'Patria', 'Navidad', 'Linux')][string]$Name, [switch]$Save)
+    param([ValidateSet('Light', 'Dark', 'Skeuo', 'Patria', 'Navidad', 'Linux')][string]$Name, [switch]$Save)
     $g = $script:WNGui
     $t = $script:WNGuiThemes[$Name]
     $g.Theme = $t
@@ -1760,7 +1851,7 @@ function Set-WNGuiTheme {
         $g.Window.Resources[$k] = [Windows.Media.Brush](ConvertTo-WNBrush $t[$k])
     }
     $g.Window.Resources['Bg'] = [Windows.Media.Brush](ConvertTo-WNBrush $(if ($g.Glass) { $t.GlassBg } else { $t.Bg }))
-    if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, $Name -ne 'Light') } catch { } }
+    if ($g.Hwnd) { try { [WNDwm]::SetDark($g.Hwnd, -not (Test-WNGuiLight)) } catch { } }
     foreach ($l in $g.Lists) { foreach ($r in $l.Rows) { if ($r.Badge -and $r.Kind) { Set-WNGuiBadge $r $r.Badge $r.Kind } } }
     # The button is a palette; its menu lists the themes
     $g.Ctl.ThemeBtn.Content = [string][char]0xE790
@@ -1774,10 +1865,11 @@ function Set-WNGuiTheme {
     foreach ($img in @($g.Ctl.Logo, $g.Ctl.Avatar, $g.AboutLogo)) { if ($img -and $logo) { $img.Source = $logo } }
     if ($logo) { $g.Window.Icon = $logo }
     Update-WNGuiHero
+    Update-WNGuiGlass
     if ($Save) { Save-WNSetting 'GuiTheme' $Name }
 }
 
-function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Light' { 'Winnow_128_light.png' } 'Navidad' { 'Winnow_128_navidad.png' } 'Patria' { 'Winnow_128_patria.png' } 'Linux' { 'Winnow_128_linux.png' } default { 'Winnow_128.png' } } }
+function Get-WNGuiLogoFile { switch ($script:WNGui.ThemeName) { 'Light' { 'Winnow_128_light.png' } 'Skeuo' { 'Winnow_128_light.png' } 'Navidad' { 'Winnow_128_navidad.png' } 'Patria' { 'Winnow_128_patria.png' } 'Linux' { 'Winnow_128_linux.png' } default { 'Winnow_128.png' } } }
 
 function Set-WNGuiUpdateState {
     # Update pill in the top bar: Idle, Checking, None, Offline or Available (then it opens the update)
@@ -1986,7 +2078,7 @@ function Show-WNGui {
 
     $ctl = @{}
     foreach ($n in 'UpdateBtn', 'UpdateIcon', 'UpdateText', 'ThemeBtn', 'LangEn', 'LangEs', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText',
-                   'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'NavFooter', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
+                   'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'NavFooter', 'NavPane', 'NavScrim', 'NavToggle', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
                    'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
 
     $script:WNGui = @{
@@ -2005,7 +2097,7 @@ function Show-WNGui {
     # ---- Theme: the saved choice; Navidad in December, Mes patrio in November; else the Windows apps setting
     $saved = (Get-WNSettings).GuiTheme
     $light = (Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -ne 0
-    $theme = if ($saved -in 'Light', 'Dark', 'Patria', 'Navidad', 'Linux') { $saved } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } elseif ($light) { 'Light' } else { 'Dark' }
+    $theme = if ($saved -in 'Light', 'Dark', 'Skeuo', 'Patria', 'Navidad', 'Linux') { $saved } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } elseif ($light) { 'Light' } else { 'Dark' }
     Set-WNGuiTheme $theme
 
     # ---- Window chrome and identity
@@ -2088,53 +2180,11 @@ function Show-WNGui {
     Register-WNGuiPage 'hosts' 'E72E' 'main.secNetwork' (T 'main.hosts') (T 'main.hostsHint') ${function:Build-WNGuiHosts} -Hint (T 'main.hostsHint')
     Register-WNGuiPage 'system' 'E7F4' 'main.secSystem' (T 'main.info') (T 'main.infoHint') ${function:Build-WNGuiSystem} -Hint (T 'main.infoHint')
     Register-WNGuiPage 'logs' 'E8A5' 'main.secSystem' (T 'main.logs') $WN.LogFile ${function:Build-WNGuiLogs} -Hint (T 'logs.errorsHint')
+    Register-WNGuiPage 'profiles' 'E8F1' 'main.secTool' (T 'pf.menuTitle') (T 'pf.sub') ${function:Build-WNGuiProfiles} -Hint (T 'pf.sub')
     Register-WNGuiPage 'about' 'E946' 'main.secTool' (T 'about.title') (T 'about.subtitle') ${function:Build-WNGuiAbout} -Hint (T 'about.subtitle')
 
-    # ---- Navigation rail: Home, one item per group of tools (each opens a page of its tools), What's new and About
-    $g.RailTargets = @{}
-    $addRail = {
-        param([string]$Key, [string]$Glyph, [string]$Label, [string]$Page, $Panel, [scriptblock]$Action)
-        $r = New-Object Windows.Controls.RadioButton
-        $r.Style = $window.Resources['Rail']
-        $r.Tag = [string][char][Convert]::ToInt32($Glyph, 16)
-        $tb = New-Object Windows.Controls.TextBlock
-        $tb.Text = $Label
-        $tb.FontSize = 11
-        $tb.TextAlignment = 'Center'
-        $tb.TextTrimming = 'CharacterEllipsis'
-        $tb.MaxWidth = 78
-        $r.Content = $tb
-        $r.Name = "Rail_$Key"
-        $r.ToolTip = $Label
-        [Windows.Automation.AutomationProperties]::SetName($r, $Label)
-        $g.RailTargets[$r.Name] = @{ Page = $Page; Action = $Action }
-        $r.Add_Click({
-            $t = $script:WNGui.RailTargets[$this.Name]
-            if ($t.Action) { $this.IsChecked = $false; & $t.Action; return }
-            if ($script:WNGui.Current -ne $t.Page) { Show-WNGuiPage $t.Page }
-        })
-        [void]$Panel.Children.Add($r)
-        $r
-    }
-    $g.NavButtons['home'] = & $addRail 'home' 'E80F' (T 'gui.navHome') 'home' $ctl.NavPanel
-    $groupIcons = @{ 'main.secOptimize' = 'E713'; 'main.secApps' = 'E71D'; 'main.secMaintain' = 'E90F'; 'main.secNetwork' = 'E774'; 'main.secSystem' = 'E7F4'; 'main.secTool' = 'E8F1' }
-    $sections = @($g.Pages.Values | Where-Object { $_.Section -and $_.Id -ne 'about' } | ForEach-Object { $_.Section } | Select-Object -Unique)
-    foreach ($sec in $sections) {
-        $members = @($g.Pages.Values | Where-Object { $_.Section -eq $sec -and $_.Id -ne 'about' })
-        Register-WNGuiPage "grp:$sec" $groupIcons[$sec] $sec (T $sec) (T 'gui.groupSub' $members.Count) ${function:Build-WNGuiGroup}
-        $g.Pages["grp:$sec"].Group = $true
-        $btn = & $addRail ($sec -replace '\W', '') $groupIcons[$sec] (T $sec) "grp:$sec" $ctl.NavPanel
-        foreach ($pg in $members) { $g.NavButtons[$pg.Id] = $btn }
-        $g.NavButtons["grp:$sec"] = $btn
-    }
-    # What's new: the starting point tour where there is one, else the releases on the About page
-    $news = if (Get-Command Show-WNGuiTour -ErrorAction SilentlyContinue) { { Show-WNGuiTour } } else { { Show-WNGuiPage 'about' } }
-    $nb = & $addRail 'news' 'E789' (T 'gui.railNews') '' $ctl.NavFooter $news
-    $nb.GroupName = 'news'
-    $db = & $addRail 'donate' 'EB51' (T 'gui.railDonate') '' $ctl.NavFooter { Start-Process $WN.Donate }
-    $db.GroupName = 'donate'
-    $db.ToolTip = T 'about.donateTip'
-    $g.NavButtons['about'] = & $addRail 'about' 'E946' (T 'gui.railAbout') 'about' $ctl.NavFooter
+    # ---- Navigation pane: compact icons, expandable over the page (gui/Experience.ps1)
+    Build-WNGuiNav
 
     # ---- Start: worker, home page, then the update check in the background
     $g.Runspace = New-WNGuiWorker
@@ -2144,6 +2194,8 @@ function Show-WNGui {
         [void]$this.Activate()
         Show-WNGuiPage 'home'
         if ($script:WNGui.StartupCheck) { Start-WNGuiUpdateCheck -Startup }
+        # People coming from an older version see what changed, once
+        if (Test-WNGuiNewsDue) { Show-WNGuiNews }
     })
     $window.Add_Closing({
         param($s, $e)
@@ -2164,3 +2216,6 @@ function Show-WNGui {
     Write-WNLog 'GUI closed' -Component 'Gui'
     return $g.Relaunch
 }
+
+# Glass, Skeuomorphism, the navigation pane and the What's new slides
+. (Join-Path $PSScriptRoot 'Experience.ps1')

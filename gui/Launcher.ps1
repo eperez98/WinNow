@@ -1,7 +1,8 @@
 # gui/Launcher.ps1
-# Start window: a short boot animation, then the language (EN | ES) and the mode as two flat cards,
-# Graphical interface or Terminal. Replaces the console screens on every interactive start. While the animation
-# runs it asks GitHub for a newer release; when there is one, a bar offers Update now / Later.
+# Start window: a short boot animation with a soft chime, then straight into the saved mode (the graphical
+# interface by default). The first start asks instead: language (EN | ES), Graphical interface or Terminal, and
+# Light or Dark. While the animation runs it asks GitHub for a newer release; when there is one, the cards come up
+# with a bar that offers Update now / Later.
 
 $script:WNLauncherXaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -54,21 +55,42 @@ $script:WNLauncherXaml = @'
       </Setter>
     </Style>
   </Window.Resources>
-  <Border CornerRadius="22" Background="@@BG@@" BorderBrush="@@LINE@@" BorderThickness="1">
+  <Border x:Name="Shell" CornerRadius="22" Background="@@BG@@" BorderBrush="@@LINE@@" BorderThickness="1" ClipToBounds="True">
     <Grid>
+      <!-- Glass glow: two soft lights in the accent colour drift behind everything -->
+      <Canvas IsHitTestVisible="False" ClipToBounds="True">
+        <Ellipse x:Name="Glow1" Width="430" Height="430" Canvas.Left="-170" Canvas.Top="-210" Opacity="0.55">
+          <Ellipse.Fill><RadialGradientBrush><GradientStop Color="@@ACCENT@@" Offset="0"/><GradientStop Color="#00000000" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+        </Ellipse>
+        <Ellipse x:Name="Glow2" Width="380" Height="380" Canvas.Left="420" Canvas.Top="170" Opacity="0.35">
+          <Ellipse.Fill><RadialGradientBrush><GradientStop Color="@@ACCENT@@" Offset="0"/><GradientStop Color="#00000000" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
+        </Ellipse>
+      </Canvas>
       <StackPanel x:Name="Boot" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <Image x:Name="BootLogo" Width="104" Height="104" Opacity="0" RenderTransformOrigin="0.5,0.5"
-               RenderOptions.BitmapScalingMode="HighQuality">
-          <Image.RenderTransform><ScaleTransform x:Name="BootScale" ScaleX="0.82" ScaleY="0.82"/></Image.RenderTransform>
-        </Image>
+        <Grid Width="150" Height="150" HorizontalAlignment="Center">
+          <Ellipse x:Name="Ring" Width="146" Height="146" Stroke="@@ACCENT@@" StrokeThickness="3" StrokeDashArray="150 150"
+                   StrokeDashOffset="150" StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5">
+            <Ellipse.RenderTransform><RotateTransform x:Name="RingSpin" Angle="-90"/></Ellipse.RenderTransform>
+          </Ellipse>
+          <Image x:Name="BootLogo" Width="100" Height="100" Opacity="0" RenderTransformOrigin="0.5,0.5"
+                 RenderOptions.BitmapScalingMode="HighQuality">
+            <Image.RenderTransform><ScaleTransform x:Name="BootScale" ScaleX="0.82" ScaleY="0.82"/></Image.RenderTransform>
+            <Image.Effect><BlurEffect x:Name="BootBlur" Radius="18"/></Image.Effect>
+          </Image>
+        </Grid>
         <TextBlock x:Name="BootName" Text="WinNow" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="30"
-                   FontWeight="Bold" HorizontalAlignment="Center" Margin="0,16,0,0" Opacity="0"/>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0">
+                   FontWeight="Bold" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0">
+          <TextBlock.RenderTransform><TranslateTransform x:Name="NameShift" Y="12"/></TextBlock.RenderTransform>
+        </TextBlock>
+        <StackPanel x:Name="Dots" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0" Visibility="Collapsed">
           <Ellipse x:Name="Dot1" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
           <Ellipse x:Name="Dot2" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
           <Ellipse x:Name="Dot3" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
         </StackPanel>
-        <TextBlock x:Name="BootText" Foreground="@@DIM@@" FontSize="12.5" HorizontalAlignment="Center" Margin="0,14,0,0" Opacity="0"/>
+        <Border Width="150" Height="3" CornerRadius="2" Background="@@LINE@@" Margin="0,16,0,0" HorizontalAlignment="Center">
+          <Border x:Name="BootBar" Width="0" HorizontalAlignment="Left" CornerRadius="2" Background="@@ACCENT@@"/>
+        </Border>
+        <TextBlock x:Name="BootText" Foreground="@@DIM@@" FontSize="12.5" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0"/>
       </StackPanel>
       <Grid x:Name="Chooser" Margin="32,24,32,22" Opacity="0" Visibility="Collapsed">
         <Grid.RenderTransform><TranslateTransform x:Name="ChooserShift" Y="14"/></Grid.RenderTransform>
@@ -118,7 +140,13 @@ $script:WNLauncherXaml = @'
             </StackPanel>
           </Button>
         </UniformGrid>
-        <TextBlock x:Name="Keys" Grid.Row="2" Foreground="@@DIM@@" FontSize="12" HorizontalAlignment="Center"/>
+        <TextBlock x:Name="Keys" Grid.Row="2" Foreground="@@DIM@@" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- First start only: Light or Dark for the window -->
+        <StackPanel x:Name="Appear" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
+          <TextBlock x:Name="AppearLabel" Foreground="@@DIM@@" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <Button x:Name="AppLight" Style="{StaticResource Pill}" Tag="Light"/>
+          <Button x:Name="AppDark" Style="{StaticResource Pill}" Tag="Dark"/>
+        </StackPanel>
         <Border x:Name="UpdBar" Grid.Row="2" CornerRadius="12" Background="@@TINT@@" Padding="14,7" Visibility="Collapsed">
           <DockPanel>
             <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -142,6 +170,7 @@ $script:WNLauncherThemes = @{
     Patria = @{ BG = '#FF0B2A52'; CARD = '#FF143A6B'; LINE = '#FF24497A'; FG = '#FFF5F5F7'; DIM = '#FFC3CEDD'; ACCENT = '#FFD21034'; TINT = '#F2FFFFFF' }
     Linux = @{ BG = '#FF2B2B2B'; CARD = '#FF353535'; LINE = '#FF454545'; FG = '#FFF2F2F2'; DIM = '#FFBDBDBD'; ACCENT = '#FFE95420'; TINT = '#268AE234' }
     Light = @{ BG = '#FFF5F5F7'; CARD = '#FFFFFFFF'; LINE = '#FFE0E0E5'; FG = '#FF1C1C1E'; DIM = '#FF6E6E73'; ACCENT = '#FF007AFF'; TINT = '#1F007AFF' }
+    Skeuo = @{ BG = '#FFEDE6D8'; CARD = '#FFFBF8F1'; LINE = '#FFC9BDA6'; FG = '#FF3A2E22'; DIM = '#FF6B5C4A'; ACCENT = '#FF2F6FB0'; TINT = '#1F2F6FB0' }
 }
 
 function Set-WNConsoleWindow {
@@ -158,7 +187,15 @@ function Set-WNConsoleWindow {
 
 function Update-WNLauncherText {
     $c = $script:WNL.Ctl
-    $c.Heading.Text = T 'mode.title'
+    $c.Heading.Text = if ($script:WNL.FirstRun) { T 'onb.title' } else { T 'mode.title' }
+    $c.AppearLabel.Text = T 'onb.appearance'
+    $c.AppLight.Content = T 'onb.light'
+    $c.AppDark.Content = T 'onb.dark'
+    foreach ($b in @($c.AppLight, $c.AppDark)) {
+        $on = $b.Tag -eq $script:WNL.Appear
+        $b.Foreground = if ($on) { 'White' } else { $script:WNL.Theme.DIM }
+        $b.Background = if ($on) { $script:WNL.Theme.ACCENT } else { 'Transparent' }
+    }
     $c.PreviewTag.ToolTip = T 'launch.previewTip'
     $c.GuiLabel.Text = T 'mode.gui'
     $c.GuiHint.Text = T 'mode.guiHint'
@@ -236,12 +273,22 @@ function Start-WNLauncherXmas {
 }
 
 function Show-WNLauncherChooser {
-    # Boot animation done (or skipped): fade the chooser in and focus the last mode used
+    # Boot animation done (or skipped). Returning users go straight into their mode (the window by default); the
+    # first start, or a newer release found meanwhile, fades the cards in and focuses the last mode used.
     $l = $script:WNL
     if ($l.Chosen) { return }
     $l.Chosen = $true
     $l.Timer.Stop()
     $c = $l.Ctl
+    if (-not $l.FirstRun -and -not $l.Update) {
+        $mode = if ((Get-WNSettings).Mode -eq 'terminal') { 'terminal' } else { 'gui' }
+        $l.Result = @{ Mode = $mode; Lang = $WN.Lang; Checked = $l.Checked; Update = $null }
+        $out = New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(220))
+        $out.Add_Completed({ $script:WNL.Window.Close() })
+        $l.Window.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)
+        return
+    }
+    if ($l.FirstRun -and -not $l.Update) { $c.Appear.Visibility = 'Visible'; $c.Keys.HorizontalAlignment = 'Right' }
     $c.Boot.Visibility = 'Collapsed'
     if ($l.Snow) { $l.Snow.BeginAnimation([Windows.UIElement]::OpacityProperty, (New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(700)))) }
     $c.Chooser.Visibility = 'Visible'
@@ -286,10 +333,10 @@ function Show-WNLauncher {
     if (-not $Lang) { $Lang = if ($saved.Lang -in 'en', 'es') { $saved.Lang } else { 'en' } }
     Set-WNLanguage $Lang
     # The window's theme: the saved one, Navidad in December, Mes patrio in November, else the Windows apps setting
-    $themeName = if ($saved.GuiTheme -in 'Light', 'Dark', 'Patria', 'Navidad', 'Linux') { $saved.GuiTheme } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } else {
+    $themeName = if ($saved.GuiTheme -in 'Light', 'Dark', 'Skeuo', 'Patria', 'Navidad', 'Linux') { $saved.GuiTheme } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } else {
         try { if ((Get-ItemPropertyValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme' -ErrorAction Stop) -eq 1) { 'Light' } else { 'Dark' } } catch { 'Dark' }
     }
-    $light = $themeName -eq 'Light'
+    $light = $themeName -in 'Light', 'Skeuo'
     $theme = $script:WNLauncherThemes[$themeName]
     $xaml = $script:WNLauncherXaml
     foreach ($k in $theme.Keys) { $xaml = $xaml.Replace("@@$k@@", $theme[$k]) }
@@ -298,11 +345,14 @@ function Show-WNLauncher {
     $ctl = @{}
     foreach ($n in 'Boot', 'BootLogo', 'BootScale', 'BootName', 'BootText', 'Dot1', 'Dot2', 'Dot3', 'Chooser', 'ChooserShift', 'SmallLogo',
                    'Heading', 'Version', 'GuiCard', 'TermCard', 'GuiLabel', 'GuiHint', 'TermLabel', 'TermHint', 'Keys', 'LangEn', 'LangEs', 'CloseBtn',
-                   'UpdBar', 'UpdText', 'UpdNow', 'UpdLater', 'PreviewTag') {
+                   'UpdBar', 'UpdText', 'UpdNow', 'UpdLater', 'PreviewTag', 'Shell', 'Glow1', 'Glow2', 'Ring', 'RingSpin', 'BootBlur', 'NameShift',
+                   'Dots', 'BootBar', 'Appear', 'AppearLabel', 'AppLight', 'AppDark') {
         $ctl[$n] = $window.FindName($n)
     }
+    # First start on this PC (no settings yet): the cards ask for the mode and Light / Dark
+    $first = -not @($saved.PSObject.Properties | Where-Object { $_.Name -in 'Lang', 'Mode', 'GuiTheme', 'TourSeen', 'ShortcutAsked' }).Count
     $script:WNL = @{ Window = $window; Ctl = $ctl; Theme = $theme; ThemeName = $themeName; Result = 'exit'; Chosen = $false; Timer = $null
-                     Check = $null; Poll = $null; Checked = $false; Update = $null }
+                     Check = $null; Poll = $null; Checked = $false; Update = $null; FirstRun = $first; Appear = $(if ($light) { 'Light' } else { 'Dark' }) }
 
     # Update check in its own runspace so the animation never waits on GitHub (5 s at most)
     if (-not $NoUpdateCheck) {
@@ -323,7 +373,7 @@ function Show-WNLauncher {
     }
 
     # Logo made for this background, read into memory so the updater can always replace the file
-    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } 'Patria' { 'LOGO\Winnow_128_patria.png' } 'Linux' { 'LOGO\Winnow_128_linux.png' } default { 'LOGO\Winnow_128.png' } })
+    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Skeuo' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } 'Patria' { 'LOGO\Winnow_128_patria.png' } 'Linux' { 'LOGO\Winnow_128_linux.png' } default { 'LOGO\Winnow_128.png' } })
     if (Test-Path -LiteralPath $file) {
         $bmp = New-Object Windows.Media.Imaging.BitmapImage
         $bmp.BeginInit(); $bmp.CacheOption = 'OnLoad'; $bmp.UriSource = New-Object Uri $file; $bmp.EndInit(); $bmp.Freeze()
@@ -336,6 +386,8 @@ function Show-WNLauncher {
         $l = $script:WNL
         $l.Result = @{ Mode = $this.Tag; Lang = $WN.Lang; Checked = $l.Checked; Update = $l.Update }
         Save-WNSetting 'Mode' $this.Tag
+        # A new user starts with the look picked here and has nothing "new" to be shown
+        if ($l.FirstRun) { Save-WNSetting 'GuiTheme' $l.Appear; Save-WNSetting 'NewsSeen' $WN.Version }
         $l.Window.Close()
     }
     $ctl.GuiCard.Add_Click($pick)
@@ -348,6 +400,7 @@ function Show-WNLauncher {
     # Later: keep using this version; the next start asks again
     $ctl.UpdLater.Add_Click({ $c = $script:WNL.Ctl; $c.UpdBar.Visibility = 'Collapsed'; $c.Keys.Visibility = 'Visible' })
     $ctl.CloseBtn.Add_Click({ $script:WNL.Window.Close() })
+    foreach ($b in @($ctl.AppLight, $ctl.AppDark)) { $b.Add_Click({ $script:WNL.Appear = $this.Tag; Update-WNLauncherText }) }
     foreach ($b in @($ctl.LangEn, $ctl.LangEs)) {
         $b.Add_Click({ $l = $this.Content.ToString().ToLower(); Set-WNLanguage $l; Save-WNSetting 'Lang' $l; Update-WNLauncherText })
     }
@@ -365,34 +418,57 @@ function Show-WNLauncher {
         }
     })
 
-    # Boot animation: the logo grows in, the name follows, three dots pulse like the logo's grains
+    # Boot animation: a ring draws itself around the logo, the logo comes into focus, the name rises, a thin line
+    # fills while WinNow starts, and the glow behind drifts. A soft chime plays (Sound = false in settings mutes it).
     $window.Add_ContentRendered({
-        $c = $script:WNL.Ctl
+        $l = $script:WNL
+        $c = $l.Ctl
         $ms = { param($v) [Windows.Duration][TimeSpan]::FromMilliseconds($v) }
+        $out = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
+        $draw = New-Object Windows.Media.Animation.DoubleAnimation 150, 0, (& $ms 900)
+        $draw.EasingFunction = $out
+        $c.Ring.BeginAnimation([Windows.Shapes.Shape]::StrokeDashOffsetProperty, $draw)
+        $spin = New-Object Windows.Media.Animation.DoubleAnimation -90, 270, (& $ms 1500)
+        $spin.EasingFunction = $out
+        $c.RingSpin.BeginAnimation([Windows.Media.RotateTransform]::AngleProperty, $spin)
         $in = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, (& $ms 520)
         $c.BootLogo.BeginAnimation([Windows.UIElement]::OpacityProperty, $in)
-        $grow = New-Object Windows.Media.Animation.DoubleAnimation 0.82, 1, (& $ms 640)
+        $focus = New-Object Windows.Media.Animation.DoubleAnimation 18, 0, (& $ms 640)
+        $focus.EasingFunction = $out
+        $c.BootBlur.BeginAnimation([Windows.Media.Effects.BlurEffect]::RadiusProperty, $focus)
+        $grow = New-Object Windows.Media.Animation.DoubleAnimation 0.82, 1, (& $ms 680)
         $grow.EasingFunction = New-Object Windows.Media.Animation.BackEase -Property @{ Amplitude = 0.35 }
         $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $grow)
         $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $grow)
         foreach ($t in @($c.BootName, $c.BootText)) {
             $f = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, (& $ms 420)
-            $f.BeginTime = [TimeSpan]::FromMilliseconds(260)
+            $f.BeginTime = [TimeSpan]::FromMilliseconds(300)
             $t.BeginAnimation([Windows.UIElement]::OpacityProperty, $f)
         }
-        $i = 0
-        foreach ($d in @($c.Dot1, $c.Dot2, $c.Dot3)) {
-            $p = New-Object Windows.Media.Animation.DoubleAnimation 0.25, 1, (& $ms 360)
-            $p.AutoReverse = $true
-            $p.RepeatBehavior = [Windows.Media.Animation.RepeatBehavior]::Forever
-            $p.BeginTime = [TimeSpan]::FromMilliseconds(180 * $i++)
-            $d.BeginAnimation([Windows.UIElement]::OpacityProperty, $p)
+        $rise = New-Object Windows.Media.Animation.DoubleAnimation 12, 0, (& $ms 520)
+        $rise.BeginTime = [TimeSpan]::FromMilliseconds(300); $rise.EasingFunction = $out
+        $c.NameShift.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $rise)
+        $bar = New-Object Windows.Media.Animation.DoubleAnimation 0, 150, (& $ms $l.Timer.Interval.TotalMilliseconds)
+        $bar.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
+        $c.BootBar.BeginAnimation([Windows.FrameworkElement]::WidthProperty, $bar)
+        foreach ($gl in @(@($c.Glow1, 60), @($c.Glow2, -50))) {
+            $d = New-Object Windows.Media.Animation.DoubleAnimation ([Windows.Controls.Canvas]::GetLeft($gl[0])), ([Windows.Controls.Canvas]::GetLeft($gl[0]) + $gl[1]), (& $ms 2600)
+            $d.AutoReverse = $true; $d.RepeatBehavior = [Windows.Media.Animation.RepeatBehavior]::Forever
+            $d.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
+            $gl[0].BeginAnimation([Windows.Controls.Canvas]::LeftProperty, $d)
         }
-        if ($script:WNL.ThemeName -eq 'Navidad') { Start-WNLauncherXmas }
-        $script:WNL.Timer.Start()
+        if ($l.ThemeName -eq 'Navidad') {
+            $c.Dots.Visibility = 'Visible'
+            Start-WNLauncherXmas
+        }
+        if ((Get-WNSettings).Sound -ne $false) {
+            $wav = Join-Path $WN.Root 'gui\start.wav'
+            if (Test-Path -LiteralPath $wav) { try { $l.Sound = New-Object Media.SoundPlayer $wav; $l.Sound.Play() } catch { } }
+        }
+        $l.Timer.Start()
     })
     $timer = New-Object Windows.Threading.DispatcherTimer
-    $timer.Interval = [TimeSpan]::FromMilliseconds($(if ($themeName -eq 'Navidad') { 2400 } else { 1700 }))
+    $timer.Interval = [TimeSpan]::FromMilliseconds($(if ($themeName -eq 'Navidad') { 2400 } else { 1900 }))
     $timer.Add_Tick({ Show-WNLauncherChooser })
     $script:WNL.Timer = $timer
     $window.Add_PreviewMouseLeftButtonDown({ if (-not $script:WNL.Chosen) { Show-WNLauncherChooser } })

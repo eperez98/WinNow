@@ -27,6 +27,8 @@
     <SolidColorBrush x:Key="Layer" Color="#0FFFFFFF"/>
     <SolidColorBrush x:Key="LayerBorder" Color="#1AFFFFFF"/>
     <SolidColorBrush x:Key="Code" Color="#59000000"/>
+    <SolidColorBrush x:Key="NavBg" Color="#EB1A1C23"/>
+    <SolidColorBrush x:Key="Popup" Color="#FA1D1F26"/>
     <FontFamily x:Key="Icons">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
     <!-- Card: translucent, flat, rounded -->
@@ -466,7 +468,7 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
-            <Border x:Name="bd" CornerRadius="8" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="16,14">
+            <Border x:Name="bd" CornerRadius="12" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" Padding="16,14">
               <ContentPresenter/>
             </Border>
             <ControlTemplate.Triggers>
@@ -478,6 +480,67 @@
       </Setter>
     </Style>
 
+    <!-- Navigation pane item: icon in a 48 px column (all that shows when the pane is compact), label beside it -->
+    <Style x:Key="NavItem" TargetType="RadioButton">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+      <Setter Property="Height" Value="40"/>
+      <Setter Property="Margin" Value="6,1"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="RadioButton">
+            <Grid>
+              <Border x:Name="bd" CornerRadius="8" Background="Transparent"/>
+              <Border x:Name="hv" CornerRadius="8" Background="{DynamicResource Hover}" Opacity="0"/>
+              <Border x:Name="pill" Width="3" Height="16" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource AccentSolid}" Visibility="Collapsed"/>
+              <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="48"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <TextBlock x:Name="ic" Text="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}" FontFamily="{StaticResource Icons}" FontSize="17" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <ContentPresenter Grid.Column="1" VerticalAlignment="Center" Margin="10,0,6,0"/>
+              </Grid>
+            </Grid>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="hv" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12"/></Storyboard></BeginStoryboard></Trigger.EnterActions>
+                <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="hv" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
+              </Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Selected}"/>
+                <Setter TargetName="pill" Property="Visibility" Value="Visible"/>
+                <Setter TargetName="ic" Property="Foreground" Value="{DynamicResource AccentText}"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="NavChevron" TargetType="Button">
+      <Setter Property="Foreground" Value="{DynamicResource FgDim}"/>
+      <Setter Property="FontFamily" Value="{StaticResource Icons}"/>
+      <Setter Property="FontSize" Value="11"/>
+      <Setter Property="Width" Value="28"/>
+      <Setter Property="Height" Value="28"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="bd" CornerRadius="6" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+    <Style x:Key="NavToggle" TargetType="Button" BasedOn="{StaticResource NavChevron}">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+      <Setter Property="FontSize" Value="16"/>
+      <Setter Property="Width" Value="48"/>
+      <Setter Property="Height" Value="40"/>
+    </Style>
+
     <Style x:Key="NavHeader" TargetType="TextBlock">
       <Setter Property="Foreground" Value="{DynamicResource FgDim}"/>
       <Setter Property="FontSize" Value="11"/>
@@ -487,22 +550,19 @@
   </Window.Resources>
 
   <Grid x:Name="Root" Background="{DynamicResource Bg}">
-    <Grid.ColumnDefinitions><ColumnDefinition Width="92"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="60"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
 
-    <!-- Navigation rail (Microsoft Store style): the logo, Home and one item per group of tools; What's new and About
-         at the foot -->
-    <DockPanel>
-      <Image x:Name="Logo" DockPanel.Dock="Top" Width="28" Height="28" Margin="0,18,0,12" HorizontalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
-      <StackPanel x:Name="NavFooter" DockPanel.Dock="Bottom" Margin="0,0,0,12" HorizontalAlignment="Center"/>
-      <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel x:Name="NavPanel" HorizontalAlignment="Center"/>
-      </ScrollViewer>
-    </DockPanel>
+    <!-- Glassmorphism: soft colour blobs behind the frosted cards (filled per theme; none in Skeuomorphism) -->
+    <Canvas x:Name="Blobs" Grid.ColumnSpan="2" IsHitTestVisible="False" ClipToBounds="True">
+      <Ellipse Width="760" Height="760" Canvas.Left="-260" Canvas.Top="-300"/>
+      <Ellipse Width="700" Height="700" Canvas.Left="820" Canvas.Top="120"/>
+      <Ellipse Width="640" Height="640" Canvas.Left="260" Canvas.Top="520"/>
+    </Canvas>
 
     <Grid Grid.Column="1">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
       <!-- WinUI 3: the page sits on a layer with a rounded top-left corner, over the backdrop -->
-      <Border Grid.Row="1" Grid.RowSpan="2" CornerRadius="8,0,0,0" Background="{DynamicResource Layer}" BorderBrush="{DynamicResource LayerBorder}" BorderThickness="1,1,0,0"/>
+      <Border Grid.Row="1" Grid.RowSpan="2" CornerRadius="14,0,0,0" Background="{DynamicResource Layer}" BorderBrush="{DynamicResource LayerBorder}" BorderThickness="1,1,0,0"/>
 
       <!-- Top bar: search fills the left; update status, theme, language, shortcut, terminal and identity on the right -->
       <DockPanel Margin="30,16,30,4" LastChildFill="True">
@@ -575,5 +635,23 @@
         </StackPanel>
       </Border>
     </Grid>
+
+    <!-- Navigation pane: compact (icons) by default; the menu button expands it over the page (labels, groups that
+         open to show their tools). A click outside, Esc or a choice folds it back. -->
+    <Border x:Name="NavScrim" Grid.ColumnSpan="2" Panel.ZIndex="19" Background="#33000000" Visibility="Collapsed"/>
+    <Border x:Name="NavPane" Grid.ColumnSpan="2" Width="60" HorizontalAlignment="Left" Panel.ZIndex="20" ClipToBounds="True"
+            Background="Transparent" CornerRadius="0,14,14,0">
+      <DockPanel Width="272" HorizontalAlignment="Left">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="6,12,0,10">
+          <Button x:Name="NavToggle" Style="{StaticResource NavToggle}" Content="&#xE700;"/>
+          <Image x:Name="Logo" Width="22" Height="22" Margin="6,0,10,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+          <TextBlock Text="WinNow" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource Fg}"/>
+        </StackPanel>
+        <StackPanel x:Name="NavFooter" DockPanel.Dock="Bottom" Margin="0,0,0,10"/>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+          <StackPanel x:Name="NavPanel"/>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
   </Grid>
 </Window>

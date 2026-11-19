@@ -6,7 +6,7 @@
 
 <br />
 
-[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.6%20GUI%20Rethinked-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
+[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.7%20Profiles%20%26%20Schedules-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -56,35 +56,31 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 <div align="center">
 <img src="screenshots/en/home.png" alt="WinNow home" width="100%" />
-<sub><b>Home</b> — a WinUI 3 style hero with start cards, every tool as a card, and a Store-style rail on the left.</sub>
-</div>
-
-<br />
-
-<div align="center">
-<img src="screenshots/en/launcher.png" alt="Launcher" width="70%" />
-<br /><sub><b>Launcher</b> — a short boot animation, then the window or the terminal. It also checks for updates while it starts.</sub>
+<sub><b>Home</b> — glass cards over soft colour, a hero with start cards, and the compact menu on the left.</sub>
 </div>
 
 <br />
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/en/group-optimize.png" alt="Optimize group" /><br /><sub><b>Groups</b> — each rail item opens its tools as cards</sub> | <img src="screenshots/en/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b> — live status, apply and real undo, presets</sub> |
-| <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
+| <img src="screenshots/en/nav.png" alt="Expanded menu" /><br /><sub><b>Menu</b> — expands over the page; a group lists its tools</sub> | <img src="screenshots/en/launcher.png" alt="Start animation" /><br /><sub><b>Start</b> — a ring draws around the logo, then straight to the window</sub> |
+| <img src="screenshots/en/news.png" alt="What's new" /><br /><sub><b>What's new</b> — slides with pictures, shown once after an update</sub> | <img src="screenshots/en/welcome.png" alt="Welcome" /><br /><sub><b>First start</b> — window or terminal, Light or Dark</sub> |
+| <img src="screenshots/en/profiles.png" alt="Profiles & schedules" /><br /><sub><b>Profiles & schedules</b> — save a PC, apply it elsewhere, scheduled maintenance</sub> | <img src="screenshots/en/group-optimize.png" alt="Optimize group" /><br /><sub><b>Groups</b> — each menu item opens its tools as cards</sub> |
+| <img src="screenshots/en/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b> — live status, apply and real undo, presets</sub> | <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> |
 | <img src="screenshots/en/preferences.png" alt="Preferences" /><br /><sub><b>Preferences</b> — 18 ON / OFF switches</sub> | <img src="screenshots/en/services.png" alt="Services" /><br /><sub><b>Services</b> — current vs. recommended vs. Windows default</sub> |
-| <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> |
-| <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark, Mes patrio, Navidad and Linux World</sub> | <img src="screenshots/en/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b> — terminal green, aubergine and a penguin</sub> |
+| <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
+| <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> | <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark, Skeuomorphism, Mes patrio, Navidad, Linux World</sub> |
 
 <details>
-<summary><b>🎨 Light, Mes patrio and Navidad themes</b></summary>
+<summary><b>🎨 Themes: Light, Skeuomorphism, Mes patrio, Navidad and Linux World</b></summary>
 <br />
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/en/home-light.png" alt="Light theme" /><br /><sub>Light theme</sub> | <img src="screenshots/en/tweaks-light.png" alt="Tweaks, light" /><br /><sub>Tweaks in the light theme</sub> |
-| <img src="screenshots/en/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: the flag of Panama, navy and red — the default in November</sub> | <img src="screenshots/en/launcher-patria.png" alt="Launcher, Mes patrio" /><br /><sub>The launcher in Mes patrio</sub> |
-| <img src="screenshots/en/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: ornaments, snowflakes, pine green and red — the default in December</sub> | <img src="screenshots/en/launcher-navidad.png" alt="Launcher, Navidad" /><br /><sub>The launcher in Navidad: snow falls and the logo swings like an ornament</sub> |
+| <img src="screenshots/en/home-light.png" alt="Light" /><br /><sub>Light glass</sub> | <img src="screenshots/en/tweaks-light.png" alt="Tweaks, light" /><br /><sub>Tweaks in the light theme</sub> |
+| <img src="screenshots/en/home-skeuo.png" alt="Skeuomorphism" /><br /><sub><b>Skeuomorphism</b>: paper, depth and glossy buttons</sub> | <img src="screenshots/en/tweaks-skeuo.png" alt="Tweaks, Skeuomorphism" /><br /><sub>Tweaks in Skeuomorphism</sub> |
+| <img src="screenshots/en/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: the flag of Panama, the default in November</sub> | <img src="screenshots/en/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: the default in December</sub> |
+| <img src="screenshots/en/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: terminal green, aubergine and a penguin</sub> | <img src="screenshots/en/launcher-navidad.png" alt="Start in Navidad" /><br /><sub>The start animation in Navidad, with falling snow</sub> |
 
 </details>
 
@@ -135,13 +131,22 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 <details>
 <summary><b>Window and terminal</b></summary>
 
-- **Two editions, one engine**: every start asks for the language and then **Terminal** or **Graphical interface**. `G` in the terminal opens the window; the window has a button for the terminal.
-- **Launcher**: every start opens a small window with a boot animation, the **EN | ES** switch and two cards — **Graphical interface** or **Terminal**. It checks GitHub for a newer release while the animation runs.
-- **The window**: WinUI 3 look with acrylic on Windows 11 22H2 or later — a Store-style rail (Home, one item per group, What's new, Support, About), a hero with start cards, every tool as a card, a search bar for every page, step-by-step progress bar, and five themes in an in-window picker — **Light**, **Dark**, **Mes patrio** (the default in November), **Navidad** (the default in December) and **Linux World**.
+- **Starts in the window**: after a short start animation (a ring draws around the logo, a soft chime) WinNow opens the graphical interface. **Terminal mode** in the menu switches to the console; the last What's new slide sets which one WinNow starts in.
+- **First start**: a welcome asks for the language, window or terminal, and Light or Dark, once.
+- **What's new**: after an update, a card with slides that move sideways shows what changed, with pictures; the design slide lets you try a theme on the spot.
+- **Menu**: compact icons; the menu button expands it over the page with labels, and the arrow next to a group lists its tools. It folds away after a choice.
+- **Glassmorphism**: frosted, translucent cards with a bright edge over soft colour, on the Windows 11 acrylic backdrop. Six themes: **Light**, **Dark**, **Skeuomorphism**, **Mes patrio** (the default in November), **Navidad** (December) and **Linux World**.
 - **The terminal**: arrow-key menus, `Space` to tick, `/` to search, `U` to undo, `Esc` to go back.
-- **Icons**: line glyphs on quiet tiles that follow the theme (gold in Navidad, terminal green in Linux World).
 - **Desktop shortcut**: asked on exit. **Yes** keeps WinNow with a shortcut; **No** removes WinNow's own files like an uninstall (logs and backups stay).
 - **Updates**: every start asks GitHub for the latest release and shows its changelog: update now, keep this version, or skip it.
+</details>
+
+<details>
+<summary><b>Profiles and scheduled maintenance</b></summary>
+
+- **Profiles**: save this PC (applied tweaks and preferences, installed catalog apps) as a profile, export it to a `.json` file, import it on another PC and apply it in one step, with the usual backup and restore point.
+- **Scheduled maintenance**: a Windows scheduled task, weekly or every four weeks, cleans temporary files and upgrades every app with winget. It runs from a permanent copy, never from the download in `%TEMP%`.
+- `-Maintain Temp,Upgrade` runs the same maintenance without questions.
 </details>
 
 ## Run it
@@ -153,7 +158,7 @@ irm eperez98.github.io/WinNow | iex
 ```
 
 1. It downloads the latest release to `%TEMP%\Winnow-app` and asks for administrator rights. Nothing is installed.
-2. The launcher opens: pick **EN** or **ES**, then **Graphical interface** or **Terminal**.
+2. The first time, pick **EN** or **ES**, the window or the terminal, and Light or Dark. After that WinNow opens straight in your choice.
 3. To look around first, turn on **simulation mode** (`M` in the terminal, the checkbox in the window).
 
 **Offline:** download `Winnow.zip` from [Releases](https://github.com/eperez98/WinNow/releases/latest), extract it and run `Launch.bat` as administrator.
@@ -173,6 +178,7 @@ irm eperez98.github.io/WinNow | iex
 .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
 .\Winnow.ps1 -Undo ClassicContextMenu
 .\Winnow.ps1 -Install firefox,7zip,vscode -Yes
+.\Winnow.ps1 -Maintain Temp,Upgrade                  # scheduled-style maintenance, no questions
 .\Winnow.ps1 -NoUpdateCheck -NoRestorePoint
 ```
 
@@ -197,7 +203,6 @@ WinNow runs as administrator, so it treats what it reads back as untrusted until
 
 | Version | Name | Goals |
 |---|---|---|
-| **1.7** | Profiles & Schedules | Save a PC as a profile and apply it on another; scheduled maintenance |
 | **1.8** | Trusted Updates | Signed releases, a history of every session with undo, the final GUI Rethinked |
 | **1.8.1** | Polish | A closing dialog in the window's own look |
 | **1.8.2** | Starting Point | A starting point tour; Office Helper with Thunderbird, LibreOffice and OpenOffice |
@@ -226,7 +231,7 @@ Launch.bat          Double-click launcher (self-elevates, asks for the mode)
 run.ps1             One-line launcher used by irm | iex
 core/               Common, Engine (registry / services / backups), Tui, I18n, Update
 modules/            Tweaks, TweakActions, Apps, Uninstall, Services, Startup, Repair, Updates, Network, System
-gui/                Gui.ps1 (every page), MainWindow.xaml and Launcher.ps1 (the start window)
+gui/                Gui.ps1 (every page), Experience.ps1 (menu, glass, What's new), MainWindow.xaml, Launcher.ps1
 config/             Tweak, app, service, preset and DNS catalogs; interface text
 docs/ screenshots/  Release notes, image generators, pictures
 tests/              Self-checks for the parsers

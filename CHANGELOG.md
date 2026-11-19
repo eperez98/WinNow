@@ -6,9 +6,7 @@ All notable changes to WinNow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.7 Profiles & Schedules** (on the way): Save this PC as a profile, export it and apply it on another PC;
-  scheduled maintenance (temp cleanup, app upgrades) weekly or every 4 weeks.
-- **1.8 Trusted Updates** (idea): Signed releases (an update is installed only when its signature checks out); a
+- **1.8 Trusted Updates** (on the way): Signed releases (an update is installed only when its signature checks out); a
   history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
   preview.
 - **1.8.1 Polish** (idea): A closing dialog in the window's own look.
@@ -20,25 +18,43 @@ All notable changes to WinNow are listed here. The format follows
   the Store, and the same tools.
 - More changes may be added and others removed.
 
-## [1.6] - 2026-11-16 - GUI Rethinked
+## [1.7] - 2026-11-19 - Profiles & Schedules
 
-The terminal and the graphical interface are both **1.6 GUI Rethinked**.
+The terminal and the graphical interface are both **1.7 Profiles & Schedules**.
 
 ### Added
-- **Launcher window** on every start (`Launch.bat`, the one-line command, the desktop shortcut): a short boot
-  animation (the logo grows in, three dots pulse), then **Graphical interface** or **Terminal** as two flat cards,
-  with the **EN | ES** switch on top and a **GUI RETHINKED** tag. Click, `1` / `2`, the arrow keys and Enter, or `Esc` to exit; any key or
-  click skips the animation. The last mode used is focused. It replaces the console language and mode screens,
-  which stay as the fallback where the window cannot open (and with `-Terminal`).
-- **Update check in the launcher**: while the boot animation runs, the launcher asks GitHub for a newer release in
-  the background ("Checking for updates..."). When there is one, a bar shows the new version with **Update now**
-  (WinNow downloads it, replaces this copy and opens the launcher again) or **Later** (keep using this version;
-  asked again on the next start). The window and the terminal then skip their own check; `-NoUpdateCheck` turns
-  it off, and a skipped version is not offered.
+- **Starts in the window**: after the launcher's animation WinNow opens the graphical interface directly. The
+  terminal is one click away (**Terminal mode** in the menu), and the start mode can be changed on the last What's
+  new slide; `-Terminal` still starts in the console.
+- **Welcome on the first start**: a new user picks the language, Graphical interface or Terminal, and Light or
+  Dark, once. Later starts skip the question.
+- **What's new slides**: people coming from an older version see a card with slides that move sideways (Next /
+  Back, arrow keys), each with a picture of the change. The design slide lets you pick a theme on the spot, and the
+  last one sets how WinNow starts and whether the start sound plays. It shows once per version; **What's new** in
+  the menu opens it again.
+- **Navigation pane**: compact icons by default; the menu button expands it over the page (labels), the arrow next
+  to a group lists its tools (progressive disclosure), and it folds back after a choice, a click outside or Esc.
+  The page keeps its full width (immersive). A tool's page also marks its group, so the compact pane shows where
+  you are.
+- **Glassmorphism** is the base of every theme: frosted, translucent cards with a bright edge over soft colour
+  blobs, on the Windows 11 acrylic backdrop.
+- **Skeuomorphism** theme: paper, depth and glossy buttons, opaque and light.
+- **New logo**: a white W on a frosted glass pane over soft colour, with a gold grain for "Now" (a star in
+  Navidad and Mes patrio). Window, taskbar, desktop shortcut, launcher and README.
+- **New start animation and sound**: a ring draws itself around the logo, the logo comes into focus, the name
+  rises and a thin line fills, over a slow glow; a short, soft chime plays (it can be turned off).
+- **Profiles**: save this PC as a profile (the tweaks and preferences that are applied, and the catalog apps that
+  are installed), export it to a `.json` file and import it on another PC, then apply it in one step: tweaks that
+  are not applied yet are applied (with the usual backup and restore point) and missing apps are installed. An
+  imported profile keeps only items from WinNow's catalog. `P` in the terminal main menu, WinNow > Profiles &
+  schedules in the window.
+- **Scheduled maintenance**: a Windows scheduled task, every week or every 4 weeks (Sunday 10:00, or as soon as you
+  sign in after that), cleans temporary files and upgrades every app with winget, with a JSON backup of the app
+  list first. Turn it on or off from the same page. It runs from a permanent copy (the desktop shortcut's folder
+  or one you extracted), not from the download in `%TEMP%`.
+- `-Maintain Temp,Upgrade`: the same maintenance without questions, for scripts and the scheduled task.
 
 ### Changed
-- **README** in a new layout: hero image, why WinNow, screenshots in English and Spanish (README.es.md), features,
-  security and roadmap.
 - **App search reaches all of winget**: on the App Manager page, typing searches every winget package by itself
   after a short pause (Enter and the button still work), keeps the catalog apps that match and adds every winget
   result, even those that match by tag; the text stays in the box. In the terminal, "Search all of winget" is the
@@ -70,6 +86,25 @@ The terminal and the graphical interface are both **1.6 GUI Rethinked**.
   **Mes patrio**, **Linux World** and **Navidad**: a
   Christmas icon (window, taskbar, desktop shortcut, launcher), ornaments and snowflakes on the Home hero, and an
   aero background in pine green and Christmas red. It is the starting theme in December.
+## [1.6] - 2026-11-16 - GUI Rethinked
+
+The terminal and the graphical interface are both **1.6 GUI Rethinked**.
+
+### Added
+- **Launcher window** on every start (`Launch.bat`, the one-line command, the desktop shortcut): a short boot
+  animation (the logo grows in, three dots pulse), then **Graphical interface** or **Terminal** as two flat cards,
+  with the **EN | ES** switch on top and a **PREVIEW** tag (the launcher is new and may still change). Click, `1` / `2`, the arrow keys and Enter, or `Esc` to exit; any key or
+  click skips the animation. The last mode used is focused. It replaces the console language and mode screens,
+  which stay as the fallback where the window cannot open (and with `-Terminal`).
+- **Update check in the launcher**: while the boot animation runs, the launcher asks GitHub for a newer release in
+  the background ("Checking for updates..."). When there is one, a bar shows the new version with **Update now**
+  (WinNow downloads it, replaces this copy and opens the launcher again) or **Later** (keep using this version;
+  asked again on the next start). The window and the terminal then skip their own check; `-NoUpdateCheck` turns
+  it off, and a skipped version is not offered.
+
+### Changed
+- **Flat, minimal icons**: the tool tiles on the home page show a line icon in the colour of its group on a light
+  tint of it, instead of gradient app-icon squares, and the banner is one flat colour.
 
 ## [1.5] - 2026-11-13 - QL Update Mid November
 
@@ -333,7 +368,8 @@ First release.
 - Scripted use: `-Preset`, `-Apply`, `-Undo`, `-Install`, `-List`, `-Status`, `-Yes`, `-NoRestorePoint`.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
-[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.6...HEAD
+[Unreleased]: https://github.com/eperez98/Winnow/compare/v1.7...HEAD
+[1.7]: https://github.com/eperez98/Winnow/releases/tag/v1.7
 [1.6]: https://github.com/eperez98/Winnow/releases/tag/v1.6
 [1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.5
 [1.2.2]: https://github.com/eperez98/Winnow/releases/tag/v1.2.2

@@ -5,7 +5,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 $steps = @(
     @{ V = '1.5'; Name = 'QL Update Mid November'; State = 'now'; Goals = @('New name: WinNow', 'Mes patrio icon', 'Active startup apps first') }
     @{ V = '1.6'; Name = 'GUI Rethinked'; State = 'now'; Goals = @('Launcher with boot animation', 'WinUI 3 look, Store-style rail', 'Navidad and Linux World') }
-    @{ V = '1.7'; Name = 'Profiles & Schedules'; State = 'next'; Goals = @('Export a PC as a profile', 'Apply it on another PC', 'Scheduled maintenance') }
+    @{ V = '1.7'; Name = 'Profiles & Schedules'; State = 'now'; Goals = @('Profiles and schedules', 'Glass design, new logo', 'Starts in the window') }
     @{ V = '1.8'; Name = 'Trusted Updates'; State = 'next'; Tag = 'GUI RETHINKED'; Goals = @('Signed releases', 'Undo a whole session', 'Final, calmer GUI') }
     @{ V = '1.8.1'; Name = 'Polish'; State = 'next'; Goals = @('New closing dialog', 'Light and dark look', 'Shows what it did') }
     @{ V = '1.8.2'; Name = 'Starting Point'; State = 'next'; Goals = @('Starting point tour', 'Office Helper', 'Free Office alternatives') }

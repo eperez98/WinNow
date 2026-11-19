@@ -6,7 +6,7 @@
 
 <br />
 
-[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.6%20GUI%20Rethinked-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
+[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7%20Profiles%20%26%20Schedules-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -56,35 +56,31 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 
 <div align="center">
 <img src="screenshots/es/home.png" alt="Inicio de WinNow" width="100%" />
-<sub><b>Inicio</b>: una portada al estilo WinUI 3 con tarjetas de inicio, cada herramienta como tarjeta, y una barra lateral como la de la Store.</sub>
-</div>
-
-<br />
-
-<div align="center">
-<img src="screenshots/es/launcher.png" alt="Ventana de inicio" width="70%" />
-<br /><sub><b>Ventana de inicio</b>: una animación corta y luego la ventana o la terminal. Mientras arranca, busca actualizaciones.</sub>
+<sub><b>Inicio</b>: tarjetas de vidrio sobre color suave, una portada con tarjetas de inicio y el menú compacto a la izquierda.</sub>
 </div>
 
 <br />
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/es/group-optimize.png" alt="Grupo Optimizar" /><br /><sub><b>Grupos</b>: cada botón de la barra abre sus herramientas como tarjetas</sub> | <img src="screenshots/es/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b>: estado en vivo, aplicar y deshacer de verdad, presets</sub> |
-| <img src="screenshots/es/tweaks-advanced.png" alt="Tweaks avanzados" /><br /><sub><b>Tweaks avanzados</b>: con una advertencia antes de aplicarlos</sub> | <img src="screenshots/es/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b>: política recomendada, valores de Windows, pausar, reanudar</sub> |
+| <img src="screenshots/es/nav.png" alt="Menú expandido" /><br /><sub><b>Menú</b>: se expande sobre la página; cada grupo lista sus herramientas</sub> | <img src="screenshots/es/launcher.png" alt="Animación de inicio" /><br /><sub><b>Inicio</b>: un anillo se dibuja alrededor del logo y abre directo la ventana</sub> |
+| <img src="screenshots/es/news.png" alt="Novedades" /><br /><sub><b>Novedades</b>: diapositivas con imágenes, una vez después de actualizar</sub> | <img src="screenshots/es/welcome.png" alt="Bienvenida" /><br /><sub><b>Primer inicio</b>: ventana o terminal, Claro u Oscuro</sub> |
+| <img src="screenshots/es/profiles.png" alt="Perfiles y programación" /><br /><sub><b>Perfiles y programación</b>: guarda un PC, aplícalo en otro, mantenimiento programado</sub> | <img src="screenshots/es/group-optimize.png" alt="Grupo Optimizar" /><br /><sub><b>Grupos</b>: cada botón del menú abre sus herramientas como tarjetas</sub> |
+| <img src="screenshots/es/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b>: estado en vivo, aplicar y deshacer de verdad, presets</sub> | <img src="screenshots/es/tweaks-advanced.png" alt="Tweaks avanzados" /><br /><sub><b>Tweaks avanzados</b>: con una advertencia antes de aplicarlos</sub> |
 | <img src="screenshots/es/preferences.png" alt="Preferencias" /><br /><sub><b>Preferencias</b>: 18 interruptores ON / OFF</sub> | <img src="screenshots/es/services.png" alt="Servicios" /><br /><sub><b>Servicios</b>: actual, recomendado y el de Windows</sub> |
-| <img src="screenshots/es/repair.png" alt="Reparación" /><br /><sub><b>Reparación y mantenimiento</b>: SFC, DISM, limpieza, reinicios</sub> | <img src="screenshots/es/about.png" alt="Acerca de" /><br /><sub><b>Acerca de WinNow</b>: el núcleo, cada versión y lo que viene</sub> |
-| <img src="screenshots/es/theme-picker.png" alt="Temas" /><br /><sub><b>Temas</b>: Claro, Oscuro, Mes patrio, Navidad y Linux World</sub> | <img src="screenshots/es/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: verde de terminal, berenjena y un pingüino</sub> |
+| <img src="screenshots/es/repair.png" alt="Reparación" /><br /><sub><b>Reparación y mantenimiento</b>: SFC, DISM, limpieza, reinicios</sub> | <img src="screenshots/es/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b>: política recomendada, valores de Windows, pausar, reanudar</sub> |
+| <img src="screenshots/es/about.png" alt="Acerca de" /><br /><sub><b>Acerca de WinNow</b>: el núcleo, cada versión y lo que viene</sub> | <img src="screenshots/es/theme-picker.png" alt="Temas" /><br /><sub><b>Temas</b>: Claro, Oscuro, Skeuomorfismo, Mes patrio, Navidad, Linux World</sub> |
 
 <details>
-<summary><b>🎨 Temas Claro, Mes patrio y Navidad</b></summary>
+<summary><b>🎨 Temas: Claro, Skeuomorfismo, Mes patrio, Navidad y Linux World</b></summary>
 <br />
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/es/home-light.png" alt="Tema claro" /><br /><sub>Tema claro</sub> | <img src="screenshots/es/tweaks-light.png" alt="Tweaks, claro" /><br /><sub>Tweaks en el tema claro</sub> |
-| <img src="screenshots/es/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: la bandera de Panamá, azul marino y rojo; el tema de noviembre</sub> | <img src="screenshots/es/launcher-patria.png" alt="Inicio en Mes patrio" /><br /><sub>La ventana de inicio en Mes patrio</sub> |
-| <img src="screenshots/es/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: adornos, copos de nieve, verde pino y rojo; el tema de diciembre</sub> | <img src="screenshots/es/launcher-navidad.png" alt="Inicio en Navidad" /><br /><sub>La ventana de inicio en Navidad: cae nieve y el logo se mece como un adorno</sub> |
+| <img src="screenshots/es/home-light.png" alt="Claro" /><br /><sub>Vidrio claro</sub> | <img src="screenshots/es/tweaks-light.png" alt="Tweaks, claro" /><br /><sub>Tweaks en el tema claro</sub> |
+| <img src="screenshots/es/home-skeuo.png" alt="Skeuomorfismo" /><br /><sub><b>Skeuomorfismo</b>: papel, profundidad y botones con brillo</sub> | <img src="screenshots/es/tweaks-skeuo.png" alt="Tweaks, Skeuomorfismo" /><br /><sub>Tweaks en Skeuomorfismo</sub> |
+| <img src="screenshots/es/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: la bandera de Panamá, el tema de noviembre</sub> | <img src="screenshots/es/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: el tema de diciembre</sub> |
+| <img src="screenshots/es/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: verde de terminal, berenjena y un pingüino</sub> | <img src="screenshots/es/launcher-navidad.png" alt="Inicio en Navidad" /><br /><sub>La animación de inicio en Navidad, con nieve</sub> |
 
 </details>
 
@@ -134,13 +130,22 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 <details>
 <summary><b>Ventana y terminal</b></summary>
 
-- **Dos ediciones, un motor**: cada inicio pregunta el idioma y luego **Terminal** o **Interfaz gráfica**. `G` en la terminal abre la ventana; la ventana tiene un botón para la terminal.
-- **Ventana de inicio**: cada inicio abre una ventana pequeña con una animación, el botón **EN | ES** y dos tarjetas: **Interfaz gráfica** o **Terminal**. Mientras corre la animación busca una versión nueva en GitHub.
-- **La ventana**: estilo WinUI 3 con acrílico desde Windows 11 22H2: una barra lateral como la de la Store (Inicio, un botón por grupo, Novedades, Apoyar, Acerca de), una portada con tarjetas de inicio, cada herramienta como tarjeta, buscador en cada página, barra de progreso paso a paso y cinco temas en un selector dentro de la ventana: **Claro**, **Oscuro**, **Mes patrio** (el de noviembre), **Navidad** (el de diciembre) y **Linux World**.
+- **Inicia en la ventana**: después de una animación corta (un anillo se dibuja alrededor del logo, con un sonido suave) WinNow abre la interfaz gráfica. **Modo terminal** en el menú cambia a la consola; la última diapositiva de Novedades elige en cuál inicia WinNow.
+- **Primer inicio**: una bienvenida pregunta el idioma, ventana o terminal, y Claro u Oscuro, una sola vez.
+- **Novedades**: después de actualizar, una tarjeta con diapositivas que se deslizan de lado muestra lo que cambió, con imágenes; en la del diseño puedes probar un tema ahí mismo.
+- **Menú**: iconos compactos; el botón de menú lo expande sobre la página con sus nombres, y la flecha junto a cada grupo lista sus herramientas. Se pliega solo al elegir algo.
+- **Glassmorphism**: tarjetas translúcidas y esmeriladas con un borde brillante sobre color suave, encima del fondo acrílico de Windows 11. Seis temas: **Claro**, **Oscuro**, **Skeuomorfismo**, **Mes patrio** (el de noviembre), **Navidad** (diciembre) y **Linux World**.
 - **La terminal**: menús con flechas, `Espacio` para marcar, `/` para buscar, `U` para deshacer, `Esc` para volver.
-- **Iconos**: trazos simples sobre fichas discretas que siguen el tema (dorado en Navidad, verde de terminal en Linux World).
 - **Acceso directo**: se pregunta al salir. **Sí** deja WinNow con un acceso directo; **No** quita los archivos de WinNow como una desinstalación (registros y backups se quedan).
 - **Actualizaciones**: cada inicio consulta la última versión en GitHub y muestra su changelog: actualizar ahora, seguir con esta versión u omitirla.
+</details>
+
+<details>
+<summary><b>Perfiles y mantenimiento programado</b></summary>
+
+- **Perfiles**: guarda este PC (tweaks y preferencias aplicados, apps del catálogo instaladas) como un perfil, expórtalo a un `.json`, impórtalo en otro PC y aplícalo en un paso, con el backup y el punto de restauración de siempre.
+- **Mantenimiento programado**: una tarea programada de Windows, cada semana o cada cuatro semanas, limpia archivos temporales y actualiza todas las apps con winget. Corre desde una copia permanente, nunca desde la descarga en `%TEMP%`.
+- `-Maintain Temp,Upgrade` hace el mismo mantenimiento sin preguntas.
 </details>
 
 ## Ejecútalo
@@ -152,7 +157,7 @@ irm eperez98.github.io/WinNow | iex
 ```
 
 1. Descarga la última versión a `%TEMP%\Winnow-app` y pide permisos de administrador. No se instala nada.
-2. Se abre la ventana de inicio: elige **EN** o **ES**, y luego **Interfaz gráfica** o **Terminal**.
+2. La primera vez, elige **EN** o **ES**, la ventana o la terminal, y Claro u Oscuro. Después WinNow abre directo en lo que elegiste.
 3. Para mirar primero, activa el **modo simulación** (`M` en la terminal, la casilla en la ventana).
 
 **Sin conexión:** descarga `Winnow.zip` desde [Releases](https://github.com/eperez98/WinNow/releases/latest), extráelo y ejecuta `Launch.bat` como administrador.
@@ -172,6 +177,7 @@ irm eperez98.github.io/WinNow | iex
 .\Winnow.ps1 -Apply Telemetry,ClassicContextMenu -DryRun
 .\Winnow.ps1 -Undo ClassicContextMenu
 .\Winnow.ps1 -Install firefox,7zip,vscode -Yes
+.\Winnow.ps1 -Maintain Temp,Upgrade                  # mantenimiento como la tarea programada, sin preguntas
 .\Winnow.ps1 -NoUpdateCheck -NoRestorePoint
 ```
 
@@ -196,7 +202,6 @@ WinNow corre como administrador, así que no confía en lo que vuelve a leer has
 
 | Versión | Nombre | Metas |
 |---|---|---|
-| **1.7** | Profiles & Schedules | Guardar un PC como perfil y aplicarlo en otro; mantenimiento programado |
 | **1.8** | Trusted Updates | Releases firmadas, historial de cada sesión con deshacer, la GUI Rethinked final |
 | **1.8.1** | Polish | Un diálogo de cierre con el estilo de la ventana |
 | **1.8.2** | Starting Point | Un tour de inicio; Office Helper con Thunderbird, LibreOffice y OpenOffice |
