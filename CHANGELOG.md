@@ -18,6 +18,17 @@ All notable changes to WinNow are listed here. The format follows
   the Store, and the same tools.
 - More changes may be added and others removed.
 
+## [1.7.1] - 2026-11-19 - Winget HotFix
+
+The terminal and the graphical interface are both **1.7.1 Winget HotFix**.
+
+### Fixed
+- **Reading the installed apps took minutes** on some PCs (App Manager, installs, backups): `winget export` now
+  reads only the winget source, where the catalog's apps live, instead of also looking every package up in the
+  Microsoft Store, and stops after 90 s. The list is saved in `installed-apps.json`, so the App Manager shows the
+  installed tags at once and a failed read keeps the last list.
+- The compact menu cut the selected item at its edge; each item is now its icon column, with rounded ends.
+
 ## [1.7] - 2026-11-19 - Profiles & Schedules
 
 The terminal and the graphical interface are both **1.7 Profiles & Schedules**.
@@ -86,6 +97,7 @@ The terminal and the graphical interface are both **1.7 Profiles & Schedules**.
   **Mes patrio**, **Linux World** and **Navidad**: a
   Christmas icon (window, taskbar, desktop shortcut, launcher), ornaments and snowflakes on the Home hero, and an
   aero background in pine green and Christmas red. It is the starting theme in December.
+
 ## [1.6] - 2026-11-16 - GUI Rethinked
 
 The terminal and the graphical interface are both **1.6 GUI Rethinked**.
@@ -369,6 +381,7 @@ First release.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
 [Unreleased]: https://github.com/eperez98/Winnow/compare/v1.7...HEAD
+[1.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.7.1
 [1.7]: https://github.com/eperez98/Winnow/releases/tag/v1.7
 [1.6]: https://github.com/eperez98/Winnow/releases/tag/v1.6
 [1.5]: https://github.com/eperez98/Winnow/releases/tag/v1.5

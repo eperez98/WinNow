@@ -21,7 +21,10 @@ function Get-WNInstalledAppIds {
     if ($wg) {
         Write-WNStatus (T 'apps.reading') Info 'Apps'
         $tmp = Join-Path $env:TEMP "winnow_export_$PID.json"
-        & $wg export -o $tmp --accept-source-agreements --disable-interactivity *> $null
+        # Only the winget source: the catalog's IDs live there, while the Store source looks every package up online
+        # (minutes on some PCs). A winget that hangs is stopped after 90 s.
+        $proc = Start-Process -FilePath $wg -ArgumentList @('export', '-o', "`"$tmp`"", '--source', 'winget', '--accept-source-agreements', '--disable-interactivity') -WindowStyle Hidden -PassThru
+        if (-not $proc.WaitForExit(90000)) { try { $proc.Kill() } catch { }; Write-WNLog 'winget export did not finish in 90 s' -Level WARN -Component 'Apps' }
         if (Test-Path $tmp) {
             try {
                 $data = Get-Content $tmp -Raw | ConvertFrom-Json
@@ -29,8 +32,20 @@ function Get-WNInstalledAppIds {
             } catch { Write-WNLog "winget export parse failed: $_" -Level WARN -Component 'Apps' }
             Remove-Item $tmp -Force -ErrorAction SilentlyContinue
         }
+        # Kept for the next start; a failed read falls back to the last list instead of showing nothing installed
+        $cache = Join-Path $WN.DataDir 'installed-apps.json'
+        if ($set.Count) { try { ConvertTo-Json @($set) | Set-Content $cache -Encoding UTF8 } catch { } }
+        else { $set = Get-WNInstalledAppCache }
     }
     $WN.Cache.InstalledApps = $set
+    return ,$set
+}
+
+function Get-WNInstalledAppCache {
+    # The installed-app list saved by the last winget read (empty set when there is none)
+    $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
+    $cache = Join-Path $WN.DataDir 'installed-apps.json'
+    if (Test-Path $cache) { try { foreach ($id in (Get-Content $cache -Raw | ConvertFrom-Json)) { [void]$set.Add([string]$id) } } catch { } }
     return ,$set
 }
 

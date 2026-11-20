@@ -745,6 +745,11 @@ function Update-WNGuiAppBadges {
 }
 
 function Update-WNGuiInstalled {
+    # The tags from the last read show at once; the fresh list replaces them when winget answers
+    if (-not $script:WNGui.InstalledIds) {
+        $saved = Get-WNInstalledAppCache
+        if ($saved.Count) { $script:WNGui.InstalledIds = $saved; Update-WNGuiAppBadges }
+    }
     Start-WNGuiJob -Label (T 'apps.reading') -Script { [string[]]@((Get-WNInstalledAppIds -Refresh) | ForEach-Object { $_ }) }.ToString() -OnDone {
         param($out)
         $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)

@@ -121,6 +121,14 @@ function Set-WNGuiNavSelection {
     foreach ($b in $g.NavAll) { $b.IsChecked = [bool]($on | Where-Object { [object]::ReferenceEquals($_, $b) }) }
 }
 
+function Set-WNGuiNavWidth {
+    # Compact: every item is just its 48 px icon column, so its rounded selection fits the pane; expanded: full width
+    $g = $script:WNGui
+    foreach ($panel in @($g.Ctl.NavPanel, $g.Ctl.NavFooter)) {
+        foreach ($it in $panel.Children) { if ($it -is [Windows.Controls.RadioButton]) { $it.Width = if ($g.NavExpanded) { [double]::NaN } else { 48 }; $it.HorizontalAlignment = if ($g.NavExpanded) { 'Stretch' } else { 'Left' } } }
+    }
+}
+
 function Set-WNGuiNavExpanded {
     # Compact (icons) or expanded (labels and groups). Expanded floats over the page on the glass surface, with a
     # scrim that folds it back on a click outside; immersive, the page keeps its full width.
@@ -128,6 +136,7 @@ function Set-WNGuiNavExpanded {
     $g = $script:WNGui
     if ($g.NavExpanded -eq $On) { return }
     $g.NavExpanded = $On
+    Set-WNGuiNavWidth
     $pane = $g.Ctl.NavPane
     $d = [Windows.Duration][TimeSpan]::FromMilliseconds($(if ($On) { 240 } else { 180 }))
     $a = New-Object Windows.Media.Animation.DoubleAnimation $pane.ActualWidth, $(if ($On) { 272 } else { 60 }), $d
@@ -211,6 +220,7 @@ function Build-WNGuiNav {
     & $add $about $ctl.NavFooter 'about'
     $g.NavButtons['about'] = $about
 
+    Set-WNGuiNavWidth
     $ctl.NavToggle.ToolTip = T 'nav.toggle'
     [Windows.Automation.AutomationProperties]::SetName($ctl.NavToggle, (T 'nav.toggle'))
     $ctl.NavToggle.Add_Click({ Set-WNGuiNavExpanded (-not $script:WNGui.NavExpanded) })
@@ -224,6 +234,7 @@ function Build-WNGuiNav {
 # gui/news/<lang>/<id>.png. 'design' and 'skeuo' let you pick a theme; 'end' (always last) asks how WinNow starts.
 $script:WNNewsByVersion = [ordered]@{
     '1.7' = @('design', 'nav', 'skeuo', 'start', 'profiles')
+    '1.7.1' = @('winget')
 }
 
 function Get-WNGuiNewsSlides {
