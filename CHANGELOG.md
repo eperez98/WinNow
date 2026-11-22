@@ -18,6 +18,17 @@ All notable changes to WinNow are listed here. The format follows
   the Store, and the same tools.
 - More changes may be added and others removed.
 
+## [1.7.2] - 2026-11-21 - Upgrade HotFix
+
+The terminal and the graphical interface are both **1.7.2 Upgrade HotFix**.
+
+### Fixed
+- **Upgrade all apps did nothing** when one app could not upgrade unattended: `winget upgrade --all` stops the whole
+  batch, for example for an app that asks for an install folder. WinNow now upgrades one app at a time with
+  `[i/N]` progress, goes on past a failure and ends with a summary, in the terminal, the window and the scheduled
+  maintenance. Apps whose installed version winget cannot tell are left out, as `winget upgrade` lists them.
+- The status bar and the log say when the installed apps have been read, instead of staying on "Reading".
+
 ## [1.7.1] - 2026-11-19 - Winget HotFix
 
 The terminal and the graphical interface are both **1.7.1 Winget HotFix**.
@@ -381,6 +392,7 @@ First release.
 - One-line launcher: `irm https://github.com/eperez98/Winnow/releases/latest/download/run.ps1 | iex`.
 
 [Unreleased]: https://github.com/eperez98/Winnow/compare/v1.7...HEAD
+[1.7.2]: https://github.com/eperez98/Winnow/releases/tag/v1.7.2
 [1.7.1]: https://github.com/eperez98/Winnow/releases/tag/v1.7.1
 [1.7]: https://github.com/eperez98/Winnow/releases/tag/v1.7
 [1.6]: https://github.com/eperez98/Winnow/releases/tag/v1.6

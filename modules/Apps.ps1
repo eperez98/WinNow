@@ -32,6 +32,7 @@ function Get-WNInstalledAppIds {
             } catch { Write-WNLog "winget export parse failed: $_" -Level WARN -Component 'Apps' }
             Remove-Item $tmp -Force -ErrorAction SilentlyContinue
         }
+        Write-WNLog "Installed apps read: $($set.Count)" -Component 'Apps'
         # Kept for the next start; a failed read falls back to the last list instead of showing nothing installed
         $cache = Join-Path $WN.DataDir 'installed-apps.json'
         if ($set.Count) { try { ConvertTo-Json @($set) | Set-Content $cache -Encoding UTF8 } catch { } }
@@ -106,6 +107,33 @@ function Uninstall-WNApps {
         if ($code -eq 0) { Write-WNStatus (T 'apps.uninstalled' $a.Name) Ok 'Apps'; if (-not $WN.DryRun) { [void]$installed.Remove($a.Winget) } }
         else { Write-WNStatus (T 'apps.uninstallFail' $a.Name $code) Error 'Apps' }
     }
+}
+
+function Update-WNAllApps {
+    # One winget upgrade per package. "winget upgrade --all" stops the whole batch when a single package cannot
+    # upgrade unattended (one that asks for an install folder, for example), and then nothing is upgraded.
+    # Packages whose installed version winget cannot tell are left out, as "winget upgrade" lists them.
+    $wg = Find-WNWinget
+    if (-not $wg) { Write-WNStatus (T 'apps.noWinget') Error 'Apps'; return }
+    $enc = [Console]::OutputEncoding
+    try {
+        [Console]::OutputEncoding = [Text.Encoding]::UTF8
+        $out = & $wg upgrade --source winget --accept-source-agreements --disable-interactivity 2>$null
+    } finally { [Console]::OutputEncoding = $enc }
+    $list = @(ConvertFrom-WNWingetTable @($out))
+    if (-not $list.Count) { Write-WNStatus (T 'apps.upgradeNone') Ok 'Apps'; return }
+    $i = 0; $ok = 0; $fail = 0
+    foreach ($p in $list) {
+        $i++
+        if (Get-Command Write-WNStep -ErrorAction SilentlyContinue) { Write-WNStep $i $list.Count $p.Name }
+        else { Write-Host ''; Write-Host ("  [{0}/{1}] {2}" -f $i, $list.Count, $p.Name) -ForegroundColor White }
+        $code = Invoke-WNWinget @('upgrade', '--id', $p.Id, '-e', '--source', 'winget', '--accept-package-agreements', '--silent')
+        if ($code -in 0, 3010, 1641) { Write-WNStatus (T 'apps.upgraded' $p.Name) Ok 'Apps'; $ok++ }
+        elseif ($code -in $script:WingetAlreadyInstalled) { Write-WNStatus (T 'apps.upToDate' $p.Name) Skip 'Apps'; $ok++ }
+        else { Write-WNStatus (T 'apps.upgradeFail' $p.Name $code) Error 'Apps'; $fail++ }
+    }
+    Write-Host ''
+    Write-Host ('  ' + (T 'apps.upgradeSummary' $ok $fail $list.Count)) -ForegroundColor Cyan
 }
 
 function ConvertFrom-WNWingetTable {
@@ -212,7 +240,7 @@ function Show-WNAppsMenu {
             'upgrade' {
                 Write-WNHeader (T 'apps.upgradeTitle')
                 if ((Test-WNCanChange) -and (Start-WNChange -Label 'upgrade all apps' -Apps -SkipRestorePoint)) {
-                    [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent'))
+                    Update-WNAllApps
                     [void](Get-WNInstalledAppIds -Refresh)
                 }
                 Wait-WNKey

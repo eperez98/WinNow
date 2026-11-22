@@ -755,6 +755,7 @@ function Update-WNGuiInstalled {
         $set = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
         foreach ($id in @($out)) { [void]$set.Add([string]$id) }
         $script:WNGui.InstalledIds = $set
+        $script:WNGui.Status.Text = T 'apps.readDone' $set.Count
         Update-WNGuiAppBadges
         Update-WNGuiFilter
     }
@@ -861,7 +862,7 @@ function Build-WNGuiApps {
             Start-WNGuiJob -Label (T 'apps.upgradeTitle') -Arguments @(, $WN.DryRun) -Script {
                 param($dry)
                 $WN.DryRun = $dry
-                if (Start-WNChange -Label 'upgrade all apps' -Apps -SkipRestorePoint) { [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent')) }
+                if (Start-WNChange -Label 'upgrade all apps' -Apps -SkipRestorePoint) { Update-WNAllApps }
             }.ToString() -OnDone { Update-WNGuiInstalled }
             return
         }

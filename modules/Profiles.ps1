@@ -146,7 +146,7 @@ function Invoke-WNMaintenance {
     Write-WNLog "Scheduled maintenance: $($Tasks -join ', ')" -Component 'Schedule'
     if ('Temp' -in $Tasks) { if ($WN.DryRun) { Write-WNStatus (T 'rep.dryTemp' $env:TEMP "$env:SystemRoot\Temp") Dry } else { Invoke-WNDeleteTempFiles } }
     if ('Upgrade' -in $Tasks -and (Test-WNCanChange) -and (Start-WNChange -Label 'scheduled upgrade' -Apps -SkipRestorePoint)) {
-        [void](Invoke-WNWinget @('upgrade', '--all', '--include-unknown', '--accept-package-agreements', '--silent'))
+        Update-WNAllApps
     }
 }
 #endregion

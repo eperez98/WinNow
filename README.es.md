@@ -6,7 +6,7 @@
 
 <br />
 
-[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.1%20Winget%20HotFix-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
+[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.2%20Upgrade%20HotFix-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)

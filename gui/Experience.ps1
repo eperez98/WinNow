@@ -235,6 +235,7 @@ function Build-WNGuiNav {
 $script:WNNewsByVersion = [ordered]@{
     '1.7' = @('design', 'nav', 'skeuo', 'start', 'profiles')
     '1.7.1' = @('winget')
+    '1.7.2' = @('upgrade')
 }
 
 function Get-WNGuiNewsSlides {
