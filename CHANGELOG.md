@@ -22,6 +22,9 @@ All notable changes to WinNow are listed here. The format follows
 
 The terminal and the graphical interface are both **1.7.2 Upgrade HotFix**.
 
+### Added
+- **More from the author** on the About page (window and terminal): [Monto](https://github.com/eperez98/monto), personal and family finances for Panama, with an Open Monto button.
+
 ### Fixed
 - **Upgrade all apps did nothing** when one app could not upgrade unattended: `winget upgrade --all` stops the whole
   batch, for example for an app that asks for an install folder. WinNow now upgrades one app at a time with

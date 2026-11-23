@@ -1156,7 +1156,9 @@ function Build-WNGuiAbout {
         (New-WNGuiCard -Title (T 'about.whatTitle') -Text (T 'about.what') -Icon 'E946'),
         (New-WNGuiCard -Title (T 'about.coreTitle') -Icon 'E950' -Extra (New-WNGuiAboutLines 'about.core')),
         (New-WNGuiCard -Title (T 'about.releasesTitle') -Icon 'E81C' -Extra (New-WNGuiAboutLines 'about.releases')),
-        (New-WNGuiCard -Title (T 'about.futureTitle') -Text (T 'about.futureNote') -Icon 'E82F' -Extra (New-WNGuiAboutLines 'about.future'))
+        (New-WNGuiCard -Title (T 'about.futureTitle') -Text (T 'about.futureNote') -Icon 'E82F' -Extra (New-WNGuiAboutLines 'about.future')),
+        (New-WNGuiCard -Title (T 'about.moreTitle') -Text (T 'about.monto') -Icon 'E8F1' -Buttons @(
+            (New-WNGuiButton (T 'about.montoOpen') -Icon 'E8A7' -Always -OnClick { Start-Process $WN.Monto })))
     )
     $p.Body = New-WNGuiScroll $stack
 }

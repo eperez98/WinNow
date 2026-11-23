@@ -227,6 +227,12 @@ La estructura del proyecto y cómo agregar un tweak están en el [README en ingl
 
 Si WinNow te sirve, puedes apoyarlo con una donación por [PayPal](https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD). También está en la app: Acerca de > Apoyar el desarrollo.
 
+## Más del autor
+
+**[Monto](https://github.com/eperez98/monto)** — finanzas personales y familiares para Panamá: ingresos, quincenas, gastos, presupuestos,
+ahorros y deudas, en balboas y dólares, para ti o para todo tu hogar. App de escritorio para Windows (Tauri + React)
+que funciona sin conexión, en español e inglés. Sin nube ni cuenta: tus datos se quedan en tu computadora.
+
 ## Licencia
 
 **GPL-3.0** © ErickP ([eperez98](https://github.com/eperez98)).

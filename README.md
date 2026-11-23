@@ -255,6 +255,12 @@ Registry and service tweaks need no code, only an entry in `config/tweaks.json`:
 
 If WinNow helps you, you can support it with a donation through [PayPal](https://www.paypal.com/donate/?business=erapc%40outlook.com&currency_code=USD). It is also in the app: About > Support development.
 
+## More from the author
+
+**[Monto](https://github.com/eperez98/monto)** — personal and family finances for Panama: income, semi-monthly paydays, expenses, budgets,
+savings and debts, in balboas and dollars, for you or your whole household. A Windows desktop app (Tauri + React)
+that works offline, in English and Spanish. No cloud, no account: your data stays on your computer.
+
 ## License
 
 **GPL-3.0** © ErickP ([eperez98](https://github.com/eperez98)).
