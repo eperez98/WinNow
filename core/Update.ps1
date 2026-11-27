@@ -3,6 +3,23 @@
 
 $script:WNRepoSlug = 'eperez98/Winnow'
 
+$script:WNReleaseKey = '<RSAKeyValue><Modulus>udlHLkTDN4uSXsc8Cl9WnIZKlUC1FnCqrrzKLn/2NU3islEa16Ap7SmL4KQiOoMIRYOQ6cqUpFzLtjtJTLzzEjQv0/6uomyH/Cb94KBUOkb5Q4yB8L5Un3Y0bjY32yaV+RTyGNwCpkXbdRaW/HKw+h7q8ur5lQEap/wYxBp0H59ncGdTgx4SWcMo73BQY2p+ngk0PSFv/Z0ZidcCyhFox1896oXdR8/SvFKItvfErAMpWf/tBp3XDpbiFfW60p0NDCUWgJkDXlnDgy9y7MgrQAk0W8tT5zxgLES/MirW3EwUz4+hNaPOzb0DCtrzEke+YOlnUZYY7VZsqGydD/gexVWw+fA6bE1upX/pZeNqrsNN9+vOZ4OQ5ak3AuifLTCvktOB+o6wZtup5AbWJiEQEhtZdO/77mEPosUB2XDoJcMtaVX0x0xL8mN+cj0yYwSyj+EusEADDVoPVFF3SeLnsSjG70byyxBR+sFtvITaQ5KTTBOJYXftmEiyp8bz4Bj1</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>'
+
+function Test-WNReleaseSignature {
+    param([string]$File, [string]$SigFile, [string]$Key)
+    $rsa = New-Object Security.Cryptography.RSACryptoServiceProvider
+    try {
+        $rsa.PersistKeyInCsp = $false
+        $rsa.FromXmlString($Key)
+        $signature = [Convert]::FromBase64String((Get-Content -LiteralPath $SigFile -Raw -ErrorAction Stop).Trim())
+        return $rsa.VerifyData([IO.File]::ReadAllBytes($File), 'SHA256', $signature)
+    } catch {
+        return $false
+    } finally {
+        $rsa.Dispose()
+    }
+}
+
 function ConvertTo-WNVersion {
     param([string]$Text)
     $v = $null
@@ -58,6 +75,7 @@ function Get-WNUpdateInfo {
             Tag     = $rel.tag_name
             Url     = $rel.html_url
             Zip     = ($rel.assets | Where-Object { $_.name -eq 'Winnow.zip' } | Select-Object -First 1).browser_download_url
+            Sig     = ($rel.assets | Where-Object { $_.name -eq 'Winnow.zip.sig' } | Select-Object -First 1).browser_download_url
             Notes   = @($notes)
         }
     } catch {
@@ -80,23 +98,25 @@ function Save-WNUpdate {
     # files are installed), or $null; this copy is not touched yet.
     param([Parameter(Mandatory)]$Update)
     if (-not $Update.Zip) { Write-WNStatus (T 'au.failed' 'Winnow.zip' $WN.Version) Error 'Update'; return $null }
-    $tmp = Join-Path $env:TEMP "Winnow-update-$PID"
+    $tmp = Join-Path $env:TEMP ("Winnow-update-" + [guid]::NewGuid().ToString('N'))
     $zip = "$tmp.zip"
     try {
         Write-WNStatus (T 'au.downloading' $Update.Version) Step 'Update'
         $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -Uri $Update.Zip -OutFile $zip -UseBasicParsing -TimeoutSec 120
-        if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }
-        Expand-Archive -Path $zip -DestinationPath $tmp -Force
-        if (-not (Test-Path (Join-Path $tmp 'Winnow.ps1'))) { throw 'Winnow.ps1 is missing from the package' }
+        if (-not $Update.Sig) { throw (T 'au.unsigned') }
+        Invoke-WebRequest -Uri $Update.Zip -OutFile $zip -UseBasicParsing -TimeoutSec 120 -ErrorAction Stop
+        Invoke-WebRequest -Uri $Update.Sig -OutFile "$zip.sig" -UseBasicParsing -TimeoutSec 30 -ErrorAction Stop
+        if (-not (Test-WNReleaseSignature $zip "$zip.sig" $script:WNReleaseKey)) { throw (T 'au.badSig') }
+        Expand-Archive -LiteralPath $zip -DestinationPath $tmp -ErrorAction Stop
+        if (-not (Test-Path -LiteralPath (Join-Path $tmp 'Winnow.ps1') -PathType Leaf)) { throw 'Winnow.ps1 is missing from the package' }
         Get-ChildItem $tmp -Recurse -File | Unblock-File -ErrorAction SilentlyContinue
         return [pscustomobject]@{ Path = $tmp; Hashes = (Get-WNTreeHashes $tmp) }
     } catch {
-        Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $tmp -Recurse -Force -ErrorAction SilentlyContinue
         Write-WNStatus (T 'au.failed' $_.Exception.Message $WN.Version) Error 'Update'
         return $null
     } finally {
-        Remove-Item $zip -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $zip, "$zip.sig" -Force -ErrorAction SilentlyContinue
     }
 }
 
@@ -107,7 +127,7 @@ function Install-WNUpdate {
     param([Parameter(Mandatory)]$Update, [string]$Root = $WN.Root, $Staged)
     if ($WN.DryRun) { Write-WNStatus (T 'au.dry' $Update.Version) Dry 'Update'; return $false }
     $stage = if ($Staged) { $Staged } else { Save-WNUpdate $Update }
-    if (-not $stage -or -not (Test-Path (Join-Path $stage.Path 'Winnow.ps1'))) { return $false }
+    if (-not $stage -or -not (Test-Path -LiteralPath (Join-Path $stage.Path 'Winnow.ps1') -PathType Leaf)) { return $false }
     $tmp = $stage.Path
     $stamp = Get-Date -Format 'yyyyMMddHHmmss'
     $moved = @(); $added = @()
@@ -123,7 +143,9 @@ function Install-WNUpdate {
             Rename-Item -LiteralPath (Join-Path $Root $n) -NewName "$n.old-$stamp" -ErrorAction Stop
             $moved += $n
         }
-        Copy-Item -Path (Join-Path $tmp '*') -Destination $Root -Recurse -Force -ErrorAction Stop
+        foreach ($n in $items) {
+            Copy-Item -LiteralPath (Join-Path $tmp $n) -Destination $Root -Recurse -Force -ErrorAction Stop
+        }
         foreach ($n in $moved) { Remove-Item -LiteralPath (Join-Path $Root "$n.old-$stamp") -Recurse -Force -ErrorAction SilentlyContinue }
         Write-WNStatus (T 'au.done' $Update.Version) Ok 'Update'
         return $true
@@ -238,10 +260,8 @@ function New-WNShortcut {
         $s.TargetPath = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
         $s.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $target 'Winnow.ps1')`""
         $s.WorkingDirectory = $target
-        $saved = (Get-WNSettings).GuiTheme
-        $xmas = $saved -eq 'Navidad' -or (-not $saved -and (Get-Date).Month -eq 12)
-        $patria = $saved -eq 'Patria' -or (-not $saved -and (Get-Date).Month -eq 11)
-        $ico = Join-Path $target "LOGO\$(if ($saved -eq 'Linux') { 'Winnow_linux.ico' } elseif ($xmas) { 'Winnow_navidad.ico' } elseif ($patria) { 'Winnow_patria.ico' } else { 'Winnow.ico' })"
+        $theme = Get-WNEffectiveTheme (Get-WNSettings).GuiTheme
+        $ico = Join-Path $target "LOGO\$(if ($theme -eq 'Navidad') { 'Winnow_navidad.ico' } else { 'Winnow.ico' })"
         if (Test-Path $ico) { $s.IconLocation = "$ico,0" }
         $s.Description = 'WinNow'
         $s.Save()

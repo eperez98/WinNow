@@ -6,7 +6,7 @@
 
 <br />
 
-[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.2%20Upgrade%20HotFix-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
+[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.4%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -54,6 +54,15 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 
 ## Capturas
 
+**1.7.4 Glassware Polish** adapta Ajustes a ventanas estrechas y muestra cuántos cambios seleccionados oculta el filtro. Puedes quitar cada ajuste directamente desde el resumen. Launch.bat admite los argumentos de PowerShell, incluido -DryRun.
+
+La app abre en **Ajustes**. La barra izquierda queda visible y puede contraerse. La tabla muestra categoría y riesgo. El panel derecho reúne la selección y ofrece **Simular cambios**. **Revisar cambios** muestra los efectos y permite elegir un punto de restauración cuando está disponible.
+
+![Ajustes de Glassware](screenshots/es/glassware-ajustes.png)
+
+[Diálogo de revisión](screenshots/es/glassware-revision.png)
+
+
 <div align="center">
 <img src="screenshots/es/home.png" alt="Inicio de WinNow" width="100%" />
 <sub><b>Inicio</b>: tarjetas de vidrio sobre color suave, una portada con tarjetas de inicio y el menú compacto a la izquierda.</sub>
@@ -63,26 +72,12 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/es/nav.png" alt="Menú expandido" /><br /><sub><b>Menú</b>: se expande sobre la página; cada grupo lista sus herramientas</sub> | <img src="screenshots/es/launcher.png" alt="Animación de inicio" /><br /><sub><b>Inicio</b>: un anillo se dibuja alrededor del logo y abre directo la ventana</sub> |
 | <img src="screenshots/es/news.png" alt="Novedades" /><br /><sub><b>Novedades</b>: diapositivas con imágenes, una vez después de actualizar</sub> | <img src="screenshots/es/welcome.png" alt="Bienvenida" /><br /><sub><b>Primer inicio</b>: ventana o terminal, Claro u Oscuro</sub> |
 | <img src="screenshots/es/profiles.png" alt="Perfiles y programación" /><br /><sub><b>Perfiles y programación</b>: guarda un PC, aplícalo en otro, mantenimiento programado</sub> | <img src="screenshots/es/group-optimize.png" alt="Grupo Optimizar" /><br /><sub><b>Grupos</b>: cada botón del menú abre sus herramientas como tarjetas</sub> |
 | <img src="screenshots/es/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b>: estado en vivo, aplicar y deshacer de verdad, presets</sub> | <img src="screenshots/es/tweaks-advanced.png" alt="Tweaks avanzados" /><br /><sub><b>Tweaks avanzados</b>: con una advertencia antes de aplicarlos</sub> |
 | <img src="screenshots/es/preferences.png" alt="Preferencias" /><br /><sub><b>Preferencias</b>: 18 interruptores ON / OFF</sub> | <img src="screenshots/es/services.png" alt="Servicios" /><br /><sub><b>Servicios</b>: actual, recomendado y el de Windows</sub> |
 | <img src="screenshots/es/repair.png" alt="Reparación" /><br /><sub><b>Reparación y mantenimiento</b>: SFC, DISM, limpieza, reinicios</sub> | <img src="screenshots/es/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b>: política recomendada, valores de Windows, pausar, reanudar</sub> |
-| <img src="screenshots/es/about.png" alt="Acerca de" /><br /><sub><b>Acerca de WinNow</b>: el núcleo, cada versión y lo que viene</sub> | <img src="screenshots/es/theme-picker.png" alt="Temas" /><br /><sub><b>Temas</b>: Claro, Oscuro, Skeuomorfismo, Mes patrio, Navidad, Linux World</sub> |
-
-<details>
-<summary><b>🎨 Temas: Claro, Skeuomorfismo, Mes patrio, Navidad y Linux World</b></summary>
-<br />
-
-| | |
-|:---:|:---:|
-| <img src="screenshots/es/home-light.png" alt="Claro" /><br /><sub>Vidrio claro</sub> | <img src="screenshots/es/tweaks-light.png" alt="Tweaks, claro" /><br /><sub>Tweaks en el tema claro</sub> |
-| <img src="screenshots/es/home-skeuo.png" alt="Skeuomorfismo" /><br /><sub><b>Skeuomorfismo</b>: papel, profundidad y botones con brillo</sub> | <img src="screenshots/es/tweaks-skeuo.png" alt="Tweaks, Skeuomorfismo" /><br /><sub>Tweaks en Skeuomorfismo</sub> |
-| <img src="screenshots/es/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: la bandera de Panamá, el tema de noviembre</sub> | <img src="screenshots/es/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: el tema de diciembre</sub> |
-| <img src="screenshots/es/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: verde de terminal, berenjena y un pingüino</sub> | <img src="screenshots/es/launcher-navidad.png" alt="Inicio en Navidad" /><br /><sub>La animación de inicio en Navidad, con nieve</sub> |
-
-</details>
+| <img src="screenshots/es/about.png" alt="Acerca de" /><br /><sub><b>Acerca de WinNow</b>: el núcleo, cada versión y lo que viene</sub> | |
 
 <details>
 <summary><b>⌨️ Edición terminal</b></summary>
@@ -130,11 +125,11 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 <details>
 <summary><b>Ventana y terminal</b></summary>
 
-- **Inicia en la ventana**: después de una animación corta (un anillo se dibuja alrededor del logo, con un sonido suave) WinNow abre la interfaz gráfica. **Modo terminal** en el menú cambia a la consola; la última diapositiva de Novedades elige en cuál inicia WinNow.
+- **Inicia en la ventana**: después de una animación corta (el monograma Glassware aparece sobre una placa de vidrio con un sonido suave) WinNow abre la interfaz gráfica. **Modo terminal** en el menú cambia a la consola; la última diapositiva de Novedades elige en cuál inicia WinNow.
 - **Primer inicio**: una bienvenida pregunta el idioma, ventana o terminal, y Claro u Oscuro, una sola vez.
 - **Novedades**: después de actualizar, una tarjeta con diapositivas que se deslizan de lado muestra lo que cambió, con imágenes; en la del diseño puedes probar un tema ahí mismo.
-- **Menú**: iconos compactos; el botón de menú lo expande sobre la página con sus nombres, y la flecha junto a cada grupo lista sus herramientas. Se pliega solo al elegir algo.
-- **Glassmorphism**: tarjetas translúcidas y esmeriladas con un borde brillante sobre color suave, encima del fondo acrílico de Windows 11. Seis temas: **Claro**, **Oscuro**, **Skeuomorfismo**, **Mes patrio** (el de noviembre), **Navidad** (diciembre) y **Linux World**.
+- **Menú**: barra lateral acoplada con accesos a Inicio, Ajustes, Aplicaciones y Reparación. El botón de menú la contrae.
+- **Glassware** ofrece los temas **Claro**, **Oscuro** y **Navidad**, con un monograma y un arranque adaptados a cada variante.
 - **La terminal**: menús con flechas, `Espacio` para marcar, `/` para buscar, `U` para deshacer, `Esc` para volver.
 - **Acceso directo**: se pregunta al salir. **Sí** deja WinNow con un acceso directo; **No** quita los archivos de WinNow como una desinstalación (registros y backups se quedan).
 - **Actualizaciones**: cada inicio consulta la última versión en GitHub y muestra su changelog: actualizar ahora, seguir con esta versión u omitirla.
@@ -156,7 +151,7 @@ Abre **PowerShell** o Windows Terminal y ejecuta:
 irm eperez98.github.io/WinNow | iex
 ```
 
-1. Descarga la última versión a `%TEMP%\Winnow-app` y pide permisos de administrador. No se instala nada.
+1. El lanzador descarga la última versión y su firma, verifica el ZIP y lo extrae en una carpeta única bajo `%TEMP%`. Solicita permisos de administrador cuando corresponde.
 2. La primera vez, elige **EN** o **ES**, la ventana o la terminal, y Claro u Oscuro. Después WinNow abre directo en lo que elegiste.
 3. Para mirar primero, activa el **modo simulación** (`M` en la terminal, la casilla en la ventana).
 
@@ -184,12 +179,23 @@ irm eperez98.github.io/WinNow | iex
 El código de salida es `1` si algún paso falló.
 </details>
 
+## Preparar una publicación
+
+[Build-WNRelease.ps1](tools/Build-WNRelease.ps1) genera y verifica los tres archivos de publicación con la clave de publicación existente.
+
+```powershell
+.\tools\Build-WNRelease.ps1 -Source . -OutputDirectory ..\release-assets
+```
+
+Adjunta Winnow.zip, Winnow.zip.sig y run.ps1 al mismo release de GitHub. El comando de GitHub Pages usa el release marcado como Latest.
+
 ## Seguridad
 
 WinNow corre como administrador, así que no confía en lo que vuelve a leer hasta saber quién lo escribió.
 
 | Área | Qué hace WinNow |
 |---|---|
+| **Descargas** | El lanzador y el actualizador requieren una firma RSA-SHA256 válida antes de extraer el ZIP. Para publicar, firma el ZIP final con la clave de publicación existente de WinNow y sube ambos archivos, Winnow.zip y Winnow.zip.sig. |
 | **Cambios** | Modo simulación, un backup JSON antes de cada cambio, punto de restauración opcional, y deshacer que solo toca lo que WinNow aplicó. Lo de riesgo alto se marca antes de confirmar. |
 | **Carpeta de datos** | `%ProgramData%\Winnow` (registros y backups) pertenece a Administradores; los Usuarios solo pueden leer. Si otra cuenta la creó primero, se recupera, y se quitan los enlaces plantados. |
 | **Backups** | Solo se restauran si los escribió un administrador, SYSTEM o tú. |

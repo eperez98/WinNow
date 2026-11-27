@@ -55,45 +55,52 @@ $script:WNLauncherXaml = @'
       </Setter>
     </Style>
   </Window.Resources>
-  <Border x:Name="Shell" CornerRadius="22" Background="@@BG@@" BorderBrush="@@LINE@@" BorderThickness="1" ClipToBounds="True">
+  <Border CornerRadius="26" BorderBrush="@@LINE@@" BorderThickness="1" ClipToBounds="True">
+    <Border.Background>
+      <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="@@CARD@@" Offset="0"/>
+        <GradientStop Color="@@BG@@" Offset="0.62"/>
+        <GradientStop Color="@@CARD@@" Offset="1"/>
+      </LinearGradientBrush>
+    </Border.Background>
     <Grid>
-      <!-- Glass glow: two soft lights in the accent colour drift behind everything -->
-      <Canvas IsHitTestVisible="False" ClipToBounds="True">
-        <Ellipse x:Name="Glow1" Width="430" Height="430" Canvas.Left="-170" Canvas.Top="-210" Opacity="0.55">
-          <Ellipse.Fill><RadialGradientBrush><GradientStop Color="@@ACCENT@@" Offset="0"/><GradientStop Color="#00000000" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
-        </Ellipse>
-        <Ellipse x:Name="Glow2" Width="380" Height="380" Canvas.Left="420" Canvas.Top="170" Opacity="0.35">
-          <Ellipse.Fill><RadialGradientBrush><GradientStop Color="@@ACCENT@@" Offset="0"/><GradientStop Color="#00000000" Offset="1"/></RadialGradientBrush></Ellipse.Fill>
-        </Ellipse>
-      </Canvas>
+      <Border Margin="8" BorderThickness="1" BorderBrush="@@LINE@@" CornerRadius="20" IsHitTestVisible="False"/>
       <StackPanel x:Name="Boot" VerticalAlignment="Center" HorizontalAlignment="Center">
-        <Grid Width="150" Height="150" HorizontalAlignment="Center">
-          <Ellipse x:Name="Ring" Width="146" Height="146" Stroke="@@ACCENT@@" StrokeThickness="3" StrokeDashArray="150 150"
-                   StrokeDashOffset="150" StrokeDashCap="Round" RenderTransformOrigin="0.5,0.5">
-            <Ellipse.RenderTransform><RotateTransform x:Name="RingSpin" Angle="-90"/></Ellipse.RenderTransform>
-          </Ellipse>
-          <Image x:Name="BootLogo" Width="100" Height="100" Opacity="0" RenderTransformOrigin="0.5,0.5"
-                 RenderOptions.BitmapScalingMode="HighQuality">
-            <Image.RenderTransform><ScaleTransform x:Name="BootScale" ScaleX="0.82" ScaleY="0.82"/></Image.RenderTransform>
-            <Image.Effect><BlurEffect x:Name="BootBlur" Radius="18"/></Image.Effect>
-          </Image>
+        <Grid x:Name="BootTile" Width="124" Height="124" HorizontalAlignment="Center"
+              Opacity="0" RenderTransformOrigin="0.5,0.5">
+          <Grid.RenderTransform><ScaleTransform x:Name="BootScale" ScaleX="0.94" ScaleY="0.94"/></Grid.RenderTransform>
+          <Border CornerRadius="30" BorderThickness="1" BorderBrush="@@LINE@@">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                <GradientStop Color="@@TINT@@" Offset="0"/>
+                <GradientStop Color="@@CARD@@" Offset="0.7"/>
+                <GradientStop Color="@@BG@@" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Border CornerRadius="20" Margin="9" Background="@@BG@@" BorderBrush="@@LINE@@" BorderThickness="1" Opacity="0.62"/>
+          <Image x:Name="BootLogo" Width="72" Height="72" RenderOptions.BitmapScalingMode="HighQuality"/>
+          <Grid Width="94" Height="94" ClipToBounds="True" IsHitTestVisible="False">
+            <Border x:Name="BootHighlight" Width="34" HorizontalAlignment="Left" Opacity="0">
+              <Border.RenderTransform><TranslateTransform x:Name="HighlightShift" X="-36"/></Border.RenderTransform>
+              <Border.Background>
+                <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                  <GradientStop Color="#00FFFFFF" Offset="0"/>
+                  <GradientStop Color="#66FFFFFF" Offset="0.5"/>
+                  <GradientStop Color="#00FFFFFF" Offset="1"/>
+                </LinearGradientBrush>
+              </Border.Background>
+            </Border>
+          </Grid>
         </Grid>
         <TextBlock x:Name="BootName" Text="WinNow" FontFamily="Segoe UI Variable Display, Segoe UI" FontSize="30"
-                   FontWeight="Bold" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0">
-          <TextBlock.RenderTransform><TranslateTransform x:Name="NameShift" Y="12"/></TextBlock.RenderTransform>
-        </TextBlock>
-        <StackPanel x:Name="Dots" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0" Visibility="Collapsed">
-          <Ellipse x:Name="Dot1" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
-          <Ellipse x:Name="Dot2" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
-          <Ellipse x:Name="Dot3" Width="8" Height="8" Margin="4,0" Fill="@@ACCENT@@" Opacity="0.25"/>
-        </StackPanel>
-        <Border Width="150" Height="3" CornerRadius="2" Background="@@LINE@@" Margin="0,16,0,0" HorizontalAlignment="Center">
+                   FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,17,0,0" Opacity="0"/>
+        <Border Width="132" Height="4" CornerRadius="2" Background="@@LINE@@" Margin="0,15,0,0" HorizontalAlignment="Center">
           <Border x:Name="BootBar" Width="0" HorizontalAlignment="Left" CornerRadius="2" Background="@@ACCENT@@"/>
         </Border>
         <TextBlock x:Name="BootText" Foreground="@@DIM@@" FontSize="12.5" HorizontalAlignment="Center" Margin="0,10,0,0" Opacity="0"/>
       </StackPanel>
       <Grid x:Name="Chooser" Margin="32,24,32,22" Opacity="0" Visibility="Collapsed">
-        <Grid.RenderTransform><TranslateTransform x:Name="ChooserShift" Y="14"/></Grid.RenderTransform>
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="*"/>
@@ -165,12 +172,9 @@ $script:WNLauncherXaml = @'
 '@
 
 $script:WNLauncherThemes = @{
-    Dark  = @{ BG = '#FF1C1C1E'; CARD = '#FF2C2C2E'; LINE = '#FF3A3A3C'; FG = '#FFF5F5F7'; DIM = '#FF98989D'; ACCENT = '#FF0A84FF'; TINT = '#260A84FF' }
-    Navidad = @{ BG = '#FF10301F'; CARD = '#FF1A4330'; LINE = '#FF2A5A43'; FG = '#FFF5F5F7'; DIM = '#FFB8CBBF'; ACCENT = '#FFC8102E'; TINT = '#F2FFFFFF' }
-    Patria = @{ BG = '#FF0B2A52'; CARD = '#FF143A6B'; LINE = '#FF24497A'; FG = '#FFF5F5F7'; DIM = '#FFC3CEDD'; ACCENT = '#FFD21034'; TINT = '#F2FFFFFF' }
-    Linux = @{ BG = '#FF2B2B2B'; CARD = '#FF353535'; LINE = '#FF454545'; FG = '#FFF2F2F2'; DIM = '#FFBDBDBD'; ACCENT = '#FFE95420'; TINT = '#268AE234' }
-    Light = @{ BG = '#FFF5F5F7'; CARD = '#FFFFFFFF'; LINE = '#FFE0E0E5'; FG = '#FF1C1C1E'; DIM = '#FF6E6E73'; ACCENT = '#FF007AFF'; TINT = '#1F007AFF' }
-    Skeuo = @{ BG = '#FFEDE6D8'; CARD = '#FFFBF8F1'; LINE = '#FFC9BDA6'; FG = '#FF3A2E22'; DIM = '#FF6B5C4A'; ACCENT = '#FF2F6FB0'; TINT = '#1F2F6FB0' }
+    Dark  = @{ BG = '#FF111D2B'; CARD = '#FF263447'; LINE = '#FF445C78'; FG = '#FFF4F7FC'; DIM = '#FFBECCDF'; ACCENT = '#FF205DC0'; TINT = '#70456890' }
+    Navidad = @{ BG = '#FF101F1C'; CARD = '#FF263B34'; LINE = '#FF806D4B'; FG = '#FFFCF8EF'; DIM = '#FFD7DDCD'; ACCENT = '#FFA62D46'; TINT = '#70705A39' }
+    Light = @{ BG = '#FFF0F2F7'; CARD = '#FFFBFAF8'; LINE = '#FFCBD6E6'; FG = '#FF152137'; DIM = '#FF495970'; ACCENT = '#FF1556BF'; TINT = '#FFD8E6FA' }
 }
 
 function Set-WNConsoleWindow {
@@ -216,60 +220,37 @@ function Update-WNLauncherText {
     }
 }
 
-function Start-WNLauncherXmas {
-    # Navidad boot: snow falls across the window, the logo drops in and swings once like an ornament, and the dots
-    # turn red, green and gold. It all ends with the boot screen.
+function Start-WNLauncherBoot {
     $l = $script:WNL
     $c = $l.Ctl
-    $grid = $c.Boot.Parent
-    $snow = New-Object Windows.Controls.Canvas
-    $snow.IsHitTestVisible = $false
-    $snow.ClipToBounds = $true
-    $grid.Children.Insert(0, $snow)
-    $l.Snow = $snow
-    $rnd = New-Object Random 2412
-    for ($k = 0; $k -lt 34; $k++) {
-        $f = New-Object Windows.Controls.TextBlock
-        $f.Text = [string][char]0x2744
-        $f.FontFamily = 'Segoe UI Symbol'
-        $f.FontSize = $rnd.Next(9, 22)
-        $f.Foreground = [Windows.Media.Brushes]::White
-        $f.Opacity = 0.35 + $rnd.NextDouble() * 0.5
-        $x = $rnd.Next(0, 630)
-        [Windows.Controls.Canvas]::SetLeft($f, $x)
-        [Windows.Controls.Canvas]::SetTop($f, -30)
-        [void]$snow.Children.Add($f)
-        $d = [Windows.Duration][TimeSpan]::FromMilliseconds($rnd.Next(1900, 3600))
-        $start = [TimeSpan]::FromMilliseconds($rnd.Next(0, 900))
-        $fall = New-Object Windows.Media.Animation.DoubleAnimation -30, 400, $d
-        $drift = New-Object Windows.Media.Animation.DoubleAnimation $x, ($x + $rnd.Next(-46, 46)), $d
-        $drift.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
-        $fall.BeginTime = $start; $drift.BeginTime = $start
-        $f.BeginAnimation([Windows.Controls.Canvas]::TopProperty, $fall)
-        $f.BeginAnimation([Windows.Controls.Canvas]::LeftProperty, $drift)
+    if ($l.Animate) {
+        $ease = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
+        $revealTime = [Windows.Duration][TimeSpan]::FromMilliseconds(370)
+        $fade = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, $revealTime
+        foreach ($part in $c.BootTile, $c.BootName, $c.BootText) {
+            $part.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+        }
+        $scale = New-Object Windows.Media.Animation.DoubleAnimation 0.94, 1, $revealTime
+        $scale.EasingFunction = $ease
+        $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $scale)
+        $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $scale)
+        $c.BootHighlight.Opacity = 0.62
+        $sweep = New-Object Windows.Media.Animation.DoubleAnimation -36, 96, ([Windows.Duration][TimeSpan]::FromMilliseconds(520))
+        $sweep.BeginTime = [TimeSpan]::FromMilliseconds(220)
+        $c.HighlightShift.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $sweep)
+        $line = New-Object Windows.Media.Animation.DoubleAnimation 0, 132, ([Windows.Duration]$l.Timer.Interval)
+        $c.BootBar.BeginAnimation([Windows.FrameworkElement]::WidthProperty, $line)
+    } else {
+        foreach ($part in $c.BootTile, $c.BootName, $c.BootText) { $part.Opacity = 1 }
+        $c.BootScale.ScaleX = 1
+        $c.BootScale.ScaleY = 1
+        $c.BootBar.Width = 132
     }
-    # The logo drops from above with a small bounce, then swings like an ornament on its string
-    $c.BootLogo.RenderTransformOrigin = '0.5,0'
-    $drop = New-Object Windows.Media.TranslateTransform 0, -70
-    $swing = New-Object Windows.Media.RotateTransform 0
-    $tg = New-Object Windows.Media.TransformGroup
-    $c.BootLogo.RenderTransform = $null
-    $tg.Children.Add($c.BootScale); $tg.Children.Add($swing); $tg.Children.Add($drop)
-    $c.BootLogo.RenderTransform = $tg
-    $fallIn = New-Object Windows.Media.Animation.DoubleAnimation -70, 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(900))
-    $fallIn.EasingFunction = New-Object Windows.Media.Animation.BounceEase -Property @{ Bounces = 2; Bounciness = 3; EasingMode = 'EaseOut' }
-    $drop.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $fallIn)
-    $sw = New-Object Windows.Media.Animation.DoubleAnimationUsingKeyFrames
-    $sw.BeginTime = [TimeSpan]::FromMilliseconds(650)
-    foreach ($kf in @(@(0, 0), @(260, -9), @(560, 7), @(820, -3), @(1080, 0))) {
-        $k = New-Object Windows.Media.Animation.EasingDoubleKeyFrame $kf[1], ([Windows.Media.Animation.KeyTime][TimeSpan]::FromMilliseconds($kf[0]))
-        $k.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
-        [void]$sw.KeyFrames.Add($k)
+    if ((Get-WNSettings).Sound -ne $false) {
+        $wav = Join-Path $WN.Root 'gui\start.wav'
+        if (Test-Path -LiteralPath $wav) { try { $l.Sound = New-Object Media.SoundPlayer $wav; $l.Sound.Play() } catch { } }
     }
-    $swing.BeginAnimation([Windows.Media.RotateTransform]::AngleProperty, $sw)
-    $c.Dot1.Fill = [Windows.Media.Brush](New-Object Windows.Media.BrushConverter).ConvertFromString('#FFE53935')
-    $c.Dot2.Fill = [Windows.Media.Brush](New-Object Windows.Media.BrushConverter).ConvertFromString('#FF2E9D5B')
-    $c.Dot3.Fill = [Windows.Media.Brush](New-Object Windows.Media.BrushConverter).ConvertFromString('#FFF2C14E')
+    $l.Timer.Start()
 }
 
 function Show-WNLauncherChooser {
@@ -283,22 +264,21 @@ function Show-WNLauncherChooser {
     if (-not $l.FirstRun -and -not $l.Update) {
         $mode = if ((Get-WNSettings).Mode -eq 'terminal') { 'terminal' } else { 'gui' }
         $l.Result = @{ Mode = $mode; Lang = $WN.Lang; Checked = $l.Checked; Update = $null }
-        $out = New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(220))
+        if (-not $l.Animate) { $l.Window.Close(); return }
+        $out = New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(150))
         $out.Add_Completed({ $script:WNL.Window.Close() })
         $l.Window.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)
         return
     }
     if ($l.FirstRun -and -not $l.Update) { $c.Appear.Visibility = 'Visible'; $c.Keys.HorizontalAlignment = 'Right' }
     $c.Boot.Visibility = 'Collapsed'
-    if ($l.Snow) { $l.Snow.BeginAnimation([Windows.UIElement]::OpacityProperty, (New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(700)))) }
     $c.Chooser.Visibility = 'Visible'
-    $d = [Windows.Duration][TimeSpan]::FromMilliseconds(320)
-    $ease = New-Object Windows.Media.Animation.CubicEase
-    $fade = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, $d
-    $slide = New-Object Windows.Media.Animation.DoubleAnimation 14, 0, $d
-    $slide.EasingFunction = $ease
-    $c.Chooser.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
-    $c.ChooserShift.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $slide)
+    if ($l.Animate) {
+        $fade = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, ([Windows.Duration][TimeSpan]::FromMilliseconds(200))
+        $c.Chooser.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+    } else {
+        $c.Chooser.Opacity = 1
+    }
     $card = if ((Get-WNSettings).Mode -eq 'terminal') { $c.TermCard } else { $c.GuiCard }
     [void]$card.Focus()
 }
@@ -332,27 +312,25 @@ function Show-WNLauncher {
     $saved = Get-WNSettings
     if (-not $Lang) { $Lang = if ($saved.Lang -in 'en', 'es') { $saved.Lang } else { 'en' } }
     Set-WNLanguage $Lang
-    # The window's theme: the saved one, Navidad in December, Mes patrio in November, else the Windows apps setting
-    $themeName = if ($saved.GuiTheme -in 'Light', 'Dark', 'Skeuo', 'Patria', 'Navidad', 'Linux') { $saved.GuiTheme } elseif ((Get-Date).Month -eq 12) { 'Navidad' } elseif ((Get-Date).Month -eq 11) { 'Patria' } else {
-        try { if ((Get-ItemPropertyValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme' -ErrorAction Stop) -eq 1) { 'Light' } else { 'Dark' } } catch { 'Dark' }
-    }
-    $light = $themeName -in 'Light', 'Skeuo'
+    $themeName = Get-WNEffectiveTheme $saved.GuiTheme
+    $light = $themeName -eq 'Light'
     $theme = $script:WNLauncherThemes[$themeName]
     $xaml = $script:WNLauncherXaml
     foreach ($k in $theme.Keys) { $xaml = $xaml.Replace("@@$k@@", $theme[$k]) }
     try { $window = [Windows.Markup.XamlReader]::Parse($xaml) } catch { Write-WNLog "Launcher failed: $($_.Exception.Message)" -Level WARN -Component 'Gui'; return $null }
 
     $ctl = @{}
-    foreach ($n in 'Boot', 'BootLogo', 'BootScale', 'BootName', 'BootText', 'Dot1', 'Dot2', 'Dot3', 'Chooser', 'ChooserShift', 'SmallLogo',
+    foreach ($n in 'Boot', 'BootTile', 'BootLogo', 'BootScale', 'BootName', 'BootText', 'BootHighlight', 'HighlightShift', 'Chooser', 'SmallLogo',
                    'Heading', 'Version', 'GuiCard', 'TermCard', 'GuiLabel', 'GuiHint', 'TermLabel', 'TermHint', 'Keys', 'LangEn', 'LangEs', 'CloseBtn',
-                   'UpdBar', 'UpdText', 'UpdNow', 'UpdLater', 'PreviewTag', 'Shell', 'Glow1', 'Glow2', 'Ring', 'RingSpin', 'BootBlur', 'NameShift',
-                   'Dots', 'BootBar', 'Appear', 'AppearLabel', 'AppLight', 'AppDark') {
+                   'UpdBar', 'UpdText', 'UpdNow', 'UpdLater', 'PreviewTag', 'BootBar', 'Appear', 'AppearLabel', 'AppLight', 'AppDark') {
         $ctl[$n] = $window.FindName($n)
     }
     # First start on this PC (no settings yet): the cards ask for the mode and Light / Dark
     $first = -not @($saved.PSObject.Properties | Where-Object { $_.Name -in 'Lang', 'Mode', 'GuiTheme', 'TourSeen', 'ShortcutAsked' }).Count
     $script:WNL = @{ Window = $window; Ctl = $ctl; Theme = $theme; ThemeName = $themeName; Result = 'exit'; Chosen = $false; Timer = $null
                      Check = $null; Poll = $null; Checked = $false; Update = $null; FirstRun = $first; Appear = $(if ($light) { 'Light' } else { 'Dark' }) }
+
+    $script:WNL.Animate = [Windows.SystemParameters]::ClientAreaAnimation
 
     # Update check in its own runspace so the animation never waits on GitHub (5 s at most)
     if (-not $NoUpdateCheck) {
@@ -373,7 +351,7 @@ function Show-WNLauncher {
     }
 
     # Logo made for this background, read into memory so the updater can always replace the file
-    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Skeuo' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } 'Patria' { 'LOGO\Winnow_128_patria.png' } 'Linux' { 'LOGO\Winnow_128_linux.png' } default { 'LOGO\Winnow_128.png' } })
+    $file = Join-Path $WN.Root $(switch ($themeName) { 'Light' { 'LOGO\Winnow_128_light.png' } 'Navidad' { 'LOGO\Winnow_128_navidad.png' } default { 'LOGO\Winnow_128.png' } })
     if (Test-Path -LiteralPath $file) {
         $bmp = New-Object Windows.Media.Imaging.BitmapImage
         $bmp.BeginInit(); $bmp.CacheOption = 'OnLoad'; $bmp.UriSource = New-Object Uri $file; $bmp.EndInit(); $bmp.Freeze()
@@ -418,55 +396,7 @@ function Show-WNLauncher {
         }
     })
 
-    # Boot animation: a ring draws itself around the logo, the logo comes into focus, the name rises, a thin line
-    # fills while WinNow starts, and the glow behind drifts. A soft chime plays (Sound = false in settings mutes it).
-    $window.Add_ContentRendered({
-        $l = $script:WNL
-        $c = $l.Ctl
-        $ms = { param($v) [Windows.Duration][TimeSpan]::FromMilliseconds($v) }
-        $out = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
-        $draw = New-Object Windows.Media.Animation.DoubleAnimation 150, 0, (& $ms 900)
-        $draw.EasingFunction = $out
-        $c.Ring.BeginAnimation([Windows.Shapes.Shape]::StrokeDashOffsetProperty, $draw)
-        $spin = New-Object Windows.Media.Animation.DoubleAnimation -90, 270, (& $ms 1500)
-        $spin.EasingFunction = $out
-        $c.RingSpin.BeginAnimation([Windows.Media.RotateTransform]::AngleProperty, $spin)
-        $in = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, (& $ms 520)
-        $c.BootLogo.BeginAnimation([Windows.UIElement]::OpacityProperty, $in)
-        $focus = New-Object Windows.Media.Animation.DoubleAnimation 18, 0, (& $ms 640)
-        $focus.EasingFunction = $out
-        $c.BootBlur.BeginAnimation([Windows.Media.Effects.BlurEffect]::RadiusProperty, $focus)
-        $grow = New-Object Windows.Media.Animation.DoubleAnimation 0.82, 1, (& $ms 680)
-        $grow.EasingFunction = New-Object Windows.Media.Animation.BackEase -Property @{ Amplitude = 0.35 }
-        $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $grow)
-        $c.BootScale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $grow)
-        foreach ($t in @($c.BootName, $c.BootText)) {
-            $f = New-Object Windows.Media.Animation.DoubleAnimation 0, 1, (& $ms 420)
-            $f.BeginTime = [TimeSpan]::FromMilliseconds(300)
-            $t.BeginAnimation([Windows.UIElement]::OpacityProperty, $f)
-        }
-        $rise = New-Object Windows.Media.Animation.DoubleAnimation 12, 0, (& $ms 520)
-        $rise.BeginTime = [TimeSpan]::FromMilliseconds(300); $rise.EasingFunction = $out
-        $c.NameShift.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $rise)
-        $bar = New-Object Windows.Media.Animation.DoubleAnimation 0, 150, (& $ms $l.Timer.Interval.TotalMilliseconds)
-        $bar.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
-        $c.BootBar.BeginAnimation([Windows.FrameworkElement]::WidthProperty, $bar)
-        foreach ($gl in @(@($c.Glow1, 60), @($c.Glow2, -50))) {
-            $d = New-Object Windows.Media.Animation.DoubleAnimation ([Windows.Controls.Canvas]::GetLeft($gl[0])), ([Windows.Controls.Canvas]::GetLeft($gl[0]) + $gl[1]), (& $ms 2600)
-            $d.AutoReverse = $true; $d.RepeatBehavior = [Windows.Media.Animation.RepeatBehavior]::Forever
-            $d.EasingFunction = New-Object Windows.Media.Animation.SineEase -Property @{ EasingMode = 'EaseInOut' }
-            $gl[0].BeginAnimation([Windows.Controls.Canvas]::LeftProperty, $d)
-        }
-        if ($l.ThemeName -eq 'Navidad') {
-            $c.Dots.Visibility = 'Visible'
-            Start-WNLauncherXmas
-        }
-        if ((Get-WNSettings).Sound -ne $false) {
-            $wav = Join-Path $WN.Root 'gui\start.wav'
-            if (Test-Path -LiteralPath $wav) { try { $l.Sound = New-Object Media.SoundPlayer $wav; $l.Sound.Play() } catch { } }
-        }
-        $l.Timer.Start()
-    })
+    $window.Add_ContentRendered({ if (-not $script:WNL.Chosen) { Start-WNLauncherBoot } })
     $timer = New-Object Windows.Threading.DispatcherTimer
     $timer.Interval = [TimeSpan]::FromMilliseconds($(if ($themeName -eq 'Navidad') { 2400 } else { 1900 }))
     $timer.Add_Tick({ Show-WNLauncherChooser })

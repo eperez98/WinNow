@@ -75,3 +75,11 @@ function Show-WNLanguagePicker {
     if ($choice) { Save-WNSetting 'Lang' $choice }
     return $choice
 }
+
+function Get-WNEffectiveTheme {
+    param([string]$Saved)
+    if ($Saved -in 'Light', 'Dark', 'Navidad') { return $Saved }
+    if ((Get-Date).Month -eq 12) { return 'Navidad' }
+    if ((Get-WNRegistryValue 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize' 'AppsUseLightTheme') -eq 1) { return 'Light' }
+    return 'Dark'
+}

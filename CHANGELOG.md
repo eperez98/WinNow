@@ -6,8 +6,7 @@ All notable changes to WinNow are listed here. The format follows
 ## [Unreleased]
 
 ### Planned
-- **1.8 Trusted Updates** (on the way): Signed releases (an update is installed only when its signature checks out); a
-  history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
+- **1.8 Trusted Updates** (on the way): A history of every session so a whole session can be undone; the final, calmer GUI Rethinked, still marked as a GUI
   preview.
 - **1.8.1 Polish** (idea): A closing dialog in the window's own look.
 - **1.8.2 Starting Point** (idea): A starting point tour of what WinNow offers and what is new; Office Helper: remove
@@ -17,6 +16,30 @@ All notable changes to WinNow are listed here. The format follows
 - **2.0 Store Edition** (idea): An MSIX package published in the Microsoft Store: a native launcher, updates through
   the Store, and the same tools.
 - More changes may be added and others removed.
+
+## [1.7.4] - 2026-11-27 - Glassware Polish
+
+### Changed
+- Collapse navigation and move the selection panel below the table on narrow windows.
+- Show selected adjustments hidden by filters and allow removing each item from the selection.
+- Start the local and download launchers through the same PowerShell entry point so read-only options can run without elevation.
+
+## [1.7.3]
+
+### Changed
+- Open the docked Glassware Adjustments page with a searchable risk table, live selection panel, simulation, and a review dialog.
+- Updated the WinNow monogram for Glassware in the launcher, GUI, and shortcut.
+- The Glassware startup screen reveals the WinNow logo in a layered tile and follows the Windows animation setting.
+- Glassware brings a translucent navigation panel and refreshed Light, Dark and Christmas palettes to the GUI.
+
+### Removed
+- Removed the Mes patrio, Linux World, and Skeuomorphism themes. Older theme preferences fall back to the current Glassware default.
+
+### Fixed
+- Use a unique staging directory for each update and copy verified files using literal paths.
+- The download launcher and in-app updater require a valid signature before extracting a release.
+- Both Terminal buttons use the same mode switch and wait for active tasks to finish.
+- Restored the screenshots and documentation images linked from the English and Spanish READMEs.
 
 ## [1.7.2] - 2026-11-21 - Upgrade HotFix
 

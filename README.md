@@ -6,7 +6,7 @@
 
 <br />
 
-[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.7.2%20Upgrade%20HotFix-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
+[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.7.4%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -54,6 +54,15 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 ## Screenshots
 
+**1.7.4 Glassware Polish** adapts the adjustment workspace to narrow windows and keeps hidden selections visible in the summary. Remove any selected item directly from that panel. Launch.bat forwards PowerShell arguments including -DryRun.
+
+The app opens on **Adjustments**. The docked sidebar can collapse. The table shows category and risk, and the right panel lists selected changes and offers **Simulate changes**. **Review changes** shows details and can offer a restore point.
+
+![Glassware adjustments](screenshots/es/glassware-ajustes.png)
+
+[Review dialog](screenshots/es/glassware-revision.png)
+
+
 <div align="center">
 <img src="screenshots/en/home.png" alt="WinNow home" width="100%" />
 <sub><b>Home</b> — glass cards over soft colour, a hero with start cards, and the compact menu on the left.</sub>
@@ -63,26 +72,12 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 | | |
 |:---:|:---:|
-| <img src="screenshots/en/nav.png" alt="Expanded menu" /><br /><sub><b>Menu</b> — expands over the page; a group lists its tools</sub> | <img src="screenshots/en/launcher.png" alt="Start animation" /><br /><sub><b>Start</b> — a ring draws around the logo, then straight to the window</sub> |
 | <img src="screenshots/en/news.png" alt="What's new" /><br /><sub><b>What's new</b> — slides with pictures, shown once after an update</sub> | <img src="screenshots/en/welcome.png" alt="Welcome" /><br /><sub><b>First start</b> — window or terminal, Light or Dark</sub> |
 | <img src="screenshots/en/profiles.png" alt="Profiles & schedules" /><br /><sub><b>Profiles & schedules</b> — save a PC, apply it elsewhere, scheduled maintenance</sub> | <img src="screenshots/en/group-optimize.png" alt="Optimize group" /><br /><sub><b>Groups</b> — each menu item opens its tools as cards</sub> |
 | <img src="screenshots/en/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b> — live status, apply and real undo, presets</sub> | <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> |
 | <img src="screenshots/en/preferences.png" alt="Preferences" /><br /><sub><b>Preferences</b> — 18 ON / OFF switches</sub> | <img src="screenshots/en/services.png" alt="Services" /><br /><sub><b>Services</b> — current vs. recommended vs. Windows default</sub> |
 | <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
-| <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> | <img src="screenshots/en/theme-picker.png" alt="Theme picker" /><br /><sub><b>Themes</b> — Light, Dark, Skeuomorphism, Mes patrio, Navidad, Linux World</sub> |
-
-<details>
-<summary><b>🎨 Themes: Light, Skeuomorphism, Mes patrio, Navidad and Linux World</b></summary>
-<br />
-
-| | |
-|:---:|:---:|
-| <img src="screenshots/en/home-light.png" alt="Light" /><br /><sub>Light glass</sub> | <img src="screenshots/en/tweaks-light.png" alt="Tweaks, light" /><br /><sub>Tweaks in the light theme</sub> |
-| <img src="screenshots/en/home-skeuo.png" alt="Skeuomorphism" /><br /><sub><b>Skeuomorphism</b>: paper, depth and glossy buttons</sub> | <img src="screenshots/en/tweaks-skeuo.png" alt="Tweaks, Skeuomorphism" /><br /><sub>Tweaks in Skeuomorphism</sub> |
-| <img src="screenshots/en/home-patria.png" alt="Mes patrio" /><br /><sub><b>Mes patrio</b>: the flag of Panama, the default in November</sub> | <img src="screenshots/en/home-navidad.png" alt="Navidad" /><br /><sub><b>Navidad</b>: the default in December</sub> |
-| <img src="screenshots/en/home-linux.png" alt="Linux World" /><br /><sub><b>Linux World</b>: terminal green, aubergine and a penguin</sub> | <img src="screenshots/en/launcher-navidad.png" alt="Start in Navidad" /><br /><sub>The start animation in Navidad, with falling snow</sub> |
-
-</details>
+| <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> | |
 
 <details>
 <summary><b>⌨️ Terminal edition</b></summary>
@@ -131,11 +126,11 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 <details>
 <summary><b>Window and terminal</b></summary>
 
-- **Starts in the window**: after a short start animation (a ring draws around the logo, a soft chime) WinNow opens the graphical interface. **Terminal mode** in the menu switches to the console; the last What's new slide sets which one WinNow starts in.
+- **Starts in the window**: after a short start animation (the Glassware monogram appears on a glass tile with a soft chime) WinNow opens the graphical interface. **Terminal mode** in the menu switches to the console; the last What's new slide sets which one WinNow starts in.
 - **First start**: a welcome asks for the language, window or terminal, and Light or Dark, once.
 - **What's new**: after an update, a card with slides that move sideways shows what changed, with pictures; the design slide lets you try a theme on the spot.
-- **Menu**: compact icons; the menu button expands it over the page with labels, and the arrow next to a group lists its tools. It folds away after a choice.
-- **Glassmorphism**: frosted, translucent cards with a bright edge over soft colour, on the Windows 11 acrylic backdrop. Six themes: **Light**, **Dark**, **Skeuomorphism**, **Mes patrio** (the default in November), **Navidad** (December) and **Linux World**.
+- **Menu**: the docked sidebar includes Home, Adjustments, Applications and Repair. The menu button collapses it.
+- **Glassware** offers **Light**, **Dark**, and **Christmas**, with a matching monogram and startup screen.
 - **The terminal**: arrow-key menus, `Space` to tick, `/` to search, `U` to undo, `Esc` to go back.
 - **Desktop shortcut**: asked on exit. **Yes** keeps WinNow with a shortcut; **No** removes WinNow's own files like an uninstall (logs and backups stay).
 - **Updates**: every start asks GitHub for the latest release and shows its changelog: update now, keep this version, or skip it.
@@ -157,7 +152,7 @@ Open **PowerShell** or Windows Terminal and run:
 irm eperez98.github.io/WinNow | iex
 ```
 
-1. It downloads the latest release to `%TEMP%\Winnow-app` and asks for administrator rights. Nothing is installed.
+1. The launcher downloads the latest release and its signature, verifies the ZIP, then extracts it into a unique folder under `%TEMP%`. It asks for administrator rights when needed.
 2. The first time, pick **EN** or **ES**, the window or the terminal, and Light or Dark. After that WinNow opens straight in your choice.
 3. To look around first, turn on **simulation mode** (`M` in the terminal, the checkbox in the window).
 
@@ -185,12 +180,23 @@ irm eperez98.github.io/WinNow | iex
 The exit code is `1` if any step failed.
 </details>
 
+## Preparing a release
+
+[Build-WNRelease.ps1](tools/Build-WNRelease.ps1) builds and verifies the three release assets using the existing release key.
+
+```powershell
+.\tools\Build-WNRelease.ps1 -Source . -OutputDirectory ..\release-assets
+```
+
+Attach Winnow.zip, Winnow.zip.sig, and run.ps1 to the same GitHub release. The GitHub Pages command follows the release marked Latest.
+
 ## Security
 
 WinNow runs as administrator, so it treats what it reads back as untrusted until it knows who wrote it.
 
 | Area | What WinNow does |
 |---|---|
+| **Downloads** | The launcher and in-app updater require a valid RSA-SHA256 signature before extracting a ZIP. To publish a release, sign the final ZIP with the existing WinNow release key and upload it alongside Winnow.zip.sig. |
 | **Changes** | Simulation mode, a JSON backup before every change, an optional System Restore point, and undo that only touches what WinNow applied. High-risk items are flagged before you confirm. |
 | **Data folder** | `%ProgramData%\Winnow` (logs and backups) belongs to Administrators; Users can only read it. A folder another account created first is taken back, and planted links are removed. |
 | **Backups** | Restored only when an administrator, SYSTEM or you wrote them. |

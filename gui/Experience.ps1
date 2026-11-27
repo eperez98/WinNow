@@ -1,42 +1,35 @@
 # gui/Experience.ps1
-# GUI Rethinked from 1.7: the glassmorphism base (soft colour behind translucent, frosted cards), the
-# Skeuomorphism theme, the expandable navigation pane (compact icons; expanded labels; groups that open to show
-# their tools; it floats over the page and folds away after a choice) and the What's new slides, shown once to
-# people who used an older version. Loaded by gui/Gui.ps1.
-
-# ---- Skeuomorphism: paper, depth and glossy buttons. Opaque, so the acrylic backdrop stays hidden.
-$script:WNGuiThemes['Skeuo'] = @{
-    Bg = @('#FFE9E2D4@0', '#FFD5CAB5@1'); GlassBg = @('#FFE9E2D4@0', '#FFD5CAB5@1'); Pane = '#00000000'
-    Card = @('#FFFFFDF8@0', '#FFEEE6D6@1'); CardBorder = '#FFC2B59C'; Hover = @('#FFFFFFFF@0', '#FFF6F0E4@1'); Selected = '#2E2F6FB0'
-    Fg = '#FF3A2E22'; FgDim = '#FF6B5C4A'; Accent = '#FF2F6FB0'; AccentSolid = @('#FF62A2E6@0', '#FF2F6FB0@0.55', '#FF22568E@1'); AccentFg = '#FFFFFFFF'; AccentText = '#FF22568E'
-    Warn = '#FF8F5300'; WarnBg = '#26FF9500'; IconBg = @('#FFFFFFFF@0', '#FFE4D9C4@1'); IconFg = '#FF5A4632'
-    Layer = '#40FFFFFF'; LayerBorder = '#FFC9BDA6'; Code = '#FFF6F1E6'
-    Badges = @{ Applied = '#2634C759|#FF1B7A36'; Partial = '#26FF9500|#FF8F5300'; Action = '#1F2F6FB0|#FF22568E'; None = '#14000000|#FF3A2E22'; Danger = '#26FF3B30|#FFB3261E' }
-}
-# Glassmorphism base for Light and Dark: frosted cards with a bright top edge over the colour blobs
-foreach ($k in 'Dark', 'Light') {
-    $t = $script:WNGuiThemes[$k]
-    if ($k -eq 'Dark') {
-        $t.Bg = '#FF0F1117'; $t.GlassBg = '#A60D0F15'; $t.Card = '#17FFFFFF'; $t.CardBorder = @('#4DFFFFFF@0', '#0FFFFFFF@1'); $t.Hover = '#26FFFFFF'
-        $t.Layer = '#0AFFFFFF'; $t.LayerBorder = '#24FFFFFF'; $t.IconBg = '#1FFFFFFF'
-    } else {
-        $t.Bg = '#FFEDF0F6'; $t.GlassBg = '#B3EEF1F7'; $t.Card = '#80FFFFFF'; $t.CardBorder = @('#F2FFFFFF@0', '#4DFFFFFF@1'); $t.Hover = '#C7FFFFFF'
-        $t.Layer = '#38FFFFFF'; $t.LayerBorder = '#99FFFFFF'; $t.IconBg = '#99FFFFFF'
+# Glassware palettes share the same surfaces and use separate accents for primary actions and text.
+$glassware = @{
+    Light = @{
+        Bg = '#FFF0F2F7'; GlassBg = '#EEF0F2F7'; Card = '#EFFFFFFF'; CardBorder = '#260D274E'; Hover = '#FFF4F8FF'
+        Layer = '#D9FAFAFC'; LayerBorder = '#2B6480A8'; Fg = '#FF152137'; FgDim = '#FF495970'
+        AccentSolid = '#FF1556BF'; Accent = '#FF1556BF'; AccentText = '#FF174FAA'; Selected = '#262765CF'
+    }
+    Dark = @{
+        Bg = '#FF111D2B'; GlassBg = '#EE111D2B'; Card = '#FF263447'; CardBorder = '#38BCCFEC'; Hover = '#FF34475F'
+        Layer = '#E6192636'; LayerBorder = '#3BA2B9D9'; Fg = '#FFF4F7FC'; FgDim = '#FFBECCDF'
+        AccentSolid = '#FF205DC0'; Accent = '#FF74ADFF'; AccentText = '#FFA8CDFF'; Selected = '#735383DD'
+    }
+    Navidad = @{
+        Bg = '#FF101F1C'; GlassBg = '#EE101F1C'; Card = '#FF263B34'; CardBorder = '#4CD2CAAD'; Hover = '#FF354B41'
+        Layer = '#E61C2D26'; LayerBorder = '#49ACBAA3'; Fg = '#FFFCF8EF'; FgDim = '#FFD7DDCD'
+        AccentSolid = '#FFA62D46'; Accent = '#FFF0CC81'; AccentText = '#FFFFDF9F'; Selected = '#779A3E50'
     }
 }
-$script:WNGuiThemeNames = @('Light', 'Dark', 'Skeuo', 'Patria', 'Navidad', 'Linux')
-$script:WNGuiThemeSwatch['Skeuo'] = @('#FFEDE6D8', '#FF2F6FB0')
-# Colour blobs behind the glass (none in Skeuomorphism) and the surface of the open navigation pane
-$script:WNGuiGlass = @{
-    Dark    = @{ Blobs = @('#FF3A6BFF', '#FFA24DF5', '#FF12B5A2'); NavBg = '#EB1A1C23'; Popup = '#FA1D1F26' }
-    Light   = @{ Blobs = @('#FF8DB6FF', '#FFE8B4FF', '#FF8FEAD3'); NavBg = '#F2F7F8FC'; Popup = '#FFF8F9FC' }
-    Patria  = @{ Blobs = @('#FF0A64C8', '#FFD21034', '#FF3A7BFF'); NavBg = '#EB0D2747'; Popup = '#FA102C50' }
-    Navidad = @{ Blobs = @('#FF2E9D5B', '#FFC8102E', '#FFF2C14E'); NavBg = '#EB0F2B1D'; Popup = '#FA12301F' }
-    Linux   = @{ Blobs = @('#FFE95420', '#FF77216F', '#FF4E9A06'); NavBg = '#EB262626'; Popup = '#FA2B2B2B' }
-    Skeuo   = @{ Blobs = @(); NavBg = @('#FFF8F3E8@0', '#FFE5DBC7@1'); Popup = @('#FFFBF8F1@0', '#FFEDE5D5@1') }
+foreach ($name in $glassware.Keys) {
+    foreach ($token in $glassware[$name].Keys) { $script:WNGuiThemes[$name][$token] = $glassware[$name][$token] }
+    $script:WNGuiThemeSwatch[$name] = @($glassware[$name].Bg, $glassware[$name].AccentSolid)
 }
 
-function Test-WNGuiLight { $script:WNGui.ThemeName -in 'Light', 'Skeuo' }
+# Colour blobs behind the glass and the surface of the open navigation pane
+$script:WNGuiGlass = @{
+    Dark    = @{ Blobs = @('#FF45638A'); NavBg = @('#EE2D425B@0', '#ED142236@1'); Popup = '#FF233147' }
+    Light   = @{ Blobs = @('#FFACCBED'); NavBg = @('#F5EDF3FB@0', '#E2C9D9F2@1'); Popup = '#FFFBFAF8' }
+    Navidad = @{ Blobs = @('#FF56765B'); NavBg = @('#EF31483D@0', '#F02C2023@1'); Popup = '#FF26362F' }
+}
+
+function Test-WNGuiLight { $script:WNGui.ThemeName -eq 'Light' }
 
 function Update-WNGuiGlass {
     # The current theme's blobs and pane surface (called by Set-WNGuiTheme)
@@ -58,6 +51,87 @@ function Update-WNGuiGlass {
         $e.Fill = $rg
         $e.Visibility = 'Visible'
     }
+}
+
+function Update-WNGuiTweakSelection {
+    $g = $script:WNGui
+    $selected = @($g.TweakList.Rows | Where-Object Selected)
+    $g.TweakSelectionTitle.Text = T 'glassware.selected' $selected.Count
+    $hidden = @($selected | Where-Object { -not $g.TweakList.View.Contains($_) }).Count
+    $g.TweakHidden.Text = T 'glassware.hidden' $hidden
+    $g.TweakHidden.Visibility = if ($hidden) { 'Visible' } else { 'Collapsed' }
+    $g.TweakSelectionItems.Children.Clear()
+    if (-not $selected.Count) {
+        [void]$g.TweakSelectionItems.Children.Add((New-WNGuiText (T 'glassware.empty') -Dim -Wrap))
+    }
+    foreach ($row in $selected) {
+        $item = New-Object Windows.Controls.DockPanel
+        $item.Margin = '0,0,0,8'
+        $remove = New-WNGuiButton (T 'glassware.remove') -Tag $row -Always -OnClick { $this.Tag.Selected = $false }
+        $remove.ToolTip = T 'glassware.removeNamed' $row.Name
+        [Windows.Automation.AutomationProperties]::SetName($remove, $remove.ToolTip)
+        [Windows.Controls.DockPanel]::SetDock($remove, 'Right')
+        [void]$item.Children.Add($remove)
+        [void]$item.Children.Add((New-WNGuiText $row.Name -Wrap -Margin '0,0,6,0'))
+        [void]$g.TweakSelectionItems.Children.Add($item)
+    }
+}
+
+function Update-WNGuiGlasswareLayout {
+    $g = $script:WNGui
+    if (-not $g.Ctl.SidebarColumn) { return }
+    $wide = $g.Window.ActualWidth -ge 1060
+    Set-WNGuiNavExpanded ($wide -and -not $g.NavCompactPreferred)
+    if (-not $g.TweakSide) { return }
+    [Windows.Controls.DockPanel]::SetDock($g.TweakSide, $(if ($wide) { 'Right' } else { 'Bottom' }))
+    $g.TweakSide.Width = if ($wide) { 250 } else { [double]::NaN }
+    $g.TweakSide.Height = if ($wide) { [double]::NaN } else { 150 }
+    $g.TweakSide.Margin = if ($wide) { '12,0,0,0' } else { '0,8,0,0' }
+}
+
+function Show-WNGuiChangeReview {
+    param([string]$Message, [object[]]$Rows, [switch]$RestorePoint)
+    $g = $script:WNGui
+    $dialog = New-Object Windows.Window
+    $dialog.Owner = $g.Window
+    $dialog.WindowStartupLocation = 'CenterOwner'
+    $dialog.SizeToContent = 'Height'
+    $dialog.Width = 700
+    $dialog.MaxHeight = [Windows.SystemParameters]::WorkArea.Height
+    $dialog.ResizeMode = 'NoResize'
+    $dialog.ShowInTaskbar = $false
+    $dialog.Title = T 'glassware.review'
+    $dialog.FontFamily = $g.Window.FontFamily
+    $dialog.FontSize = $g.Window.FontSize
+    $dialog.Resources.MergedDictionaries.Add($g.Window.Resources)
+    $dialog.SetResourceReference([Windows.Controls.Control]::BackgroundProperty, 'Popup')
+    $dialog.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'Fg')
+    $heading = New-WNGuiText $dialog.Title -Bold -Size 24
+    $intro = New-WNGuiText $Message -Dim -Wrap -Margin '0,6,0,14'
+    $items = New-Object Windows.Controls.ItemsControl
+    $items.ItemTemplate = $g.Window.Resources['ReviewTableRow']
+    $items.ItemsSource = $Rows
+    $scroll = New-WNGuiScroll $items
+    $scroll.MaxHeight = [Math]::Max(90, [Windows.SystemParameters]::WorkArea.Height - 450)
+    $table = New-WNGuiTweakTable $scroll (T 'glassware.change')
+    $restore = New-Object Windows.Controls.CheckBox
+    $restore.Content = T 'glassware.restore'
+    $restore.IsChecked = $true
+    $restore.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'Fg')
+    $restore.Margin = '0,10,0,0'
+    $note = New-WNGuiText (T $(if ($WN.DryRun) { 'gui.noteSim' } else { 'gui.noteBackup' })) -Dim -Wrap -Margin '0,12,0,0'
+    $cancel = New-WNGuiButton (T 'glassware.cancel') -Always
+    $cancel.IsCancel = $true
+    $action = T $(if ($WN.DryRun) { 'glassware.simulate' } else { 'glassware.applyCount' }) $Rows.Count
+    $apply = New-WNGuiButton $action -Accent -Always -OnClick { [Windows.Window]::GetWindow($this).DialogResult = $true }
+    $buttons = New-WNGuiPanel -Children @($cancel, $apply)
+    $buttons.HorizontalAlignment = 'Right'
+    $buttons.Margin = '0,18,0,0'
+    $dialog.Content = New-WNGuiPanel -Orientation Vertical -Children @($heading, $intro, $table, $(if ($RestorePoint) { $restore }), $note, $buttons)
+    $dialog.Content.Margin = '24'
+    if ($dialog.ShowDialog() -ne $true) { return $false }
+    $g.SkipRp = $RestorePoint -and -not $restore.IsChecked
+    return $true
 }
 
 #region Navigation pane
@@ -130,31 +204,20 @@ function Set-WNGuiNavWidth {
 }
 
 function Set-WNGuiNavExpanded {
-    # Compact (icons) or expanded (labels and groups). Expanded floats over the page on the glass surface, with a
-    # scrim that folds it back on a click outside; immersive, the page keeps its full width.
     param([bool]$On)
     $g = $script:WNGui
-    if ($g.NavExpanded -eq $On) { return }
     $g.NavExpanded = $On
+    $g.Ctl.SidebarColumn.Width = [Windows.GridLength]::new($(if ($On) { 204 } else { 72 }))
+    $g.Ctl.SidebarBrand.Visibility = if ($On) { 'Visible' } else { 'Collapsed' }
+    $g.Ctl.NavToggle.Width = if ($On) { 36 } else { 44 }
+    $g.Ctl.NavToggle.HorizontalAlignment = if ($On) { 'Right' } else { 'Center' }
     Set-WNGuiNavWidth
-    $pane = $g.Ctl.NavPane
-    $d = [Windows.Duration][TimeSpan]::FromMilliseconds($(if ($On) { 240 } else { 180 }))
-    $a = New-Object Windows.Media.Animation.DoubleAnimation $pane.ActualWidth, $(if ($On) { 272 } else { 60 }), $d
-    $a.EasingFunction = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
-    $pane.BeginAnimation([Windows.FrameworkElement]::WidthProperty, $a)
-    if ($On) {
-        $pane.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'NavBg')
-        $pane.Effect = New-Object Windows.Media.Effects.DropShadowEffect -Property @{ BlurRadius = 30; ShadowDepth = 0; Opacity = 0.35 }
-        $g.Ctl.NavScrim.Visibility = 'Visible'
-        $g.Ctl.NavScrim.BeginAnimation([Windows.UIElement]::OpacityProperty, (New-Object Windows.Media.Animation.DoubleAnimation 0, 1, $d))
-    } else {
-        $pane.Background = [Windows.Media.Brushes]::Transparent
-        $pane.Effect = $null
-        $g.Ctl.NavScrim.Visibility = 'Collapsed'
-        foreach ($k in @($g.NavKids.Keys)) { $g.NavKids[$k].Visibility = 'Collapsed'; if ($g.NavChevrons[$k]) { $g.NavChevrons[$k].Content = [string][char]0xE70D } }
+    if (-not $On) {
+        foreach ($k in $g.NavKids.Keys) {
+            $g.NavKids[$k].Visibility = 'Collapsed'
+            $g.NavChevrons[$k].Content = [string][char]0xE70D
+        }
     }
-    $tip = T 'nav.toggle'
-    $g.Ctl.NavToggle.ToolTip = $tip
 }
 
 function Build-WNGuiNav {
@@ -167,10 +230,9 @@ function Build-WNGuiNav {
     $go = {
         $g = $script:WNGui
         $t = $g.NavTargets[$this.Name]
-        if ($t.Action) { $this.IsChecked = $false; & $t.Action; Set-WNGuiNavExpanded $false; return }
+        if ($t.Action) { $this.IsChecked = $false; & $t.Action; return }
         if ($t.Group -and $g.NavExpanded) { Switch-WNGuiNavGroup $this.Name -Open }
         if ($g.Current -ne $t.Page) { Show-WNGuiPage $t.Page }
-        if (-not $t.Group) { Set-WNGuiNavExpanded $false }
     }
     $add = {
         param($Item, $Panel, [string]$Page, [scriptblock]$Action, [switch]$Group)
@@ -182,6 +244,14 @@ function Build-WNGuiNav {
     $homeItem = New-WNGuiNavItem 'home' 'E80F' (T 'gui.navHome')
     & $add $homeItem $ctl.NavPanel 'home'
     $g.NavButtons['home'] = $homeItem
+    $primary = [ordered]@{ tweaks = 'glassware.adjustments'; apps = 'glassware.apps'; repair = 'glassware.repair' }
+    foreach ($id in $primary.Keys) {
+        $page = $g.Pages[$id]
+        $item = New-WNGuiNavItem $id $page.Icon (T $primary[$id])
+        & $add $item $ctl.NavPanel $id
+        $g.NavButtons[$id] = $item
+    }
+    [void]$ctl.NavPanel.Children.Add((New-Object Windows.Controls.Separator -Property @{ Margin = '12,8,12,8'; Opacity = 0.28 }))
     $groupIcons = @{ 'main.secOptimize' = 'E713'; 'main.secApps' = 'E71D'; 'main.secMaintain' = 'E90F'; 'main.secNetwork' = 'E774'; 'main.secSystem' = 'E7F4'; 'main.secTool' = 'E8F1' }
     $sections = @($g.Pages.Values | Where-Object { $_.Section -and $_.Id -ne 'about' } | ForEach-Object { $_.Section } | Select-Object -Unique)
     foreach ($sec in $sections) {
@@ -193,7 +263,7 @@ function Build-WNGuiNav {
         $g.NavButtons["grp:$sec"] = $grp
         $kids = New-Object Windows.Controls.StackPanel
         $kids.Visibility = 'Collapsed'
-        foreach ($pg in $members) {
+        foreach ($pg in $members | Where-Object { $_.Id -notin $primary.Keys }) {
             $it = New-WNGuiNavItem $pg.Id $pg.Icon $pg.Title -Child
             & $add $it $kids $pg.Id
             $g.NavButtons[$pg.Id] = $it
@@ -210,30 +280,28 @@ function Build-WNGuiNav {
     # Terminal mode: the same tools in the console; this window closes
     $term = New-WNGuiNavItem 'terminal' 'E756' (T 'nav.terminal')
     $term.ToolTip = T 'nav.terminalTip'
-    & $add $term $ctl.NavFooter '' {
-        if ($script:WNGui.Job) { Show-WNGuiInfo (T 'gui.busyClose'); return }
-        Start-Process powershell.exe -ArgumentList (Get-WNLaunchArgs Terminal -NoUpdateCheck)
-        $script:WNGui.ExitAsked = $true
-        $script:WNGui.Window.Close()
-    }
+    & $add $term $ctl.NavFooter '' { Switch-WNGuiToTerminal }
     $about = New-WNGuiNavItem 'about' 'E946' (T 'gui.railAbout')
     & $add $about $ctl.NavFooter 'about'
     $g.NavButtons['about'] = $about
 
-    Set-WNGuiNavWidth
+    Set-WNGuiNavExpanded $true
     $ctl.NavToggle.ToolTip = T 'nav.toggle'
     [Windows.Automation.AutomationProperties]::SetName($ctl.NavToggle, (T 'nav.toggle'))
-    $ctl.NavToggle.Add_Click({ Set-WNGuiNavExpanded (-not $script:WNGui.NavExpanded) })
-    $ctl.NavScrim.Add_MouseLeftButtonDown({ Set-WNGuiNavExpanded $false })
-    $g.Window.Add_PreviewKeyDown({ param($s, $e) if ($e.Key -eq 'Escape' -and $script:WNGui.NavExpanded) { Set-WNGuiNavExpanded $false; $e.Handled = $true } })
+    $ctl.NavToggle.Add_Click({
+        $g = $script:WNGui
+        $g.NavCompactPreferred = $g.NavExpanded
+        Set-WNGuiNavExpanded (-not $g.NavExpanded)
+    })
+    $g.Window.Add_SizeChanged({ if ($_.WidthChanged) { Update-WNGuiGlasswareLayout } })
 }
 #endregion
 
 #region What's new slides
 # Slides per version, in order. Each id has news.<id>.t / news.<id>.x in i18n.json and an optional picture,
-# gui/news/<lang>/<id>.png. 'design' and 'skeuo' let you pick a theme; 'end' (always last) asks how WinNow starts.
+# gui/news/<lang>/<id>.png. 'design' lets you pick a theme; 'end' (always last) asks how WinNow starts.
 $script:WNNewsByVersion = [ordered]@{
-    '1.7' = @('design', 'nav', 'skeuo', 'start', 'profiles')
+    '1.7' = @('design', 'nav', 'start', 'profiles')
     '1.7.1' = @('winget')
     '1.7.2' = @('upgrade')
 }
@@ -299,11 +367,11 @@ function New-WNGuiNewsSlide {
     $title.FontFamily = 'Segoe UI Variable Display, Segoe UI'
     [void]$sp.Children.Add($title)
     [void]$sp.Children.Add((New-WNGuiText (T "news.$Id.x") -Dim -Wrap -Size 13.5 -Margin '28,6,28,0'))
-    if ($Id -in 'design', 'skeuo') {
+    if ($Id -eq 'design') {
         # Pick the new look right here
         $row = New-WNGuiPanel -Wrap
         $row.Margin = '24,12,24,0'
-        $names = if ($Id -eq 'skeuo') { @('Skeuo', 'Light', 'Dark') } else { $script:WNGuiThemeNames }
+        $names = $script:WNGuiThemeNames
         foreach ($n in $names) {
             $b = New-Object Windows.Controls.Button
             $b.Style = $g.Window.Resources['PillBtn']

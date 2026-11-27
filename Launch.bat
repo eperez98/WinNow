@@ -1,22 +1,9 @@
 @echo off
-:: WinNow launcher - by Eperez98
-:: Double-click to start WinNow as Administrator: the launcher window opens (graphical interface or terminal).
-:: Add  -DryRun  after the .ps1 path below to start in simulation mode.
-title WinNow
-
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo  Requesting administrator privileges...
-    powershell -NoProfile -Command "Start-Process cmd -ArgumentList '/c \"%~f0\"' -Verb RunAs"
-    exit /b
-)
-
+setlocal
 set "SCRIPT=%~dp0Winnow.ps1"
 if not exist "%SCRIPT%" (
-    echo  [ERROR] Winnow.ps1 not found next to Launch.bat
-    pause
+    echo Winnow.ps1 not found next to Launch.bat.
     exit /b 1
 )
-
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%" %*
-if %errorLevel% neq 0 pause
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%" %*
+exit /b %errorlevel%
