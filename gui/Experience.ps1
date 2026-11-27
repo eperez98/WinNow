@@ -304,26 +304,30 @@ $script:WNNewsByVersion = [ordered]@{
     '1.7' = @('design', 'nav', 'start', 'profiles')
     '1.7.1' = @('winget')
     '1.7.2' = @('upgrade')
+    '1.7.3' = @('glassware')
+    '1.7.4' = @('glasswarePolish')
 }
 
 function Get-WNGuiNewsSlides {
-    # The slides of every version after the last one seen (all of them for someone coming from 1.6), then 'end';
-    # -All: every slide, for the menu
     param([switch]$All)
-    $seen = (Get-WNSettings).NewsSeen
-    $from = [version]'0.0'
-    if ($seen -and -not $All) { try { $from = [version]$seen } catch { } }
-    $list = foreach ($k in $script:WNNewsByVersion.Keys) { if ([version]$k -gt $from) { $script:WNNewsByVersion[$k] } }
-    @($list) + 'end'
+    $current = [version]$WN.Version
+    $settings = Get-WNSettings
+    $seen = $null
+    $valid = [version]::TryParse([string]$settings.NewsSeen, [ref]$seen)
+    $versions = @($script:WNNewsByVersion.Keys | Where-Object { [version]$_ -le $current } | Sort-Object { [version]$_ } -Descending)
+    $slides = foreach ($version in $versions) {
+        if ($All -or [version]$version -eq $current -or ($valid -and [version]$version -gt $seen)) {
+            $script:WNNewsByVersion[$version]
+        }
+    }
+    @($slides) + 'end'
 }
 
 function Test-WNGuiNewsDue {
-    # Once per version, for people who used an older one. A first start (no settings yet) skips it.
-    $s = Get-WNSettings
-    if ($s.NewsSeen -eq $WN.Version) { return $false }
-    $old = [bool]@($s.PSObject.Properties | Where-Object { $_.Name -in 'Lang', 'Mode', 'GuiTheme', 'TourSeen', 'ShortcutAsked' }).Count
-    if (-not $old) { Save-WNSetting 'NewsSeen' $WN.Version }
-    return $old
+    $settings = Get-WNSettings
+    $seen = $null
+    if ([version]::TryParse([string]$settings.NewsSeen, [ref]$seen) -and $seen -gt [version]$WN.Version) { return $false }
+    return $settings.NewsRevision -ne "$($WN.Version)/2"
 }
 
 function New-WNGuiNewsSlide {
@@ -343,7 +347,7 @@ function New-WNGuiNewsSlide {
     if ($pic) {
         $bmp = New-Object Windows.Media.Imaging.BitmapImage
         $bmp.BeginInit(); $bmp.CacheOption = 'OnLoad'; $bmp.UriSource = New-Object Uri $pic; $bmp.EndInit(); $bmp.Freeze()
-        if ($Id -in 'start', 'end', 'exit', 'task') {
+        if ($Id -in 'start', 'end', 'exit', 'task', 'glassware', 'glasswarePolish', 'adjustmentPlan') {
             # The launcher and the dialogs show whole, on the card surface
             $frame.SetResourceReference([Windows.Controls.Border]::BackgroundProperty, 'Card')
             $img = New-Object Windows.Controls.Image
@@ -367,7 +371,7 @@ function New-WNGuiNewsSlide {
     $title.FontFamily = 'Segoe UI Variable Display, Segoe UI'
     [void]$sp.Children.Add($title)
     [void]$sp.Children.Add((New-WNGuiText (T "news.$Id.x") -Dim -Wrap -Size 13.5 -Margin '28,6,28,0'))
-    if ($Id -eq 'design') {
+    if ($Id -in 'design', 'glassware') {
         # Pick the new look right here
         $row = New-WNGuiPanel -Wrap
         $row.Margin = '24,12,24,0'
@@ -444,6 +448,7 @@ function Hide-WNGuiNews {
     $g = $script:WNGui
     if (-not $g.News) { return }
     Save-WNSetting 'NewsSeen' $WN.Version
+    Save-WNSetting 'NewsRevision' "$($WN.Version)/2"
     $out = New-Object Windows.Media.Animation.DoubleAnimation 0, ([Windows.Duration][TimeSpan]::FromMilliseconds(180))
     $out.Add_Completed({ $l = $script:WNGui.News; if ($l) { $script:WNGui.Window.FindName('Root').Children.Remove($l.Layer); $script:WNGui.News = $null } })
     $g.News.Layer.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)

@@ -2,7 +2,7 @@
 
 **English** · [Español](README.es.md)
 
-<img src="docs/readme-hero-en.png" alt="WinNow: debloat and maintain Windows 10 and 11" width="100%" />
+<img src="docs/readme-hero-en.png" alt="WinNow Glassware with the Adjustments table and selection panel" width="100%" />
 
 <br />
 

@@ -365,7 +365,7 @@ function Show-WNLauncher {
         $l.Result = @{ Mode = $this.Tag; Lang = $WN.Lang; Checked = $l.Checked; Update = $l.Update }
         Save-WNSetting 'Mode' $this.Tag
         # A new user starts with the look picked here and has nothing "new" to be shown
-        if ($l.FirstRun) { Save-WNSetting 'GuiTheme' $l.Appear; Save-WNSetting 'NewsSeen' $WN.Version }
+        if ($l.FirstRun) { Save-WNSetting 'GuiTheme' $l.Appear }
         $l.Window.Close()
     }
     $ctl.GuiCard.Add_Click($pick)

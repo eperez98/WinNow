@@ -24,6 +24,10 @@ All notable changes to WinNow are listed here. The format follows
 - Show selected adjustments hidden by filters and allow removing each item from the selection.
 - Start the local and download launchers through the same PowerShell entry point so read-only options can run without elevation.
 
+### Fixed
+- What’s New shows the current build’s highlights on the first opening, including builds that previously marked the release as seen.
+
+
 ## [1.7.3]
 
 ### Changed

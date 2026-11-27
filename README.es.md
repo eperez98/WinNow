@@ -2,7 +2,7 @@
 
 [English](README.md) · **Español**
 
-<img src="docs/readme-hero-es.png" alt="WinNow: limpia y mantén Windows 10 y 11" width="100%" />
+<img src="docs/readme-hero-es.png" alt="WinNow Glassware con la tabla de Ajustes y el panel de selección" width="100%" />
 
 <br />
 
