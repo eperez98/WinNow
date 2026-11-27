@@ -395,6 +395,7 @@ function New-WNGuiSegments {
     $p = New-WNGuiPanel
     $p.Margin = '0,0,12,0'
     $first = $true
+    $p.Resources['OptionHandler'] = $OnChange
     foreach ($o in $Options) {
         $r = New-Object Windows.Controls.RadioButton
         $r.Style = $script:WNGui.Window.Resources['Seg']
@@ -403,7 +404,13 @@ function New-WNGuiSegments {
         $r.Tag = $o.Value
         $r.IsChecked = $first
         $first = $false
-        $r.Add_Checked($OnChange)
+        $r.Add_Checked({
+            $g = $script:WNGui
+            $frame = Get-WNGuiMotionFrame $g.Ctl.BodyHost $g.Ctl.BodyGhost
+            $action = $this.Parent.Resources['OptionHandler']
+            & $action
+            Start-WNGuiPageMotion $g.Ctl.BodyHost $g.Ctl.BodyGhost $frame
+        })
         [void]$p.Children.Add($r)
     }
     return $p
@@ -444,6 +451,56 @@ function Register-WNGuiPage {
     $script:WNGui.Pages[$Id] = @{ Id = $Id; Icon = $Icon; Section = $Section; Title = $Title; Sub = $Sub; Hint = $Hint; Build = $Build; Built = $false; Shown = 0 }
 }
 
+function Test-WNGuiPageMotion {
+    [Windows.SystemParameters]::ClientAreaAnimation -and -not [Windows.SystemParameters]::HighContrast
+}
+
+function Get-WNGuiMotionFrame {
+    param($Surface, $Ghost)
+    if (-not $Surface -or -not $Ghost -or -not (Test-WNGuiPageMotion)) { return }
+    $width = [int][Math]::Ceiling($Surface.ActualWidth)
+    $height = [int][Math]::Ceiling($Surface.ActualHeight)
+    if ($width -le 0 -or $height -le 0 -or -not $Surface.IsVisible) { return }
+    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $null)
+    $Surface.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $null)
+    $Ghost.Source = $null
+    try {
+        $frame = [Windows.Media.Imaging.RenderTargetBitmap]::new($width, $height, 96, 96, [Windows.Media.PixelFormats]::Pbgra32)
+        $visual = New-Object Windows.Media.DrawingVisual
+        $brush = [Windows.Media.VisualBrush]::new($Surface)
+        $context = $visual.RenderOpen()
+        try { $context.DrawRectangle($brush, $null, [Windows.Rect]::new(0, 0, $width, $height)) } finally { $context.Close() }
+        $frame.Render($visual)
+        $frame.Freeze()
+        return $frame
+    } catch {
+        # Navigation still works when WPF cannot capture the outgoing surface.
+        return
+    }
+}
+
+function Start-WNGuiPageMotion {
+    param($Surface, $Ghost, $Frame)
+    if (-not $Frame -or -not (Test-WNGuiPageMotion)) { return }
+    $duration = [Windows.Duration][TimeSpan]::FromMilliseconds(160)
+    $ease = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
+    $out = [Windows.Media.Animation.DoubleAnimation]::new(1, 0, $duration)
+    $in = [Windows.Media.Animation.DoubleAnimation]::new(0, 1, $duration)
+    $shift = [Windows.Media.Animation.DoubleAnimation]::new(6, 0, $duration)
+    $in.EasingFunction = $ease
+    $shift.EasingFunction = $ease
+    $in.FillBehavior = 'Stop'
+    $shift.FillBehavior = 'Stop'
+    $Ghost.Source = $Frame
+    $clear = {
+        if ([object]::ReferenceEquals($Ghost.Source, $Frame)) { $Ghost.Source = $null }
+    }.GetNewClosure()
+    $out.Add_Completed($clear)
+    $Ghost.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)
+    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $in)
+    $Surface.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $shift)
+}
+
 function Show-WNGuiPage {
     param([string]$Id)
     $g = $script:WNGui
@@ -454,12 +511,18 @@ function Show-WNGuiPage {
         & $p.Build $p
         $p.Built = $true
     }
+    $frame = if ($g.Current -and $Id -ne $g.Current) { Get-WNGuiMotionFrame $g.Ctl.PageSurface $g.Ctl.PageGhost }
     $g.Ctl.PageTitle.Text = $p.Title
     $g.Ctl.PageSub.Text = $p.Sub
     $g.Ctl.Header.Visibility = if ($p.NoHeader) { 'Collapsed' } else { 'Visible' }
     $g.Ctl.ActionsHost.Content = $p.Actions
     $g.Ctl.ToolbarHost.Content = $p.Toolbar
     $g.Ctl.ToolbarHost.Visibility = if ($p.Toolbar.Children.Count) { 'Visible' } else { 'Collapsed' }
+    if ($Id -ne $g.Current) {
+        $g.Ctl.BodyGhost.Source = $null
+        $g.Ctl.BodyHost.BeginAnimation([Windows.UIElement]::OpacityProperty, $null)
+        $g.Ctl.BodyHost.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $null)
+    }
     $g.Ctl.BodyHost.Content = $p.Body
     $g.Current = $Id
     # The search box follows the page: cleared, with a page-specific hint, off where there is nothing to search
@@ -471,6 +534,7 @@ function Show-WNGuiPage {
     if ($g.NavAll) { Set-WNGuiNavSelection $Id } elseif ($g.NavButtons[$Id].IsChecked -ne $true) { $g.NavButtons[$Id].IsChecked = $true }
     $p.Shown++
     if ($p.OnShow) { & $p.OnShow $p }
+    Start-WNGuiPageMotion $g.Ctl.PageSurface $g.Ctl.PageGhost $frame
 }
 
 function Add-WNGuiActions { param($Page, [object[]]$Buttons) foreach ($b in $Buttons) { [void]$Page.Actions.Children.Add($b) } }
@@ -2079,7 +2143,7 @@ function Show-WNGui {
     $ctl = @{}
     foreach ($n in 'UpdateBtn', 'UpdateIcon', 'UpdateText', 'ThemeBtn', 'LangEn', 'LangEs', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText',
                    'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'NavFooter', 'NavPane', 'SidebarColumn', 'SidebarBrand', 'NavToggle', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
-                   'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
+                   'ToolbarHost', 'PageSurface', 'PageGhost', 'BodyHost', 'BodyGhost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
 
     $script:WNGui = @{
         Window = $window; Ctl = $ctl; Job = $null; Relaunch = $null

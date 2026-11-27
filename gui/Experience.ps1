@@ -192,7 +192,20 @@ function Set-WNGuiNavSelection {
     param([string]$Id)
     $g = $script:WNGui
     $on = @($g.NavButtons[$Id], $g.NavGroupOf[$Id]) | Where-Object { $_ }
-    foreach ($b in $g.NavAll) { $b.IsChecked = [bool]($on | Where-Object { [object]::ReferenceEquals($_, $b) }) }
+    $animate = $g.NavMotionPage -ne $Id -and $g.Window.IsVisible -and (Test-WNGuiPageMotion)
+    $g.NavMotionPage = $Id
+    foreach ($b in $g.NavAll) {
+        $selected = [bool]($on | Where-Object { [object]::ReferenceEquals($_, $b) })
+        if ($b.IsChecked -ne $selected) { $b.IsChecked = $selected }
+        if (-not $selected -or -not $animate) { continue }
+        [void]$b.ApplyTemplate()
+        $marker = $b.Template.FindName('pill', $b)
+        if (-not $marker) { continue }
+        $duration = [Windows.Duration][TimeSpan]::FromMilliseconds(160)
+        $fade = [Windows.Media.Animation.DoubleAnimation]::new(0, 1, $duration)
+        $fade.FillBehavior = 'Stop'
+        $marker.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+    }
 }
 
 function Set-WNGuiNavWidth {

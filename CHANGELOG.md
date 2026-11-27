@@ -20,6 +20,7 @@ All notable changes to WinNow are listed here. The format follows
 ## [1.7.4] - 2026-11-27 - Glassware Polish
 
 ### Changed
+- Glassware cross-fades between pages and filter options, with reduced motion respected.
 - Collapse navigation and move the selection panel below the table on narrow windows.
 - Show selected adjustments hidden by filters and allow removing each item from the selection.
 - Start the local and download launchers through the same PowerShell entry point so read-only options can run without elevation.
