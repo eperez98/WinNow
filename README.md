@@ -1,8 +1,8 @@
 <div align="center">
 
-**English** · [Español](README.es.md)
+**English** · [Spanish](README.es.md)
 
-<img src="docs/readme-hero-en.png" alt="WinNow Glassware with the Adjustments table and selection panel" width="100%" />
+<img src="docs/readme-hero-174a-en.png" alt="WinNow 1.7.4A Glassware Polish on Windows 10 and 11" width="100%" />
 
 <br />
 
@@ -11,7 +11,7 @@
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
 ![Nothing to install](https://img.shields.io/badge/nothing-to%20install-123A5C)
-![English | Español](https://img.shields.io/badge/English%20%7C%20Espa%C3%B1ol-123A5C)
+![English and Spanish](https://img.shields.io/badge/languages-English%20and%20Spanish-123A5C)
 ![GPL-3.0](https://img.shields.io/badge/license-GPL--3.0-123A5C)
 
 **Telemetry, ads and bloat out; what you use stays. From the terminal or from a window.**<br />
@@ -54,32 +54,22 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 ## Screenshots
 
-**1.7.4A Glassware Polish** adapts the adjustment workspace to narrow windows and keeps hidden selections visible in the summary. Remove any selected item directly from that panel. Launch.bat forwards PowerShell arguments including -DryRun.
+**WinNow 1.7.4A Glassware Polish** brings horizontal navigation, a selection highlight that follows the active tab, and switches that briefly compress when toggled. Motion follows your Windows settings.
 
-The selection indicator glides between sidebar items and tabs. Pages slide horizontally, and switches compress briefly when toggled. Motion follows Windows settings.
+In **Adjustments**, choose what to change, check the risk level and see your selections in one place. Items hidden by a filter stay in the selection summary. Use **Simulate changes** to preview the steps or **Review changes** to inspect what will be applied.
 
-The app opens on **Adjustments**. The docked sidebar can collapse. The table shows category and risk, and the right panel lists selected changes and offers **Simulate changes**. **Review changes** shows details and can offer a restore point.
+![Adjustments in the Dark theme with the Recommended filter and selected changes](screenshots/en/glassware-174a-adjustments.png)
 
-![Glassware adjustments](screenshots/es/glassware-ajustes.png)
+| Home in the Dark theme | Advanced adjustments in the Light theme |
+| --- | --- |
+| ![Home screen with shortcuts and the tools catalog](screenshots/en/glassware-174a-home.png) | ![Advanced adjustments with risk levels and the selection summary](screenshots/en/glassware-174a-advanced.png) |
 
-[Review dialog](screenshots/es/glassware-revision.png)
+<details>
+<summary>Review changes dialog</summary>
 
+![Review dialog showing the change list, risk levels and the optional restore-point switch](screenshots/en/glassware-174a-review.png)
 
-<div align="center">
-<img src="screenshots/en/home.png" alt="WinNow home" width="100%" />
-<sub><b>Home</b> — glass cards over soft colour, a hero with start cards, and the compact menu on the left.</sub>
-</div>
-
-<br />
-
-| | |
-|:---:|:---:|
-| <img src="screenshots/en/news.png" alt="What's new" /><br /><sub><b>What's new</b> — slides with pictures, shown once after an update</sub> | <img src="screenshots/en/welcome.png" alt="Welcome" /><br /><sub><b>First start</b> — window or terminal, Light or Dark</sub> |
-| <img src="screenshots/en/profiles.png" alt="Profiles & schedules" /><br /><sub><b>Profiles & schedules</b> — save a PC, apply it elsewhere, scheduled maintenance</sub> | <img src="screenshots/en/group-optimize.png" alt="Optimize group" /><br /><sub><b>Groups</b> — each menu item opens its tools as cards</sub> |
-| <img src="screenshots/en/tweaks.png" alt="Tweaks" /><br /><sub><b>Tweaks</b> — live status, apply and real undo, presets</sub> | <img src="screenshots/en/tweaks-advanced.png" alt="Advanced tweaks" /><br /><sub><b>Advanced tweaks</b> — with a caution note before you apply them</sub> |
-| <img src="screenshots/en/preferences.png" alt="Preferences" /><br /><sub><b>Preferences</b> — 18 ON / OFF switches</sub> | <img src="screenshots/en/services.png" alt="Services" /><br /><sub><b>Services</b> — current vs. recommended vs. Windows default</sub> |
-| <img src="screenshots/en/repair.png" alt="Repair" /><br /><sub><b>Repair & maintenance</b> — SFC, DISM, cleanup, resets</sub> | <img src="screenshots/en/updates.png" alt="Windows Update" /><br /><sub><b>Windows Update</b> — recommended policy, defaults, pause, resume</sub> |
-| <img src="screenshots/en/about.png" alt="About" /><br /><sub><b>About WinNow</b> — the core, every release and what comes next</sub> | |
+</details>
 
 <details>
 <summary><b>⌨️ Terminal edition</b></summary>
@@ -93,7 +83,7 @@ The app opens on **Adjustments**. The docked sidebar can collapse. The table sho
 
 </details>
 
-<sub>Screenshots are taken in simulation mode. Pages that would show your own programs, hosts file or hardware are left out.</sub>
+<sub>Screenshots show sample selections. No system changes were applied.</sub>
 
 ## Features
 
