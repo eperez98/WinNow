@@ -391,11 +391,12 @@ function Set-WNGuiRows {
 
 function New-WNGuiSegments {
     # Pill tabs; $OnChange gets the selected value through $this.Tag
-    param([string]$Group, [object[]]$Options, [scriptblock]$OnChange)
-    $p = New-WNGuiPanel
+    param([string]$Group, [object[]]$Options, [scriptblock]$OnChange, [switch]$NoBodyMotion, [switch]$Wrap)
+    $p = New-WNGuiPanel -Wrap:$Wrap
     $p.Margin = '0,0,12,0'
     $first = $true
     $p.Resources['OptionHandler'] = $OnChange
+    $p.Resources['SkipContentMotion'] = [bool]$NoBodyMotion
     foreach ($o in $Options) {
         $r = New-Object Windows.Controls.RadioButton
         $r.Style = $script:WNGui.Window.Resources['Seg']
@@ -404,12 +405,18 @@ function New-WNGuiSegments {
         $r.Tag = $o.Value
         $r.IsChecked = $first
         $first = $false
+        if ($r.IsChecked) { $p.Tag = $r }
         $r.Add_Checked({
-            $g = $script:WNGui
-            $frame = Get-WNGuiMotionFrame $g.Ctl.BodyHost $g.Ctl.BodyGhost
-            $action = $this.Parent.Resources['OptionHandler']
+            $panel = $this.Parent
+            $previous = $panel.Tag
+            $panel.Tag = $this
+            Move-WNGuiSelection $previous $this $panel
+            $action = $panel.Resources['OptionHandler']
             & $action
-            Start-WNGuiPageMotion $g.Ctl.BodyHost $g.Ctl.BodyGhost $frame
+            if ($previous -and -not $panel.Resources['SkipContentMotion']) {
+                $offset = if ($panel.Children.IndexOf($this) -gt $panel.Children.IndexOf($previous)) { 14 } else { -14 }
+                Start-WNGuiContentMotion $script:WNGui.Ctl.BodyHost $offset
+            }
         })
         [void]$p.Children.Add($r)
     }
@@ -455,50 +462,104 @@ function Test-WNGuiPageMotion {
     [Windows.SystemParameters]::ClientAreaAnimation -and -not [Windows.SystemParameters]::HighContrast
 }
 
-function Get-WNGuiMotionFrame {
-    param($Surface, $Ghost)
-    if (-not $Surface -or -not $Ghost -or -not (Test-WNGuiPageMotion)) { return }
-    $width = [int][Math]::Ceiling($Surface.ActualWidth)
-    $height = [int][Math]::Ceiling($Surface.ActualHeight)
-    if ($width -le 0 -or $height -le 0 -or -not $Surface.IsVisible) { return }
-    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $null)
-    $Surface.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $null)
-    $Ghost.Source = $null
-    try {
-        $frame = [Windows.Media.Imaging.RenderTargetBitmap]::new($width, $height, 96, 96, [Windows.Media.PixelFormats]::Pbgra32)
-        $visual = New-Object Windows.Media.DrawingVisual
-        $brush = [Windows.Media.VisualBrush]::new($Surface)
-        $context = $visual.RenderOpen()
-        try { $context.DrawRectangle($brush, $null, [Windows.Rect]::new(0, 0, $width, $height)) } finally { $context.Close() }
-        $frame.Render($visual)
-        $frame.Freeze()
-        return $frame
-    } catch {
-        # Navigation still works when WPF cannot capture the outgoing surface.
-        return
+function Move-WNGuiSelection {
+    param($Previous, $Current, $Container)
+    if (-not $Previous -or -not $Current -or $Previous -eq $Current) { return }
+    [void]$Previous.ApplyTemplate()
+    [void]$Current.ApplyTemplate()
+    $from = $Previous.Template.FindName('selection', $Previous)
+    $to = $Current.Template.FindName('selection', $Current)
+    if (-not $from -or -not $to -or $from.ActualWidth -le 0 -or $to.ActualWidth -le 0 -or
+        -not $from.IsDescendantOf($Container) -or -not $to.IsDescendantOf($Container)) { return }
+
+    # Keep the previous pill's on-screen position if the user changes selection mid-animation.
+    $origin = $from.TranslatePoint([Windows.Point]::new(0, 0), $Container)
+    $edge = $from.TranslatePoint([Windows.Point]::new($from.ActualWidth, 0), $Container)
+    if ($to.RenderTransform.IsFrozen) { $to.RenderTransform = $to.RenderTransform.Clone() }
+    $scale, $translate = $to.RenderTransform.Children
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $null)
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $null)
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $null)
+    if (-not (Test-WNGuiPageMotion)) { return }
+
+    $target = $to.TranslatePoint([Windows.Point]::new(0, 0), $Container)
+    $duration = [Windows.Duration]::new([TimeSpan]::FromMilliseconds(210))
+    $ease = [Windows.Media.Animation.CubicEase]::new()
+    $ease.EasingMode = 'EaseOut'
+    $x = [Windows.Media.Animation.DoubleAnimation]::new(($origin.X - $target.X), 0, $duration)
+    $y = [Windows.Media.Animation.DoubleAnimation]::new(($origin.Y - $target.Y), 0, $duration)
+    $width = [Windows.Media.Animation.DoubleAnimation]::new((($edge.X - $origin.X) / $to.ActualWidth), 1, $duration)
+    foreach ($animation in $x, $y, $width) {
+        $animation.EasingFunction = $ease
+        $animation.FillBehavior = 'Stop'
     }
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $x)
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $y)
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $width)
 }
 
-function Start-WNGuiPageMotion {
-    param($Surface, $Ghost, $Frame)
-    if (-not $Frame -or -not (Test-WNGuiPageMotion)) { return }
-    $duration = [Windows.Duration][TimeSpan]::FromMilliseconds(160)
-    $ease = New-Object Windows.Media.Animation.CubicEase -Property @{ EasingMode = 'EaseOut' }
-    $out = [Windows.Media.Animation.DoubleAnimation]::new(1, 0, $duration)
-    $in = [Windows.Media.Animation.DoubleAnimation]::new(0, 1, $duration)
-    $shift = [Windows.Media.Animation.DoubleAnimation]::new(6, 0, $duration)
-    $in.EasingFunction = $ease
-    $shift.EasingFunction = $ease
-    $in.FillBehavior = 'Stop'
-    $shift.FillBehavior = 'Stop'
-    $Ghost.Source = $Frame
-    $clear = {
-        if ([object]::ReferenceEquals($Ghost.Source, $Frame)) { $Ghost.Source = $null }
-    }.GetNewClosure()
-    $out.Add_Completed($clear)
-    $Ghost.BeginAnimation([Windows.UIElement]::OpacityProperty, $out)
-    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $in)
-    $Surface.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $shift)
+function Start-WNGuiContentMotion {
+    param($Surface, [double]$Offset = 16)
+    if ($Surface.RenderTransform.IsFrozen) { $Surface.RenderTransform = $Surface.RenderTransform.Clone() }
+    $translate = $Surface.RenderTransform
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $null)
+    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $null)
+    if (-not (Test-WNGuiPageMotion)) { return }
+    $duration = [Windows.Duration]::new([TimeSpan]::FromMilliseconds(170))
+    $ease = [Windows.Media.Animation.CubicEase]::new()
+    $ease.EasingMode = 'EaseOut'
+    $shift = [Windows.Media.Animation.DoubleAnimation]::new($Offset, 0, $duration)
+    $fade = [Windows.Media.Animation.DoubleAnimation]::new(0.82, 1, $duration)
+    $shift.EasingFunction = $fade.EasingFunction = $ease
+    $shift.FillBehavior = $fade.FillBehavior = 'Stop'
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $shift)
+    $Surface.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+}
+
+function Initialize-WNGuiSwitch {
+    param($Switch)
+    $Switch.Style = $script:WNGui.Window.Resources['GlassSwitch']
+    $Switch.Add_Checked({ Start-WNGuiSwitchMotion $this })
+    $Switch.Add_Unchecked({ Start-WNGuiSwitchMotion $this })
+}
+
+function Start-WNGuiSwitchMotion {
+    param($Switch)
+    [void]$Switch.ApplyTemplate()
+    $thumb = $Switch.Template.FindName('thumb', $Switch)
+    if (-not $thumb) { return }
+    if ($thumb.RenderTransform.IsFrozen) { $thumb.RenderTransform = $thumb.RenderTransform.Clone() }
+    $scale, $translate = $thumb.RenderTransform.Children
+    $travel = [Math]::Max(0, $Switch.Template.FindName('track', $Switch).ActualWidth - $thumb.Width - 2 * $thumb.Margin.Left)
+    $direction = if ($Switch.IsChecked) { 1 } else { -1 }
+    $start = [Math]::Max(-$travel, [Math]::Min($travel, $translate.X - $direction * $travel))
+    $fromX = $scale.ScaleX
+    $fromY = $scale.ScaleY
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $null)
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $null)
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $null)
+    if ($travel -le 0 -or -not (Test-WNGuiPageMotion)) { return }
+
+    $shift = [Windows.Media.Animation.DoubleAnimationUsingKeyFrames]::new()
+    $stretch = [Windows.Media.Animation.DoubleAnimationUsingKeyFrames]::new()
+    $squash = [Windows.Media.Animation.DoubleAnimationUsingKeyFrames]::new()
+    $ease = [Windows.Media.Animation.CubicEase]::new()
+    $ease.EasingMode = 'EaseOut'
+    foreach ($step in @(
+        @{ Time = 0; X = $start; Width = $fromX; Height = $fromY },
+        @{ Time = 65; X = $start * 0.35; Width = 1.16; Height = 0.9 },
+        @{ Time = 135; X = $direction * 1.25; Width = 0.97; Height = 1.04 },
+        @{ Time = 205; X = 0; Width = 1; Height = 1 }
+    )) {
+        $key = [Windows.Media.Animation.KeyTime]::FromTimeSpan([TimeSpan]::FromMilliseconds($step.Time))
+        $shift.KeyFrames.Add([Windows.Media.Animation.EasingDoubleKeyFrame]::new($step.X, $key, $ease))
+        $stretch.KeyFrames.Add([Windows.Media.Animation.EasingDoubleKeyFrame]::new($step.Width, $key, $ease))
+        $squash.KeyFrames.Add([Windows.Media.Animation.EasingDoubleKeyFrame]::new($step.Height, $key, $ease))
+    }
+    $shift.FillBehavior = $stretch.FillBehavior = $squash.FillBehavior = 'Stop'
+    $translate.BeginAnimation([Windows.Media.TranslateTransform]::XProperty, $shift)
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleXProperty, $stretch)
+    $scale.BeginAnimation([Windows.Media.ScaleTransform]::ScaleYProperty, $squash)
 }
 
 function Show-WNGuiPage {
@@ -511,18 +572,13 @@ function Show-WNGuiPage {
         & $p.Build $p
         $p.Built = $true
     }
-    $frame = if ($g.Current -and $Id -ne $g.Current) { Get-WNGuiMotionFrame $g.Ctl.PageSurface $g.Ctl.PageGhost }
+    $changed = $g.Current -and $Id -ne $g.Current
     $g.Ctl.PageTitle.Text = $p.Title
     $g.Ctl.PageSub.Text = $p.Sub
     $g.Ctl.Header.Visibility = if ($p.NoHeader) { 'Collapsed' } else { 'Visible' }
     $g.Ctl.ActionsHost.Content = $p.Actions
     $g.Ctl.ToolbarHost.Content = $p.Toolbar
     $g.Ctl.ToolbarHost.Visibility = if ($p.Toolbar.Children.Count) { 'Visible' } else { 'Collapsed' }
-    if ($Id -ne $g.Current) {
-        $g.Ctl.BodyGhost.Source = $null
-        $g.Ctl.BodyHost.BeginAnimation([Windows.UIElement]::OpacityProperty, $null)
-        $g.Ctl.BodyHost.RenderTransform.BeginAnimation([Windows.Media.TranslateTransform]::YProperty, $null)
-    }
     $g.Ctl.BodyHost.Content = $p.Body
     $g.Current = $Id
     # The search box follows the page: cleared, with a page-specific hint, off where there is nothing to search
@@ -534,7 +590,7 @@ function Show-WNGuiPage {
     if ($g.NavAll) { Set-WNGuiNavSelection $Id } elseif ($g.NavButtons[$Id].IsChecked -ne $true) { $g.NavButtons[$Id].IsChecked = $true }
     $p.Shown++
     if ($p.OnShow) { & $p.OnShow $p }
-    Start-WNGuiPageMotion $g.Ctl.PageSurface $g.Ctl.PageGhost $frame
+    if ($changed) { Start-WNGuiContentMotion $g.Ctl.BodyHost }
 }
 
 function Add-WNGuiActions { param($Page, [object[]]$Buttons) foreach ($b in $Buttons) { [void]$Page.Actions.Children.Add($b) } }
@@ -2143,7 +2199,7 @@ function Show-WNGui {
     $ctl = @{}
     foreach ($n in 'UpdateBtn', 'UpdateIcon', 'UpdateText', 'ThemeBtn', 'LangEn', 'LangEs', 'ShortcutBtn', 'Logo', 'Avatar', 'VersionText', 'AdminText',
                    'SimToggle', 'SimBadge', 'ModeText', 'TerminalBtn', 'NavPanel', 'NavFooter', 'NavPane', 'SidebarColumn', 'SidebarBrand', 'NavToggle', 'SearchBox', 'Header', 'ActionsHost', 'PageTitle', 'PageSub',
-                   'ToolbarHost', 'PageSurface', 'PageGhost', 'BodyHost', 'BodyGhost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
+                   'ToolbarHost', 'BodyHost', 'LogToggle', 'Busy', 'StatusText', 'LogBox') { $ctl[$n] = $window.FindName($n) }
 
     $script:WNGui = @{
         Window = $window; Ctl = $ctl; Job = $null; Relaunch = $null
@@ -2183,6 +2239,8 @@ function Show-WNGui {
     $ctl.VersionText.Text = "WinNow $($WN.GuiVersion)"
     $ctl.AdminText.Text = $WN.GuiChannel
     $ctl.ModeText.Text = if ($WN.IsAdmin) { T 'gui.modeAdmin' } else { T 'gui.modeUser' }
+    Initialize-WNGuiSwitch $ctl.SimToggle
+    Initialize-WNGuiSwitch $ctl.LogToggle
     $ctl.SimToggle.IsChecked = $WN.DryRun
     $ctl.SimToggle.IsEnabled = $WN.IsAdmin
     $ctl.SimBadge.Visibility = if ($WN.DryRun) { 'Visible' } else { 'Collapsed' }

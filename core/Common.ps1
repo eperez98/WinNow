@@ -14,9 +14,9 @@ function Initialize-WNContext {
 
     $global:WN = [ordered]@{
         Name             = 'WinNow'
-        Version          = '1.7.4'
+        Version          = '1.7.4A'
         Channel          = 'Glassware Polish'
-        GuiVersion       = '1.7.4'
+        GuiVersion       = '1.7.4A'
         GuiChannel       = 'Glassware Polish'
         Author           = 'ErickP (Eperez98)'
         Repo             = 'https://github.com/eperez98/Winnow'

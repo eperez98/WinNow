@@ -30,7 +30,7 @@ param([Parameter(ValueFromRemainingArguments = $true)][string[]]$WNArgs)
     }
 
     $releaseKey = '<RSAKeyValue><Modulus>udlHLkTDN4uSXsc8Cl9WnIZKlUC1FnCqrrzKLn/2NU3islEa16Ap7SmL4KQiOoMIRYOQ6cqUpFzLtjtJTLzzEjQv0/6uomyH/Cb94KBUOkb5Q4yB8L5Un3Y0bjY32yaV+RTyGNwCpkXbdRaW/HKw+h7q8ur5lQEap/wYxBp0H59ncGdTgx4SWcMo73BQY2p+ngk0PSFv/Z0ZidcCyhFox1896oXdR8/SvFKItvfErAMpWf/tBp3XDpbiFfW60p0NDCUWgJkDXlnDgy9y7MgrQAk0W8tT5zxgLES/MirW3EwUz4+hNaPOzb0DCtrzEke+YOlnUZYY7VZsqGydD/gexVWw+fA6bE1upX/pZeNqrsNN9+vOZ4OQ5ak3AuifLTCvktOB+o6wZtup5AbWJiEQEhtZdO/77mEPosUB2XDoJcMtaVX0x0xL8mN+cj0yYwSyj+EusEADDVoPVFF3SeLnsSjG70byyxBR+sFtvITaQ5KTTBOJYXftmEiyp8bz4Bj1</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>'
-    $repo = 'eperez98/Winnow'
+    $repo = 'eperez98/WinNow'
     $url  = "https://github.com/$repo/releases/latest/download/Winnow.zip"
     $dir = Join-Path $env:TEMP ("Winnow-app-" + [guid]::NewGuid().ToString('N'))
     $zip = "$dir.zip"

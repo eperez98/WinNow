@@ -115,6 +115,7 @@ function Show-WNGuiChangeReview {
     $scroll.MaxHeight = [Math]::Max(90, [Windows.SystemParameters]::WorkArea.Height - 450)
     $table = New-WNGuiTweakTable $scroll (T 'glassware.change')
     $restore = New-Object Windows.Controls.CheckBox
+    Initialize-WNGuiSwitch $restore
     $restore.Content = T 'glassware.restore'
     $restore.IsChecked = $true
     $restore.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'Fg')
@@ -181,31 +182,26 @@ function Switch-WNGuiNavGroup {
     $kids.Visibility = if ($show) { 'Visible' } else { 'Collapsed' }
     $chev = $g.NavChevrons[$Name]
     if ($chev) { $chev.Content = [string][char]$(if ($show) { 0xE70E } else { 0xE70D }) }
-    if ($show) {
-        $kids.Opacity = 0
-        $kids.BeginAnimation([Windows.UIElement]::OpacityProperty, (New-Object Windows.Media.Animation.DoubleAnimation 0, 1, ([Windows.Duration][TimeSpan]::FromMilliseconds(220))))
+    if ($show -and (Test-WNGuiPageMotion)) {
+        $fade = [Windows.Media.Animation.DoubleAnimation]::new(0, 1, [Windows.Duration]::new([TimeSpan]::FromMilliseconds(170)))
+        $fade.FillBehavior = 'Stop'
+        $kids.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
     }
 }
 
 function Set-WNGuiNavSelection {
-    # The page's item is marked, and for a tool its group as well, so the compact pane still shows where you are
     param([string]$Id)
     $g = $script:WNGui
-    $on = @($g.NavButtons[$Id], $g.NavGroupOf[$Id]) | Where-Object { $_ }
-    $animate = $g.NavMotionPage -ne $Id -and $g.Window.IsVisible -and (Test-WNGuiPageMotion)
-    $g.NavMotionPage = $Id
-    foreach ($b in $g.NavAll) {
-        $selected = [bool]($on | Where-Object { [object]::ReferenceEquals($_, $b) })
-        if ($b.IsChecked -ne $selected) { $b.IsChecked = $selected }
-        if (-not $selected -or -not $animate) { continue }
-        [void]$b.ApplyTemplate()
-        $marker = $b.Template.FindName('pill', $b)
-        if (-not $marker) { continue }
-        $duration = [Windows.Duration][TimeSpan]::FromMilliseconds(160)
-        $fade = [Windows.Media.Animation.DoubleAnimation]::new(0, 1, $duration)
-        $fade.FillBehavior = 'Stop'
-        $marker.BeginAnimation([Windows.UIElement]::OpacityProperty, $fade)
+    $leaf = $g.NavButtons[$Id]
+    $group = $g.NavGroupOf[$Id]
+    $target = if ($group -and $g.NavKids[$group.Name].Visibility -ne 'Visible') { $group } else { $leaf }
+    $previous = $g.NavSelected
+    $g.NavSelected = $target
+    foreach ($button in $g.NavAll) {
+        $selected = $button -eq $leaf -or $button -eq $group
+        if ($button.IsChecked -ne $selected) { $button.IsChecked = $selected }
     }
+    Move-WNGuiSelection $previous $target $g.Ctl.NavPane
 }
 
 function Set-WNGuiNavWidth {
@@ -318,7 +314,7 @@ $script:WNNewsByVersion = [ordered]@{
     '1.7.1' = @('winget')
     '1.7.2' = @('upgrade')
     '1.7.3' = @('glassware')
-    '1.7.4' = @('glasswarePolish')
+    '1.7.4A' = @('glasswarePolish')
 }
 
 function Get-WNGuiNewsSlides {
@@ -425,6 +421,7 @@ function New-WNGuiNewsSlide {
         }
         [void]$sp.Children.Add($row)
         $snd = New-Object Windows.Controls.CheckBox
+        Initialize-WNGuiSwitch $snd
         $snd.Content = T 'news.sound'
         $snd.SetResourceReference([Windows.Controls.Control]::ForegroundProperty, 'Fg')
         $snd.Margin = '28,12,28,0'

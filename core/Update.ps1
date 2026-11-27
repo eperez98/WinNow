@@ -1,7 +1,7 @@
 # core/Update.ps1
 # Update check against the GitHub releases, in-place updater, and the desktop shortcut.
 
-$script:WNRepoSlug = 'eperez98/Winnow'
+$script:WNRepoSlug = 'eperez98/WinNow'
 
 $script:WNReleaseKey = '<RSAKeyValue><Modulus>udlHLkTDN4uSXsc8Cl9WnIZKlUC1FnCqrrzKLn/2NU3islEa16Ap7SmL4KQiOoMIRYOQ6cqUpFzLtjtJTLzzEjQv0/6uomyH/Cb94KBUOkb5Q4yB8L5Un3Y0bjY32yaV+RTyGNwCpkXbdRaW/HKw+h7q8ur5lQEap/wYxBp0H59ncGdTgx4SWcMo73BQY2p+ngk0PSFv/Z0ZidcCyhFox1896oXdR8/SvFKItvfErAMpWf/tBp3XDpbiFfW60p0NDCUWgJkDXlnDgy9y7MgrQAk0W8tT5zxgLES/MirW3EwUz4+hNaPOzb0DCtrzEke+YOlnUZYY7VZsqGydD/gexVWw+fA6bE1upX/pZeNqrsNN9+vOZ4OQ5ak3AuifLTCvktOB+o6wZtup5AbWJiEQEhtZdO/77mEPosUB2XDoJcMtaVX0x0xL8mN+cj0yYwSyj+EusEADDVoPVFF3SeLnsSjG70byyxBR+sFtvITaQ5KTTBOJYXftmEiyp8bz4Bj1</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>'
 
@@ -22,8 +22,11 @@ function Test-WNReleaseSignature {
 
 function ConvertTo-WNVersion {
     param([string]$Text)
+    $label = "$Text".Trim() -replace '^[vV]', ''
+    if ($label -match '^1\.7\.([468])A$') { return [version]::new(1, 7, [int]$matches[1], 1) }
+    if ($label -match '^1\.8([A-D])$') { return [version]::new(1, 8, 'ABCD'.IndexOf($matches[1].ToUpperInvariant()), 1) }
     $v = $null
-    if ([version]::TryParse(("$Text".Trim() -replace '^[vV]', ''), [ref]$v)) { return $v }
+    if ([version]::TryParse($label, [ref]$v)) { return $v }
     return $null
 }
 
@@ -71,7 +74,7 @@ function Get-WNUpdateInfo {
         }
         return [pscustomobject]@{
             Newer   = $newer
-            Version = "$latest"
+            Version = if ($latest -eq [version]'1.7.4.1') { '1.7.4A' } else { "$latest" }
             Tag     = $rel.tag_name
             Url     = $rel.html_url
             Zip     = ($rel.assets | Where-Object { $_.name -eq 'Winnow.zip' } | Select-Object -First 1).browser_download_url

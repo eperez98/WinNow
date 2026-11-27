@@ -6,7 +6,7 @@
 
 <br />
 
-[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.7.4%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
+[![Run WinNow](https://img.shields.io/badge/Run%20WinNow-1.7.4A%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#run-it)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -54,7 +54,9 @@ One line in PowerShell runs it from GitHub. Logs and backups live in an admin-on
 
 ## Screenshots
 
-**1.7.4 Glassware Polish** adapts the adjustment workspace to narrow windows and keeps hidden selections visible in the summary. Remove any selected item directly from that panel. Launch.bat forwards PowerShell arguments including -DryRun.
+**1.7.4A Glassware Polish** adapts the adjustment workspace to narrow windows and keeps hidden selections visible in the summary. Remove any selected item directly from that panel. Launch.bat forwards PowerShell arguments including -DryRun.
+
+The selection indicator glides between sidebar items and tabs. Pages slide horizontally, and switches compress briefly when toggled. Motion follows Windows settings.
 
 The app opens on **Adjustments**. The docked sidebar can collapse. The table shows category and risk, and the right panel lists selected changes and offers **Simulate changes**. **Review changes** shows details and can offer a restore point.
 

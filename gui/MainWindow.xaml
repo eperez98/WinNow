@@ -165,17 +165,62 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="RadioButton">
-            <Border x:Name="bd" CornerRadius="16" Padding="15,7" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1">
-              <ContentPresenter VerticalAlignment="Center"/>
-            </Border>
+            <Grid>
+              <Border x:Name="bd" CornerRadius="16" Background="{DynamicResource Card}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1"/>
+              <Border x:Name="selection" CornerRadius="16" Background="{DynamicResource Accent}" Opacity="0" IsHitTestVisible="False">
+                  <Border.RenderTransform>
+                    <TransformGroup><ScaleTransform/><TranslateTransform/></TransformGroup>
+                  </Border.RenderTransform>
+                </Border>
+              <ContentPresenter VerticalAlignment="Center" Margin="16,8"/>
+              <Border x:Name="focusRing" CornerRadius="16" BorderThickness="1" BorderBrush="Transparent" IsHitTestVisible="False"/>
+            </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="bd" Property="Background" Value="{DynamicResource Hover}"/></Trigger>
               <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Accent}"/>
+                <Setter TargetName="selection" Property="Opacity" Value="1"/>
                 <Setter TargetName="bd" Property="BorderBrush" Value="Transparent"/>
                 <Setter Property="Foreground" Value="{DynamicResource AccentFg}"/>
               </Trigger>
-              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AccentSolid}"/></Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="focusRing" Property="BorderBrush" Value="{DynamicResource AccentText}"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="GlassSwitch" TargetType="ToggleButton">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ToggleButton">
+            <DockPanel Background="Transparent" LastChildFill="True">
+              <Grid DockPanel.Dock="Left" Width="38" Height="22" Margin="0,0,8,0" VerticalAlignment="Center">
+                <Border x:Name="track" Background="{DynamicResource Layer}" BorderBrush="{DynamicResource CardBorder}" BorderThickness="1" CornerRadius="11"/>
+                <Border x:Name="thumb" Width="14" Height="14" Margin="4,0" HorizontalAlignment="Left"
+                        VerticalAlignment="Center" CornerRadius="7" Background="{DynamicResource FgDim}"
+                        RenderTransformOrigin="0.5,0.5">
+                  <Border.RenderTransform>
+                    <TransformGroup><ScaleTransform/><TranslateTransform/></TransformGroup>
+                  </Border.RenderTransform>
+                </Border>
+              </Grid>
+              <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
+            </DockPanel>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource AccentText}"/></Trigger>
+              <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="track" Property="Background" Value="{DynamicResource AccentSolid}"/>
+                <Setter TargetName="thumb" Property="HorizontalAlignment" Value="Right"/>
+                <Setter TargetName="thumb" Property="Background" Value="{DynamicResource AccentFg}"/>
+              </Trigger>
+              <Trigger Property="IsKeyboardFocused" Value="True">
+                <Setter TargetName="track" Property="BorderBrush" Value="{DynamicResource AccentText}"/>
+                <Setter TargetName="track" Property="BorderThickness" Value="2"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.55"/></Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
@@ -543,6 +588,11 @@
           <ControlTemplate TargetType="RadioButton">
             <Grid>
               <Border x:Name="bd" CornerRadius="8" Background="Transparent"/>
+              <Border x:Name="selection" CornerRadius="8" Background="{DynamicResource Selected}" Opacity="0" IsHitTestVisible="False">
+                  <Border.RenderTransform>
+                    <TransformGroup><ScaleTransform/><TranslateTransform/></TransformGroup>
+                  </Border.RenderTransform>
+                </Border>
               <Border x:Name="hv" CornerRadius="8" Background="{DynamicResource Hover}" Opacity="0"/>
               <Border x:Name="pill" Width="3" Height="16" CornerRadius="2" HorizontalAlignment="Left" VerticalAlignment="Center" Background="{DynamicResource AccentSolid}" Visibility="Collapsed"/>
               <Grid>
@@ -557,7 +607,7 @@
                 <Trigger.ExitActions><BeginStoryboard><Storyboard><DoubleAnimation Storyboard.TargetName="hv" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.18"/></Storyboard></BeginStoryboard></Trigger.ExitActions>
               </Trigger>
               <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="bd" Property="Background" Value="{DynamicResource Selected}"/>
+                <Setter TargetName="selection" Property="Opacity" Value="1"/>
                 <Setter TargetName="pill" Property="Visibility" Value="Visible"/>
                 <Setter TargetName="ic" Property="Foreground" Value="{DynamicResource AccentText}"/>
               </Trigger>
@@ -649,7 +699,6 @@
       <!-- Page: title with main actions, full-width tools row, body -->
       <Grid Grid.Row="1" Margin="18,18,24,8" ClipToBounds="True">
         <Grid x:Name="PageSurface">
-          <Grid.RenderTransform><TranslateTransform/></Grid.RenderTransform>
           <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
           <DockPanel x:Name="Header">
             <ContentControl x:Name="ActionsHost" DockPanel.Dock="Right" VerticalAlignment="Center" Margin="12,0,0,0" Focusable="False"/>
@@ -664,23 +713,15 @@
             <ContentControl x:Name="BodyHost" Focusable="False">
               <ContentControl.RenderTransform><TranslateTransform/></ContentControl.RenderTransform>
             </ContentControl>
-            <Image x:Name="BodyGhost" IsHitTestVisible="False" Focusable="False" Stretch="Fill"/>
           </Grid>
         </Grid>
-        <Image x:Name="PageGhost" IsHitTestVisible="False" Focusable="False" Stretch="Fill"/>
       </Grid>
 
       <!-- Status line, log switch and the live log of the running task -->
       <Border Grid.Row="2" BorderThickness="0,1,0,0" BorderBrush="{DynamicResource CardBorder}" Padding="30,7,30,9">
         <StackPanel>
           <DockPanel>
-            <ToggleButton x:Name="LogToggle" DockPanel.Dock="Right" Content="@@gui.log@@" Foreground="{DynamicResource AccentText}" Cursor="Hand" Padding="8,2">
-              <ToggleButton.Template>
-                <ControlTemplate TargetType="ToggleButton">
-                  <Border Background="Transparent" Padding="{TemplateBinding Padding}"><ContentPresenter/></Border>
-                </ControlTemplate>
-              </ToggleButton.Template>
-            </ToggleButton>
+            <ToggleButton x:Name="LogToggle" DockPanel.Dock="Right" Content="@@gui.log@@"/>
             <TextBlock x:Name="ModeText" DockPanel.Dock="Right" Foreground="{DynamicResource FgDim}" FontSize="11.5" VerticalAlignment="Center" Margin="0,0,14,0"/>
             <CheckBox x:Name="SimToggle" DockPanel.Dock="Right" Foreground="{DynamicResource Fg}" Content="@@gui.sim@@" FontSize="12.5" VerticalAlignment="Center" Margin="0,0,10,0"/>
             <ProgressBar x:Name="Busy" Width="160" Height="4" Margin="0,0,12,0" IsIndeterminate="True" Visibility="Collapsed"

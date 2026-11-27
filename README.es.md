@@ -6,7 +6,7 @@
 
 <br />
 
-[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.4%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
+[![Ejecutar WinNow](https://img.shields.io/badge/Ejecutar%20WinNow-1.7.4A%20Glassware%20Polish-0F766E?style=for-the-badge&logo=windows&logoColor=white)](#ejecútalo)
 
 ![Windows 10 | 11](https://img.shields.io/badge/Windows-10%20%7C%2011-123A5C)
 ![PowerShell 5.1 | 7](https://img.shields.io/badge/PowerShell-5.1%20%7C%207-123A5C)
@@ -54,7 +54,9 @@ Una línea en PowerShell lo ejecuta desde GitHub. Registros y backups viven en u
 
 ## Capturas
 
-**1.7.4 Glassware Polish** adapta Ajustes a ventanas estrechas y muestra cuántos cambios seleccionados oculta el filtro. Puedes quitar cada ajuste directamente desde el resumen. Launch.bat admite los argumentos de PowerShell, incluido -DryRun.
+**1.7.4A Glassware Polish** adapta Ajustes a ventanas estrechas y muestra cuántos cambios seleccionados oculta el filtro. Puedes quitar cada ajuste directamente desde el resumen. Launch.bat admite los argumentos de PowerShell, incluido -DryRun.
+
+El indicador de selección se desliza por el menú lateral y las pestañas. Las páginas entran en horizontal y los interruptores se comprimen brevemente al cambiar de estado. Las animaciones siguen la configuración de Windows.
 
 La app abre en **Ajustes**. La barra izquierda queda visible y puede contraerse. La tabla muestra categoría y riesgo. El panel derecho reúne la selección y ofrece **Simular cambios**. **Revisar cambios** muestra los efectos y permite elegir un punto de restauración cuando está disponible.
 
