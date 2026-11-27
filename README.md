@@ -21,7 +21,7 @@ Every change is backed up first and can be undone.
 irm eperez98.github.io/WinNow | iex
 ```
 
-[Features](#features) · [Screenshots](#screenshots) · [Run it](#run-it) · [Security](#security) · [Roadmap](#roadmap) · [Changelog](CHANGELOG.md)
+[Features](#features) · [Screenshots](#screenshots) · [Run it](#run-it) · [Security](#security) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -182,16 +182,6 @@ irm eperez98.github.io/WinNow | iex
 The exit code is `1` if any step failed.
 </details>
 
-## Preparing a release
-
-[Build-WNRelease.ps1](tools/Build-WNRelease.ps1) builds and verifies the three release assets using the existing release key.
-
-```powershell
-.\tools\Build-WNRelease.ps1 -Source . -OutputDirectory ..\release-assets
-```
-
-Attach Winnow.zip, Winnow.zip.sig, and run.ps1 to the same GitHub release. The GitHub Pages command follows the release marked Latest.
-
 ## Security
 
 WinNow runs as administrator, so it treats what it reads back as untrusted until it knows who wrote it.
@@ -204,20 +194,6 @@ WinNow runs as administrator, so it treats what it reads back as untrusted until
 | **Backups** | Restored only when an administrator, SYSTEM or you wrote them. |
 | **Updates** | Only from this repository's releases over HTTPS. Every file gets a SHA256 when it is downloaded, checked again right before the swap, and the swap is all or nothing. |
 | **Removal** | Answering **No** on exit deletes only WinNow's own copies, never a folder you extracted yourself. |
-
-## Roadmap
-
-<img src="docs/road-to-2.0.png" alt="Road to 2.0" width="100%" />
-
-| Version | Name | Goals |
-|---|---|---|
-| **1.8** | Trusted Updates | Signed releases, a history of every session with undo, the final GUI Rethinked |
-| **1.8.1** | Polish | A closing dialog in the window's own look |
-| **1.8.2** | Starting Point | A starting point tour; Office Helper with Thunderbird, LibreOffice and OpenOffice |
-| **1.8.3** | GUI Terminal Update | A task window with live output and a progress bar |
-| **2.0** | Store Edition | MSIX package in the Microsoft Store |
-
-Ideas, not promises: more changes may be added and others removed. Every past release is in the [CHANGELOG](CHANGELOG.md).
 
 ## Under the hood
 

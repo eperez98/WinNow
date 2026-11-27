@@ -21,7 +21,7 @@ Cada cambio se respalda antes y se puede deshacer.
 irm eperez98.github.io/WinNow | iex
 ```
 
-[Funciones](#funciones) · [Capturas](#capturas) · [Ejecútalo](#ejecútalo) · [Seguridad](#seguridad) · [Hoja de ruta](#hoja-de-ruta) · [Changelog](CHANGELOG.md)
+[Funciones](#funciones) · [Capturas](#capturas) · [Ejecútalo](#ejecútalo) · [Seguridad](#seguridad) · [Changelog](CHANGELOG.md)
 
 </div>
 
@@ -181,16 +181,6 @@ irm eperez98.github.io/WinNow | iex
 El código de salida es `1` si algún paso falló.
 </details>
 
-## Preparar una publicación
-
-[Build-WNRelease.ps1](tools/Build-WNRelease.ps1) genera y verifica los tres archivos de publicación con la clave de publicación existente.
-
-```powershell
-.\tools\Build-WNRelease.ps1 -Source . -OutputDirectory ..\release-assets
-```
-
-Adjunta Winnow.zip, Winnow.zip.sig y run.ps1 al mismo release de GitHub. El comando de GitHub Pages usa el release marcado como Latest.
-
 ## Seguridad
 
 WinNow corre como administrador, así que no confía en lo que vuelve a leer hasta saber quién lo escribió.
@@ -203,20 +193,6 @@ WinNow corre como administrador, así que no confía en lo que vuelve a leer has
 | **Backups** | Solo se restauran si los escribió un administrador, SYSTEM o tú. |
 | **Actualizaciones** | Solo desde las releases de este repositorio, por HTTPS. Cada archivo recibe un SHA256 al descargarse, se vuelve a comprobar justo antes del cambio, y el cambio es todo o nada. |
 | **Quitar WinNow** | Responder **No** al salir borra solo las copias de WinNow, nunca una carpeta que extrajiste tú. |
-
-## Hoja de ruta
-
-<img src="docs/road-to-2.0.png" alt="Road to 2.0" width="100%" />
-
-| Versión | Nombre | Metas |
-|---|---|---|
-| **1.8** | Trusted Updates | Releases firmadas, historial de cada sesión con deshacer, la GUI Rethinked final |
-| **1.8.1** | Polish | Un diálogo de cierre con el estilo de la ventana |
-| **1.8.2** | Starting Point | Un tour de inicio; Office Helper con Thunderbird, LibreOffice y OpenOffice |
-| **1.8.3** | GUI Terminal Update | Una ventana de tarea con la salida en vivo y barra de progreso |
-| **2.0** | Store Edition | Paquete MSIX en la Microsoft Store |
-
-Ideas, no promesas: se pueden agregar cambios y quitar otros. Todas las versiones anteriores están en el [CHANGELOG](CHANGELOG.md).
 
 ## Por dentro
 
